@@ -409,21 +409,7 @@ int main ( int argc, char **argv)
                     res_vec.z.r, res_vec.z.i);
     }
     printf("\n-----------------------------------------------------\n");
-    /* matrix based on test data for the line and plane
-     * intercept code. 
-    v[0].x.r = -0.408248290;       v[0].x.i = 0.0;
-    v[0].y.r =  0.0;               v[0].y.i = 0.0;
-    v[0].z.r = -0.963624112;       v[0].z.i = 0.0;
-
-    v[1].x.r =  0.816496581;       v[1].x.i = 0.0;
-    v[1].y.r = -0.554700196;       v[1].y.i = 0.0;
-    v[1].z.r = -0.222374795;       v[1].z.i = 0.0;
-
-    v[2].x.r =  0.408248290;       v[2].x.i = 0.0;
-    v[2].y.r =  0.832050294;       v[2].y.i = 0.0;
-    v[2].z.r = -0.148249863;       v[2].z.i = 0.0;
-    */
-
+    /* test data compliments of halirutan on twitch */
     v[0].x.r = -1.0 / sqrt(6.0);        v[0].x.i = 0.0;
     v[0].y.r =  0.0;                    v[0].y.i = 0.0;
     v[0].z.r = -1.0 * sqrt(13.0/14.0);  v[0].z.i = 0.0;
@@ -436,24 +422,18 @@ int main ( int argc, char **argv)
     v[2].y.r =  3.0 / sqrt(13.0);       v[2].y.i = 0.0;
     v[2].z.r = -1.0 * sqrt(2.0/91.0);   v[2].z.i = 0.0;
 
-    printf("\n\nNew matrix with line plane intercept data.\n");
-    printf("dbug : row 1 = < ( %g, %g ), ( %g, %g ), ( %g, %g ) >\n",
-            v[0].x.r, v[0].x.i,
-            v[0].y.r, v[0].y.i,
-            v[0].z.r, v[0].z.i );
+    printf("New matrix with line plane intercept data.\n");
+    printf("dbug : row 1 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
+            v[0].x.r, v[0].y.r, v[0].z.r );
 
-    printf("     : row 2 = < ( %g, %g ), ( %g, %g ), ( %g, %g ) >\n",
-            v[1].x.r, v[1].x.i,
-            v[1].y.r, v[1].y.i,
-            v[1].z.r, v[1].z.i );
+    printf("     : row 2 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
+            v[1].x.r, v[1].y.r, v[1].z.r );
 
-    printf("     : row 3 = < ( %g, %g ), ( %g, %g ), ( %g, %g ) >\n",
-            v[2].x.r, v[2].x.i,
-            v[2].y.r, v[2].y.i,
-            v[2].z.r, v[2].z.i );
+    printf("     : row 3 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
+            v[2].x.r, v[2].y.r, v[2].z.r );
 
     check_status( cplex_det( &opr, &v[0], &v[1], &v[2] ) ); 
-    printf("     : det = ( %g, %g )\n", opr.r, opr.i);
+    printf("\n     :   det =    %+-16.9e, %g )\n", opr.r, opr.i);
 
     /* we need P03 direction vector from P0 on the line to 
      * P3 in the plane. Thus < 0, 6, 3 > - < 2, 3, -2 >
@@ -463,7 +443,7 @@ int main ( int argc, char **argv)
     rh_col.y.r =  3.0; rh_col.y.i = 0.0;
     rh_col.z.r =  5.0; rh_col.z.i = 0.0;
 
-    printf("Solve for line plane intercept with Cramers rule.\n");
+    printf("\nSolve for line plane intercept with Cramers rule.\n\n");
     status = cplex_cramer( &res_vec, &v[0], &v[1], &v[2], &rh_col );
     if ( status != 0 ) {
         printf("dbug : There is no valid solution.\n");

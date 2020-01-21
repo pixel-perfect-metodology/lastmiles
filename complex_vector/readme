@@ -37,3 +37,19 @@ boe13$
 
 
 
+-------- 2020 01 21 line plane intercept testing 
+
+New matrix with line plane intercept data.
+dbug : row 1 =    -4.082482905e-01    +0.000000000e+00    -9.636241117e-01
+     : row 2 =    +8.164965809e-01    -5.547001962e-01    -2.223747950e-01
+     : row 3 =    +4.082482905e-01    +8.320502943e-01    -1.482498633e-01
+
+     :   det =    -9.819805061e-01, 0 )
+
+Solve for line plane intercept with Cramers rule.
+
+    k = +5.7154760664940829e+00
+    s = -3.1433011119429657e+00
+    t = +3.4591634777518065e-01
+
+
