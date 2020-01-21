@@ -468,13 +468,26 @@ int main ( int argc, char **argv)
     if ( status != 0 ) {
         printf("dbug : There is no valid solution.\n");
     } else {
-        printf("     : result col = < ( %+-16.12e, %+-16.12e ),\n",
-                    res_vec.x.r, res_vec.x.i );
-        printf("                      ( %+-16.12e, %+-16.12e ),\n",
-                    res_vec.y.r, res_vec.y.i );
-        printf("                      ( %+-16.12e, %+-16.12e ) >\n\n",
-                    res_vec.z.r, res_vec.z.i);
+        if (    ( fabs(res_vec.x.i) > RT_EPSILON )
+             || ( fabs(res_vec.y.i) > RT_EPSILON )
+             || ( fabs(res_vec.z.i) > RT_EPSILON ) ) {
+            printf("dbug : complex solution?\n");
+        } else {
+            /* the result will be  k , -s, -t */
+            printf("    k = %+-20.16e\n", res_vec.x.r );
+            printf("    s = %+-20.16e\n", -1.0 * res_vec.y.r );
+            printf("    t = %+-20.16e\n\n", -1.0 * res_vec.z.r );
+        }
     }
+    /* should be  k , s, t : 
+     *
+     *  k =  5.71547606649408222904
+     *  s = -3.14330111194296502477
+     *  t =  0.34591634777518055039
+     *
+     *  check with
+     * $ echo '20k 7 2 3 / v * p  _34  3  13v * / p  14 13 / v 3 / pq' | dc
+     */
 
     return ( EXIT_SUCCESS );
 
