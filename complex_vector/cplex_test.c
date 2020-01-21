@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <math.h>
 #include <complex.h>
 
 #include "v.h"
@@ -409,7 +410,7 @@ int main ( int argc, char **argv)
     }
     printf("\n-----------------------------------------------------\n");
     /* matrix based on test data for the line and plane
-     * intercept code. */
+     * intercept code. 
     v[0].x.r = -0.408248290;       v[0].x.i = 0.0;
     v[0].y.r =  0.0;               v[0].y.i = 0.0;
     v[0].z.r = -0.963624112;       v[0].z.i = 0.0;
@@ -421,6 +422,19 @@ int main ( int argc, char **argv)
     v[2].x.r =  0.408248290;       v[2].x.i = 0.0;
     v[2].y.r =  0.832050294;       v[2].y.i = 0.0;
     v[2].z.r = -0.148249863;       v[2].z.i = 0.0;
+    */
+
+    v[0].x.r = -1.0 / sqrt(6.0);        v[0].x.i = 0.0;
+    v[0].y.r =  0.0;                    v[0].y.i = 0.0;
+    v[0].z.r = -1.0 * sqrt(13.0/14.0);  v[0].z.i = 0.0;
+
+    v[1].x.r =  2.0 / sqrt(6.0);        v[1].x.i = 0.0;
+    v[1].y.r = -2.0 / sqrt(13.0);       v[1].y.i = 0.0;
+    v[1].z.r = -3.0 / sqrt(182.0);      v[1].z.i = 0.0;
+
+    v[2].x.r =  1.0 / sqrt(6.0);        v[2].x.i = 0.0;
+    v[2].y.r =  3.0 / sqrt(13.0);       v[2].y.i = 0.0;
+    v[2].z.r = -1.0 * sqrt(2.0/91.0);   v[2].z.i = 0.0;
 
     printf("\n\nNew matrix with line plane intercept data.\n");
     printf("dbug : row 1 = < ( %g, %g ), ( %g, %g ), ( %g, %g ) >\n",
