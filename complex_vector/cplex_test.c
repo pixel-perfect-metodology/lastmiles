@@ -495,7 +495,33 @@ int main ( int argc, char **argv)
                                   &plane_point, &plane_normal,
                                   (vec_type*)(NULL),(vec_type*)(NULL));
     printf("INFO : line_plane_icept() returns %i\n", lp_status);
+
+    printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                 lp_intercept_point.x.r,
+                                 lp_intercept_point.y.r,
+                                 lp_intercept_point.z.r);
+
     printf("\n\n--------------------------------------------------\n");
+    /* try again with a zero magnitude u and v vectors */
+    cplex_vec_set( &plane_u, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &plane_v, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    printf("\n\nINFO : line_plane_icept() again\n");
+    printf("     : with zero mag plane_u and plane_v\n\n");
+
+    lp_status = line_plane_icept( &lp_intercept_point,
+                                  &plane_u, &plane_v,
+                                  &lp_intercept_param,
+                                  &line_point, &line_direction,
+                                  &plane_point, &plane_normal,
+                                  &plane_u, &plane_v);
+
+    printf("     : line_plane_icept() returns %i\n\n", lp_status);
+
+    printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                 lp_intercept_point.x.r,
+                                 lp_intercept_point.y.r,
+                                 lp_intercept_point.z.r);
+
 
     return ( EXIT_SUCCESS );
 

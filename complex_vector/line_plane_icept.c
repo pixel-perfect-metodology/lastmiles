@@ -48,8 +48,6 @@
  *                                       + t * plvn
  */
 
-int check_dot(cplex_type *dat);
-
 int line_plane_icept( vec_type *icept_pt,
                       vec_type *plun,
                       vec_type *plvn,
@@ -61,12 +59,11 @@ int line_plane_icept( vec_type *icept_pt,
     int return_value = 0;
     cplex_type ctmp[12];
     vec_type i_hat, j_hat, tmp[12];
-    double lpr_pn_theta;
+    double lpr_pn_theta, u_mag, v_mag;
 
     /* rh_col is right hand column for Cramer call with
      * res_vec as the result if it exists */
     vec_type v[4], rh_col, res_vec;
-
 
     /* It seems reasonable to check if the input data is
      * sane. At the very least we must ask if the data even
@@ -128,6 +125,8 @@ int line_plane_icept( vec_type *icept_pt,
         /* We must compute both the plu and plv where the
          * i_hat or j_hat basis vectors are used. */
 
+uv:
+
         cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
         if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
             return ( return_value );
@@ -163,6 +162,7 @@ int line_plane_icept( vec_type *icept_pt,
                      plvn->x.r, plvn->y.r, plvn->z.r );
 
     } else {
+
         /* TODO : none of this will work obviously */
         /* We know that we have at least plu or plv now */
         if ( ( plu == NULL ) || ( plv == NULL ) ) {
@@ -173,8 +173,24 @@ int line_plane_icept( vec_type *icept_pt,
                 /* compute plv with the existing plu */
             }
         } else {
-            /* okay great we have them both and need to
-             * check them and normalize them */
+            /* Okay great we have them both and need to
+             * check that they are linearly independant
+             * and then normalize them. */
+
+            /* check that we have a reasonable magnitude */
+            u_mag = cplex_vec_mag( plu );
+            v_mag = cplex_vec_mag( plv );
+            if (    ( u_mag < RT_EPSILON )
+                 || ( v_mag < RT_EPSILON ) ) {
+                /* so they are very small. Is either zero ? */
+                if ( ( u_mag == 0.0 ) || ( v_mag == 0.0 ) ) {
+                    /* well one of them is zero magnitude and 
+                     * we may as well toss them both away and 
+                     * start over. Not ideal but at least it 
+                     * is safe */
+                    goto uv;
+                }
+            }
         }
     }
 
@@ -229,19 +245,58 @@ int line_plane_icept( vec_type *icept_pt,
         }
     }
 
-    return ( 1 );
+    /* copy the result data into rst */
+    cplex_vec_set ( kst, res_vec.x.r, res_vec.x.i,
+                         -1.0 * res_vec.y.r, res_vec.y.i,
+                         -1.0 * res_vec.z.r, res_vec.z.i);
 
-}
 
-int check_dot(cplex_type *dat)
-{
-    /* check for a bizarre complex result from dot product */
-    if ( !(dat->i == 0.0) ) {
-        fprintf(stderr,"FAIL : bizarre complex dot product");
-        fprintf(stderr,"     :  = ( %-+20.14e, %-+20.14e )\n",
-                              dat->r, dat->i );
-        return ( EXIT_FAILURE );
+    /* We can compute the actual intercept point two ways :
+     *
+     *     icept_pt = lp0 + k * norm[ lpr ]
+     *
+     *     icept_pt = pl0 + s * plun
+     *                    + t * plvn
+     *
+     * It seems reasonable to try both and then compare the
+     * results and verify they are within RT_EPSILON of each
+     * other. TODO : think about the wisdom of this.
+     */
+
+    /* multiply     k * norm[ lpr ]     */
+    cplex_vec_scale( tmp+5, tmp, kst->x.r);
+    cplex_vec_add( tmp+6, lp0, tmp+5 );
+    printf("\n    icept_pt = lp0 + k * norm[ lpr ]\n");
+    printf("             = < %+-16.9e, %+-16.9e, %+-16.9e >\n",
+                          tmp[6].x.r, tmp[6].y.r, tmp[6].z.r );
+
+    /* multiply     s * plun     */
+    cplex_vec_scale( tmp+7, plun, kst->y.r);
+    /* multiply     t * plvn     */
+    cplex_vec_scale( tmp+8, plvn, kst->z.r);
+    /* sum them up with pl0 */
+    cplex_vec_add( tmp+9, pl0, tmp+7);
+    cplex_vec_add( tmp+10, tmp+9, tmp+8);
+    printf("\n    icept_pt = pl0 + s * plun + t * plvn\n");
+    printf("             = < %+-16.9e, %+-16.9e, %+-16.9e >\n",
+                       tmp[10].x.r, tmp[10].y.r, tmp[10].z.r );
+
+    /* check if we are within RT_EPSILON */
+    if ( ( fabs( tmp[6].x.r - tmp[10].x.r ) < RT_EPSILON )
+            ||
+         ( fabs( tmp[6].y.r - tmp[10].y.r ) < RT_EPSILON )
+            ||
+         ( fabs( tmp[6].z.r - tmp[10].z.r ) < RT_EPSILON ) ) {
+
+        return_value = 1;
+
     }
-    return ( EXIT_SUCCESS );
+
+    cplex_vec_copy( icept_pt, tmp+6);
+
+    printf("\n--------------------------------------------\n");
+
+    return ( return_value );
+
 }
 
