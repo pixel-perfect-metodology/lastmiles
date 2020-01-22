@@ -211,7 +211,7 @@ int line_plane_icept( vec_type *icept_pt,
             v[2].x.r, v[2].y.r, v[2].z.r );
 
     cplex_det( ctmp+2, &v[0], &v[1], &v[2] ); 
-    printf("\n     :   det =    %+-16.9e, %g )\n", ctmp[2].r, ctmp[2].i);
+    printf("\n     :   det =    %+-16.9e\n", ctmp[2].r);
 
     printf("\nSolve for line plane intercept with Cramers rule.\n\n");
     if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) != 0 ) {

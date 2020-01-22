@@ -439,7 +439,7 @@ int main ( int argc, char **argv)
             v[2].x.r, v[2].y.r, v[2].z.r );
 
     check_status( cplex_det( &opr, &v[0], &v[1], &v[2] ) ); 
-    printf("\n     :   det =    %+-16.9e, %g )\n", opr.r, opr.i);
+    printf("\n     :   det =    %+-16.9e\n", opr.r);
 
     /* we need P03 direction vector from P0 on the line to 
      * P3 in the plane. Thus < 0, 6, 3 > - < 2, 3, -2 >
