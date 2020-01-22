@@ -80,19 +80,28 @@ double cplex_theta( cplex_type *op1 );
 double cplex_vec_mag( vec_type *op1 );
 
 /* return the solutions to the complex coefficient quadratic */
-int intercept( cplex_type res[2],
-                vec_type *sign,
-                vec_type *loc,
-                vec_type *axi,
-                vec_type *obs_p,
-                vec_type *obs_v );
+int icept( cplex_type res[2],
+           vec_type *sign,
+           vec_type *loc,
+           vec_type *axi,
+           vec_type *obs_p,
+           vec_type *obs_v );
 
 /* compute an actual intercept point if possible */
-int intercept_point( vec_type *pt,
-                     int intercept_cnt,
-                     cplex_type *k_val,
-                     vec_type *obs_point,
-                     vec_type *ray_direction);
+int surface_icept_pt( vec_type *pt,
+                      int intercept_cnt,
+                      cplex_type *k_val,
+                      vec_type *obs_point,
+                      vec_type *ray_direction);
+
+/* compute intercept for a line and plane */
+int line_plane_icept( vec_type *icept_pt,
+                      vec_type *plun,
+                      vec_type *plvn,
+                      vec_type *kst,
+                      vec_type *lp0, vec_type *lpr,
+                      vec_type *pl0, vec_type *pn,
+                      vec_type *plu, vec_type *plv);
 
 /* compute the surface gradient normal vector */
 int gradient( vec_type *res,

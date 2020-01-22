@@ -27,8 +27,11 @@
  * plane and ray_direction then return a null vector and integer
  * value -1.  Otherwise we return a zero integer value along with
  * the point of interception in pt */
-int intercept_point( vec_type *pt, int intercept_cnt, cplex_type *k_val,
-                     vec_type *obs_point, vec_type *ray_direction)
+int surface_icept_pt( vec_type *pt,
+                      int intercept_cnt,
+                      cplex_type *k_val,
+                      vec_type *obs_point,
+                      vec_type *ray_direction)
 {
     vec_type tmp;
     int return_value; 
@@ -46,34 +49,12 @@ int intercept_point( vec_type *pt, int intercept_cnt, cplex_type *k_val,
      * the actual intercept. */
     vec_type hit_point;
 
-    /************************************************************
-    printf ("-------- intercept_point begins -------------\n");
-
-    printf ("   0 : k_val[0] = ( %-18.14e, %-18.14e )\n",
-                                   k_val[0].r, k_val[0].i);
-
-    printf ("   1 : k_val[1] = ( %-18.14e, %-18.14e )\n\n",
-                                   k_val[1].r, k_val[1].i);
-
-    printf ("INFO : we have %i real k values.\n", intercept_cnt);
-    *************************************************************/
-
     /* if the two real roots are equal then we really only have a single
      * real solution. Note that we only really care about real roots at
      * this time.
      *
      * 24 Dec 2019 this is now checked upstream in the complex
      *             quadractic solution
-     * 
-     * if ( ( intercept_cnt == 2 ) 
-     *      &&
-     *      ( k_val[0].r == k_val[1].r )
-     *      &&
-     *      ( k_val[0].i == k_val[1].i ) ) {
-     *
-     *     intercept_cnt = 1;
-     *
-     * }
      */
 
     /* So did we get a real root ? */

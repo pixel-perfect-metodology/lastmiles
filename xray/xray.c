@@ -754,7 +754,7 @@ int main(int argc, char*argv[])
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
                 intercept_cnt = -1;
-                intercept_cnt = intercept ( k_val, &sign_data,
+                intercept_cnt = icept ( k_val, &sign_data,
                                 &object_location, &semi_major_axi,
                                 &obs_point, &obs_normal );
                 fprintf(stderr,"\nintercept_cnt = %i\n", intercept_cnt );
@@ -766,11 +766,11 @@ int main(int argc, char*argv[])
                      * if all goes well and we get an intercept point
                      * in R3 space. */
                     intercept_point_flag = -1;
-                    intercept_point_flag = intercept_point( &hit_point,
-                                                            intercept_cnt,
-                                                            &k_val[0],
-                                                            &obs_point,
-                                                            &obs_normal);
+                    intercept_point_flag = surface_icept_pt( &hit_point,
+                                                             intercept_cnt,
+                                                             &k_val[0],
+                                                             &obs_point,
+                                                             &obs_normal);
 
                     fprintf(stderr,"\nintercept_point_flag = %i\n", intercept_point_flag );
 

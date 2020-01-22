@@ -32,7 +32,13 @@ int main ( int argc, char **argv)
     /* rh_col is right hand column for Cramer call with
      * res_vec as the result if it exists */
     vec_type v[4], rh_col, res_vec;
-    int status, real_root_count;
+
+    /* elements for the line plane intercept test */
+    vec_type line_point, line_direction, plane_point, plane_normal;
+    vec_type lp_intercept_point, plane_u, plane_v;
+    vec_type lp_intercept_param;
+
+    int status, real_root_count, lp_status;
 
     op1.i = 1.0; op1.r = 0.0;
     op2.i = 1.0; op2.r = 0.0;
@@ -409,7 +415,7 @@ int main ( int argc, char **argv)
                     res_vec.z.r, res_vec.z.i);
     }
     printf("\n-----------------------------------------------------\n");
-    /* test data compliments of halirutan on twitch */
+    /* analytic test data compliments of halirutan on twitch */
     v[0].x.r = -1.0 / sqrt(6.0);        v[0].x.i = 0.0;
     v[0].y.r =  0.0;                    v[0].y.i = 0.0;
     v[0].z.r = -1.0 * sqrt(13.0/14.0);  v[0].z.i = 0.0;
@@ -467,7 +473,29 @@ int main ( int argc, char **argv)
      *
      *  check with
      * $ echo '20k 7 2 3 / v * p  _34  3  13v * / p  14 13 / v 3 / pq' | dc
+     *
+     * Use these results to determine the intercept point where we know
+     * that the distance from P0 on the line to the intercept will be
+     * our result k.
+     * 
      */
+
+    printf("\n\n--------------------------------------------------\n");
+    /* we need to create a bucket of data elements for a call to the
+     * line_plane_icept() */
+    cplex_vec_set( &line_point, 2.0, 0.0, 3.0, 0.0, -2.0, 0.0);
+    cplex_vec_set( &line_direction, -1.0, 0.0, 2.0, 0.0, 1.0, 0.0);
+    cplex_vec_set( &plane_point, 0.0, 0.0, 6.0, 0.0, 3.0, 0.0);
+    cplex_vec_set( &plane_normal, 1.0, 0.0, -3.0, 0.0, -2.0, 0.0);
+
+    lp_status = line_plane_icept( &lp_intercept_point,
+                                  &plane_u, &plane_v,
+                                  &lp_intercept_param,
+                                  &line_point, &line_direction,
+                                  &plane_point, &plane_normal,
+                                  (vec_type*)(NULL),(vec_type*)(NULL));
+    printf("INFO : line_plane_icept() returns %i\n", lp_status);
+    printf("\n\n--------------------------------------------------\n");
 
     return ( EXIT_SUCCESS );
 

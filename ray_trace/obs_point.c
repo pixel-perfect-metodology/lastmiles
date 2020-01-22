@@ -75,8 +75,7 @@ int main ( int argc, char **argv)
     vec_type obs_point;
 
     /* Test case will be an observation plane at ( 12, 0, 0 ) */
-    /* TODO put this back to the diagram */
-    cplex_vec_set( &obs_origin, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &obs_origin, 12.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
     printf("\nINFO : viewport O obs_origin = ");
     printf("< %-20.14e, %-20.14e, %-20.14e >\n",
@@ -84,8 +83,7 @@ int main ( int argc, char **argv)
 
     /* Observation direction is along negative i_hat basis vector
      * and this becomes the Ri later. */
-    /* TODO put this back to < -1, 0, 0 > */
-    cplex_vec_set( &obs_normal, 0.0, 0.0, ( -1.0 * M_SQRT1_2 ), 0.0, ( -1.0 * M_SQRT1_2 ), 0.0);
+    cplex_vec_set( &obs_normal, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
     printf("\nINFO : viewport direction obs_normal = ");
     printf("< %-20.14e, %-20.14e, %-20.14e >\n",
@@ -94,8 +92,8 @@ int main ( int argc, char **argv)
     /* we arbitrarily choose the x_prime_hat_vec and y_prime_hat_vec */
     /* x_prime_hat_vec is < 0, 1, 0 > */
     /* y_prime_hat_vec is < 0, 0, 1 > */
-    cplex_vec_set( &x_prime_hat_vec, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    cplex_vec_set( &y_prime_hat_vec, 0.0, 0.0, ( -1.0 * M_SQRT1_2 ), 0.0, M_SQRT1_2, 0.0);
+    cplex_vec_set( &x_prime_hat_vec, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &y_prime_hat_vec, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
     printf("     : viewport x_prime basis vector = ");
     printf("< %-20.14e, %-20.14e, %-20.14e >\n",
@@ -109,12 +107,10 @@ int main ( int argc, char **argv)
      *
      *   x_prime = 1.7;
      *   y_prime = -2.0;
-     *
-     * TODO : be sure to revise the viewport coordinates
      */
 
-    x_prime = 0.0;
-    y_prime = 0.0;
+    x_prime = 1.7;
+    y_prime = -2.0;
 
     printf("INFO : initial x' and y' : ( %-20.14e, %-20.14e )\n\n",
                                                     x_prime, y_prime );
@@ -191,7 +187,7 @@ int main ( int argc, char **argv)
     printf("\n\n");
 
     /* Now we call our intercept function to do most of the work */
-    intercept_cnt = intercept ( k_val, &sign_data,
+    intercept_cnt = icept ( k_val, &sign_data,
                                 &object_location, &semi_major_axi,
                                 &obs_point, &obs_normal );
 
@@ -203,9 +199,9 @@ int main ( int argc, char **argv)
 
     if ( intercept_cnt > 0 ) {
 
-        if ( intercept_point( &hit_point, intercept_cnt,
-                              &k_val[0], &obs_point,
-                              &ray_direct) == 0 ) {
+        if ( surface_icept_pt( &hit_point, intercept_cnt,
+                               &k_val[0], &obs_point,
+                               &ray_direct) == 0 ) {
 
             printf("\nDBUG : We have a good intercept point\n");
             printf("INFO : H hit_point = ");

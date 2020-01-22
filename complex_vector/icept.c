@@ -29,12 +29,12 @@
  *
  * return an integer count of the real solutions.
  */
-int intercept( cplex_type res[2],
-                vec_type *sign,
-                vec_type *loc,
-                vec_type *axi,
-                vec_type *obs_p,
-                vec_type *obs_v )
+int icept( cplex_type res[2],
+           vec_type *sign,
+           vec_type *loc,
+           vec_type *axi,
+           vec_type *obs_p,
+           vec_type *obs_v )
 {
 
     int soln_count;

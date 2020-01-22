@@ -22,16 +22,32 @@
 int main()
 {
 
-    double u0, u1, un;
-    double u3, denom, numer;
-    int k, fp_round_mode, fpe_raised;
+    /* see page 13 of The Handbook of floating Point Arithmetic
+     *
+     * where we see that the actual result should be 
+     *
+     * vesta$ bc -l
+     * scale=48
+     * a = 77617
+     * b = 33096
+     * f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 ) + 5.5 * b^8 + ( a / ( 2 * b ) )
+     * f
+     * -.827396059946821368141165095479816291999033115785
+     * 
+     *  we will most likely see some other result from IEEE-754 2008 
+     *  type floating point math. 
+     *
+     */
+
+    double a, b, f;
+    int fp_round_mode, fpe_raised;
 
 #ifdef FLT_EVAL_METHOD
     printf ( "INFO : FLT_EVAL_METHOD == %d\n", FLT_EVAL_METHOD);
 #endif
 
     fp_round_mode = fegetround();
-    printf("DBUG : fp_round_mode = 0x%08x\n", fp_round_mode );
+    /* printf("DBUG : fp_round_mode = 0x%08x\n", fp_round_mode ); */
     printf("     : fp rounding mode is ");
     switch(fp_round_mode){
         case FE_TONEAREST:
@@ -51,28 +67,21 @@ int main()
             break;
         }
 
-    u0 = 2.0;
-    u1 = -4.0;
-
-    /* we know from pen and paper and other mistakes that
-     * u2 = 37/2 and u3 =  347/37 exactly. */
-
-    printf("\n---------------------------------------\n");
-    printf(" We know that u2 = 37/2 which is 18.5\n");
-    printf(" We also know that u3 = 347/37 and that\n");
-    printf(" can not be represented by any computer.\n");
-
-    numer = 340.0 + 7.0;
-    denom = 30.0 + 7.0;
     if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
-        printf("\n    feclearexcept(FE_ALL_EXCEPT) works!\n");
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
     } else {
-        printf("\n    feclearexcept(FE_ALL_EXCEPT) fails!\n");
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
         return ( EXIT_FAILURE );
     }
     printf("\n");
 
-    u3 = numer / denom;
+    a = 77617.0;
+    b = 33096.0;
+    f= 333.75 * pow(b,6.0)
+        + pow(a,2.0)
+            * ( 11.0 * pow(a,2.0) * pow(b,2.0) 
+                 - pow(b,6.0) - 121.0 * pow(b,4.0) - 2.0 )
+        + 5.5 * pow(b,8.0) + ( a / ( 2.0 * b ) );
 
     fpe_raised = fetestexcept(FE_ALL_EXCEPT);
     if (fpe_raised!=0){
@@ -87,36 +96,10 @@ int main()
         printf(" nothing!\n");
     }
 
-    printf(" In fact u3 sort of is %-+32.28e\n", u3);
-    printf("---------------------------------------\n");
+    printf( "\n     : f = %-+32.28e\n\n", f );
 
-    printf(" u[%2i] = %-+32.28e\n", 0 , u0 );
-    printf(" u[%2i] = %-+32.28e\n", 1 , u1 );
+    printf( "INFO : f = -0.827396059946821368141165095 ?\n\n");
 
-    for ( k=2; k<32; k++ ) {
-
-        feclearexcept(FE_ALL_EXCEPT);
-
-        un = 111.0 - 1130.0/u1 + 3000.0 / ( u1 * u0 ) ;
-
-        fpe_raised = fetestexcept(FE_ALL_EXCEPT);
-        printf( " u[%2i] = %-+32.28e", k , un );
-        if (fpe_raised!=0){
-            printf("    FP Exception raised ==");
-            if(fpe_raised & FE_INEXACT) printf(" FE_INEXACT");
-            if(fpe_raised & FE_DIVBYZERO) printf(" FE_DIVBYZERO");
-            if(fpe_raised & FE_UNDERFLOW) printf(" FE_UNDERFLOW");
-            if(fpe_raised & FE_OVERFLOW) printf(" FE_OVERFLOW");
-            if(fpe_raised & FE_INVALID) printf(" FE_INVALID");
-            printf("\n");
-        } else {
-            printf(" nothing!\n");
-        }
-
-        u0 = u1;
-        u1 = un;
-
-    }
 
     return ( EXIT_SUCCESS );
 

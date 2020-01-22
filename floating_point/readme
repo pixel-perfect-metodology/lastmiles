@@ -1268,6 +1268,17 @@ sure
 (gdb) quit
 vesta$ 
 
-see page 72-73 of The Handbook ofFloating Point Arithmetic, 2nd Ed.
+see page 72-73 of The Handbook of Floating Point Arithmetic, 2nd Ed.
+
+
+----------- dealing with loss of precision ----------
+
+vesta$ bc -l
+scale=48
+a = 77617
+b = 33096
+f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 ) + 5.5 * b^8 + ( a / ( 2 * b ) )
+f
+-.827396059946821368141165095479816291999033115785
 
 

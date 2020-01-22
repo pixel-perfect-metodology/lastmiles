@@ -17,8 +17,8 @@ SRCS = xray.c \
 	../xwin/create_gc.c \
 	../xwin/create_borderless_topwin.c \
 	../time_and_date/timediff.c \
-	../complex_vector/intercept.c \
-	../complex_vector/intercept_point.c \
+	../complex_vector/icept.c \
+	../complex_vector/surface_icept_pt.c \
 	../complex_vector/gradient.c \
 	../complex_vector/check_status.c \
 	../complex_vector/cplex_add.c \
@@ -49,8 +49,8 @@ OBJS = ../xwin/x_error_handler.o \
 	../xwin/create_gc.o \
 	../xwin/create_borderless_topwin.o \
 	../time_and_date/timediff.o \
-	../complex_vector/intercept.o \
-	../complex_vector/intercept_point.o \
+	../complex_vector/icept.o \
+	../complex_vector/surface_icept_pt.o \
 	../complex_vector/gradient.o \
 	../complex_vector/check_status.o \
 	../complex_vector/cplex_add.o \
