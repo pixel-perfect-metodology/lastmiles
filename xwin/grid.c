@@ -178,7 +178,8 @@ int main(int argc, char*argv[])
      *
      *    cplex_vec_set( &obs_normal_dir, -1.0, 0.0, -1.0, 0.0, 0.0, 0.0 );
      */
-    cplex_vec_normalize( &obs_normal, &obs_normal_dir );
+    status = cplex_vec_normalize( &obs_normal, &obs_normal_dir );
+    if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
 
     /* TODO use the diagram 8x8 viewport */
     obs_x_width = 8.0;
@@ -209,7 +210,9 @@ int main(int argc, char*argv[])
 
     /* x_prime_vec is < 0, 1, 0 > */
     cplex_vec_set( &x_prime_vec_dir, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-    cplex_vec_normalize( &x_prime_vec, &x_prime_vec_dir );
+    status = cplex_vec_normalize( &x_prime_vec, &x_prime_vec_dir );
+    if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
+
 
     /* y_prime_vec is < 0, 0, 1 > */
     cplex_vec_set( &y_prime_vec, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
@@ -793,7 +796,8 @@ int main(int argc, char*argv[])
                         gradient( &grad, &sign_data, &object_location,
                                          &semi_major_axi, &hit_point );
 
-                        cplex_vec_normalize( &grad_norm, &grad );
+                        status = cplex_vec_normalize( &grad_norm, &grad );
+                        if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
 
                         sprintf(buf,"^"); /* vector hat hack */
                         XSetForeground(dsp, gc3, cyan.pixel);
@@ -897,7 +901,9 @@ int main(int argc, char*argv[])
                                                              buf, strlen(buf) );
                         } else {
                             /* Cramer's Method possible */
-                            cplex_vec_normalize( &T_norm, &T );
+                            status = cplex_vec_normalize( &T_norm, &T );
+                            if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
+
                             sprintf(buf,"^");
                             XDrawImageString( dsp, win3, gc3, 9, 222, buf, (size_t)1);
                             sprintf(buf,"T = < %-+10.6e, %-+10.6e, %-+10.6e >",

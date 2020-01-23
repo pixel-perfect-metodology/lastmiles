@@ -129,9 +129,7 @@ int line_plane_icept( vec_type *icept_pt,
         /* We must compute both the plu and plv where the
          * i_hat or j_hat basis vectors are used. */
 
-uv:
-
-        cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
+uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
         if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
             return ( return_value );
 
@@ -157,16 +155,10 @@ uv:
         status = cplex_vec_normalize( plun, tmp+3 );
         if ( status == EXIT_FAILURE ) return ( return_value );
 
-        printf("dbug : u_hat = %+-16.9e    %+-16.9e    %+-16.9e\n",
-                     plun->x.r, plun->y.r, plun->z.r );
-
         /* create an orthogonal vector plv in tmp+4 */
         cplex_vec_cross( tmp+4, tmp+1, plun );
         status = cplex_vec_normalize( plvn, tmp+4 );
         if ( status == EXIT_FAILURE ) return ( return_value );
-
-        printf("dbug : v_hat = %+-16.9e    %+-16.9e    %+-16.9e\n",
-                     plvn->x.r, plvn->y.r, plvn->z.r );
 
     } else {
 
@@ -184,32 +176,39 @@ uv:
             u_mag = cplex_vec_mag( plu );
             v_mag = cplex_vec_mag( plv );
 
+            /* We may need to deal with very small planes in the event
+             * of triangle point tesselation. Objects such as the UTAH
+             * teapot may have many very small triangle sections and 
+             * each will define a plane intercept issue. With very 
+             * tiny triangles we may have very tiny vectors u and v as
+             * well as plane normals. */
+
             if (    ( u_mag < RT_EPSILON )
                  || ( v_mag < RT_EPSILON ) ) {
+
                 /* One or both are very small. Is either zero ? */
                 if ( ( u_mag == 0.0 ) || ( v_mag == 0.0 ) ) {
                     /* Well one of them is zero magnitude.
                      * Do we have a u vector ? */
+
                     if ( u_mag == 0.0 ) {
-                        /* no u vector so lets ask about v and
+
+                        /* u vector is zero so lets ask about v and
                          * see if it is reasonable. Otherwise just
                          * compute them both as above. */
-                        if ((v_mag==0.0)||(v_mag<RT_EPSILON)) goto uv;
+                        if ( ( v_mag == 0.0 ) || ( v_mag < RT_EPSILON ) ) goto uv;
 
                         /* normalize plv */
-                        fprintf(stderr,"DBUG : ----------------------------------------------\n");
-                        fprintf(stderr,"DBUG : about to call cplex_vec_normalize( plvn, plv )\n");
-                        fprintf(stderr,"     : plv  = < %+-16.9e , %+-16.9e , %+-16.9e >\n", plv->x.r, plv->y.r, plv->z.r);
                         status = cplex_vec_normalize( plvn, plv );
-                        if ( status == EXIT_FAILURE )
-                                               return ( return_value );
-                        fprintf(stderr,"     : plv  = < %+-16.9e , %+-16.9e , %+-16.9e >\n", plv->x.r, plv->y.r, plv->z.r);
-                        fprintf(stderr,"     : plvn = < %+-16.9e , %+-16.9e , %+-16.9e >\n", plvn->x.r, plvn->y.r, plvn->z.r);
-                        fprintf(stderr,"DBUG : ----------------------------------------------\n");
+                        if ( status == EXIT_FAILURE ) return ( return_value );
 
-                        /* check if norm[plv] is orthogonal to pn and
-                         * if not then start over */
-                        cplex_vec_dot( ctmp, pn, plvn );
+                        /* check if plvn is orthogonal to pn and
+                         * if not then start over. Bear in mind that
+                         * we have no idea if pn is normalized and 
+                         * thus we must use tmp[1] from above which is
+                         * the plane normal actually normalized. */
+
+                        cplex_vec_dot( ctmp, tmp+1, plvn );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
                             return ( return_value );
 
@@ -220,23 +219,56 @@ uv:
                         cplex_vec_cross( tmp+3, pn, plvn );
                         /* normalize that into plun */
                         status = cplex_vec_normalize( plun, tmp+3 );
-                        if ( status == EXIT_FAILURE )
-                                               return ( return_value );
+                        if ( status == EXIT_FAILURE ) return ( return_value );
 
-                        printf("dbug : u_hat = %+-16.9e", plun->x.r);
-                        printf("    %+-16.9e", plun->y.r);
-                        printf("    %+-16.9e\n", plun->z.r );
+                    } else if ( v_mag == 0.0 ) {
 
-                        printf("dbug : v_hat = %+-16.9e", plvn->x.r);
-                        printf("    %+-16.9e", plvn->y.r);
-                        printf("    %+-16.9e\n", plvn->z.r );
+                        /* v vector is zero. same situation as above
+                         * we need to check u vector and then decide
+                         * if we need to abandon the compute here and
+                         * merely re-compute both u and v vectors. */
+                        if ( ( u_mag == 0.0 ) || ( u_mag < RT_EPSILON ) ) goto uv;
+
+                        /* normalize plu  */
+                        status = cplex_vec_normalize( plun, plu );
+                        if ( status == EXIT_FAILURE ) return ( return_value );
+
+                        /* check if plun is orthogonal to pn. 
+                         * here we use tmp[1] which is pn normalized */
+                        cplex_vec_dot( ctmp, tmp+1, plun );
+                        if ( check_dot( ctmp ) == EXIT_FAILURE )
+                            return ( return_value );
+
+                        if ( ctmp->r != 0.0 ) goto uv;
+
+                        /* we have a valid plun and may compute plv
+                         * with a cross product of pn and plun */
+                        cplex_vec_cross( tmp+3, pn, plun );
+                        /* normalize that into plvn */
+                        status = cplex_vec_normalize( plvn, tmp+3 );
+                        if ( status == EXIT_FAILURE ) return ( return_value );
+
+                    } else {
+
+                        /* Both u and v are zero magnitude. So
+                         * just start over and compute them both. */
+                        goto uv;
 
                     }
+                } else {
+                    /* Neither u nor v is zero in size but at least
+                     * one of them is tiny. Smaller than RT_EPSILON. */
                 }
             }
         }
     }
 
+    printf("dbug : u_hat = %+-16.9e", plun->x.r);
+    printf("    %+-16.9e", plun->y.r);
+    printf("    %+-16.9e\n", plun->z.r );
+    printf("dbug : v_hat = %+-16.9e", plvn->x.r);
+    printf("    %+-16.9e", plvn->y.r);
+    printf("    %+-16.9e\n", plvn->z.r );
 
     /* lets create the column of data for P3 - P0 in our
      * diagram. This would be  pl0 - lp0. */
@@ -270,7 +302,7 @@ uv:
             v[2].x.r, v[2].y.r, v[2].z.r );
 
     cplex_det( ctmp+2, &v[0], &v[1], &v[2] ); 
-    printf("\n     :   det =    %+-16.9e\n", ctmp[2].r);
+    printf("     :   det =    %+-16.9e\n", ctmp[2].r);
 
     printf("\nSolve for line plane intercept with Cramers rule.\n\n");
     if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) != 0 ) {

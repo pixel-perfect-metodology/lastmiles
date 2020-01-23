@@ -179,7 +179,8 @@ int main ( int argc, char **argv)
     cplex_vec_set( &semi_major_axi, 5.0, 0.0, 2.0, 0.0, 6.0, 0.0);
 
     /* Note that the ray direction must be normalized */
-    cplex_vec_normalize( &ray_direct, &obs_normal );
+    status = cplex_vec_normalize( &ray_direct, &obs_normal );
+    if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
 
     printf("INFO : ray_direct = ");
     printf("< %-20.14e, %-20.14e, %-20.14e >\n",
@@ -218,7 +219,8 @@ int main ( int argc, char **argv)
             printf("< %-20.14e, %-20.14e, %-20.14e >\n",
                               grad.x.r, grad.y.r, grad.z.r );
 
-            cplex_vec_normalize( &grad_norm, &grad );
+            status = cplex_vec_normalize( &grad_norm, &grad );
+            if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
             printf("     : normalized = ");
             printf("< %-20.14e, %-20.14e, %-20.14e >\n",
                        grad_norm.x.r, grad_norm.y.r, grad_norm.z.r );
@@ -261,7 +263,9 @@ int main ( int argc, char **argv)
             }
 
             cplex_vec_cross( tmp+4, tmp+3, &grad_norm );
-            cplex_vec_normalize( &ray_direct, &obs_normal );
+            status = cplex_vec_normalize( &ray_direct, &obs_normal );
+            if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
+
             printf("\n\nINFO : -Ri X N = ");
             printf("< %-20.14e, %-20.14e, %-20.14e >\n",
                                tmp[4].x.r, tmp[4].y.r, tmp[4].z.r );
@@ -289,7 +293,8 @@ int main ( int argc, char **argv)
             } else {
 
                 /* Cramer's Method and may as well embrace it */
-                cplex_vec_normalize( tmp+5, tmp+4 );
+                status = cplex_vec_normalize( tmp+5, tmp+4 );
+                if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
                 printf("     : this is the plane of incidence tangent\n");
                 printf("     : T = ");
                 printf("< %-20.14e, %-20.14e, %-20.14e >\n",
