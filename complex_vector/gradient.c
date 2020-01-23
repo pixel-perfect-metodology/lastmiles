@@ -84,9 +84,7 @@ int gradient( vec_type *res,
                         c_tmp[7].r, c_tmp[7].i,
                         c_tmp[11].r, c_tmp[11].i);
 
-    /* 01 Jan 2020 we should not do the normalization here 
-     * cplex_vec_normalize( res, tmp+2 );
-     */
+    /* 01 Jan 2020 we should not do the normalization here */
 
     return ( EXIT_SUCCESS );
 

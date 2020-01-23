@@ -35,7 +35,8 @@ int main ( int argc, char **argv)
 
     /* elements for the line plane intercept test */
     vec_type line_point, line_direction, plane_point, plane_normal;
-    vec_type lp_intercept_point, plane_u, plane_v;
+    vec_type lp_intercept_point;
+    vec_type plane_u, plane_v, plane_u_norm, plane_v_norm;
     vec_type lp_intercept_param;
 
     int status, real_root_count, lp_status;
@@ -203,9 +204,14 @@ int main ( int argc, char **argv)
      *   ( 0.3779644730092272 + 0.3779644730092272im ),
      *   ( 0.5669467095138407 + 0.5669467095138407im ) >
      */
+    status = cplex_vec_normalize( (v+3), v );
+    if ( status == EXIT_FAILURE ) {
+        printf("FAIL : cplex_vec_normalize() returns EXIT_FAILURE\n");
+        return ( EXIT_FAILURE );
+    }
     printf("Lets test vector normalization of v[0] as described.\n");
     printf("    : function call cplex_vec_normalize() returns %i\n",
-            cplex_vec_normalize( (v+3), v ) );
+                                                             status );
 
     printf("    : |v[0]| = ");
     printf(" < ( %16.12e, %16.12e ),\n", v[3].x.r, v[3].x.i );
@@ -414,72 +420,22 @@ int main ( int argc, char **argv)
         printf("                      ( %+-16.12e, %+-16.12e ) >\n\n",
                     res_vec.z.r, res_vec.z.i);
     }
-    printf("\n-----------------------------------------------------\n");
-    /* analytic test data compliments of halirutan on twitch */
-    v[0].x.r = -1.0 / sqrt(6.0);        v[0].x.i = 0.0;
-    v[0].y.r =  0.0;                    v[0].y.i = 0.0;
-    v[0].z.r = -1.0 * sqrt(13.0/14.0);  v[0].z.i = 0.0;
 
-    v[1].x.r =  2.0 / sqrt(6.0);        v[1].x.i = 0.0;
-    v[1].y.r = -2.0 / sqrt(13.0);       v[1].y.i = 0.0;
-    v[1].z.r = -3.0 / sqrt(182.0);      v[1].z.i = 0.0;
-
-    v[2].x.r =  1.0 / sqrt(6.0);        v[2].x.i = 0.0;
-    v[2].y.r =  3.0 / sqrt(13.0);       v[2].y.i = 0.0;
-    v[2].z.r = -1.0 * sqrt(2.0/91.0);   v[2].z.i = 0.0;
-
-    printf("New matrix with line plane intercept data.\n");
-    printf("dbug : row 1 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
-            v[0].x.r, v[0].y.r, v[0].z.r );
-
-    printf("     : row 2 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
-            v[1].x.r, v[1].y.r, v[1].z.r );
-
-    printf("     : row 3 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
-            v[2].x.r, v[2].y.r, v[2].z.r );
-
-    check_status( cplex_det( &opr, &v[0], &v[1], &v[2] ) ); 
-    printf("\n     :   det =    %+-16.9e\n", opr.r);
-
-    /* we need P03 direction vector from P0 on the line to 
-     * P3 in the plane. Thus < 0, 6, 3 > - < 2, 3, -2 >
-     *                    == < -2, 3, 5 >
+    /* analytic test data for the line plane intercept
+     * compliments of halirutan on twitch 
+     *
+     *    v[0].x.r = -1.0 / sqrt(6.0);        v[0].x.i = 0.0;
+     *    v[0].y.r =  0.0;                    v[0].y.i = 0.0;
+     *    v[0].z.r = -1.0 * sqrt(13.0/14.0);  v[0].z.i = 0.0;
+     *
+     *    v[1].x.r =  2.0 / sqrt(6.0);        v[1].x.i = 0.0;
+     *    v[1].y.r = -2.0 / sqrt(13.0);       v[1].y.i = 0.0;
+     *    v[1].z.r = -3.0 / sqrt(182.0);      v[1].z.i = 0.0;
+     *
+     *    v[2].x.r =  1.0 / sqrt(6.0);        v[2].x.i = 0.0;
+     *    v[2].y.r =  3.0 / sqrt(13.0);       v[2].y.i = 0.0;
+     *    v[2].z.r = -1.0 * sqrt(2.0/91.0);   v[2].z.i = 0.0;
      */
-    rh_col.x.r = -2.0; rh_col.x.i = 0.0;
-    rh_col.y.r =  3.0; rh_col.y.i = 0.0;
-    rh_col.z.r =  5.0; rh_col.z.i = 0.0;
-
-    printf("\nSolve for line plane intercept with Cramers rule.\n\n");
-    status = cplex_cramer( &res_vec, &v[0], &v[1], &v[2], &rh_col );
-    if ( status != 0 ) {
-        printf("dbug : There is no valid solution.\n");
-    } else {
-        if (    ( fabs(res_vec.x.i) > RT_EPSILON )
-             || ( fabs(res_vec.y.i) > RT_EPSILON )
-             || ( fabs(res_vec.z.i) > RT_EPSILON ) ) {
-            printf("dbug : complex solution?\n");
-        } else {
-            /* the result will be  k , -s, -t */
-            printf("    k = %+-20.16e\n", res_vec.x.r );
-            printf("    s = %+-20.16e\n", -1.0 * res_vec.y.r );
-            printf("    t = %+-20.16e\n\n", -1.0 * res_vec.z.r );
-        }
-    }
-    /* should be  k , s, t : 
-     *
-     *  k =  5.71547606649408222904
-     *  s = -3.14330111194296502477
-     *  t =  0.34591634777518055039
-     *
-     *  check with
-     * $ echo '20k 7 2 3 / v * p  _34  3  13v * / p  14 13 / v 3 / pq' | dc
-     *
-     * Use these results to determine the intercept point where we know
-     * that the distance from P0 on the line to the intercept will be
-     * our result k.
-     * 
-     */
-
     printf("\n\n--------------------------------------------------\n");
     /* we need to create a bucket of data elements for a call to the
      * line_plane_icept() */
@@ -489,7 +445,7 @@ int main ( int argc, char **argv)
     cplex_vec_set( &plane_normal, 1.0, 0.0, -3.0, 0.0, -2.0, 0.0);
 
     lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u, &plane_v,
+                                  &plane_u_norm, &plane_v_norm,
                                   &lp_intercept_param,
                                   &line_point, &line_direction,
                                   &plane_point, &plane_normal,
@@ -503,13 +459,13 @@ int main ( int argc, char **argv)
 
     printf("\n\n--------------------------------------------------\n");
     /* try again with a zero magnitude u and v vectors */
-    cplex_vec_set( &plane_u, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    cplex_vec_set( &plane_v, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    cplex_vec_null(&plane_u);
+    cplex_vec_null(&plane_v);
     printf("\n\nINFO : line_plane_icept() again\n");
     printf("     : with zero mag plane_u and plane_v\n\n");
 
     lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u, &plane_v,
+                                  &plane_u_norm, &plane_v_norm,
                                   &lp_intercept_param,
                                   &line_point, &line_direction,
                                   &plane_point, &plane_normal,
@@ -522,6 +478,37 @@ int main ( int argc, char **argv)
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
 
+    printf("\n\n--------------------------------------------------\n");
+    /* try again with a microscopic v vector where we know a 
+     * valid v is 
+     *   v_x = -0.96362411165943153325
+     *   v_y = -0.22237479499833035382
+     *   v_z = -0.14824986333222023589
+     */
+    cplex_vec_null(&plane_u);
+    cplex_vec_set( &plane_v, -0.96362411165943153325 / 10e10, 0.0,
+                             -0.22237479499833035382 / 10e10, 0.0,
+                             -0.14824986333222023589 / 10e10, 0.0 );
+
+    printf("\n\nINFO : line_plane_icept() again\n");
+    printf("     : with microscopic plane_v and zero plane_u\n");
+    printf("     : input plane_v < %-+20.16e,", plane_v.x.r);
+    printf("  %-+20.16e,", plane_v.y.r);
+    printf("  %-+20.16e>\n\n", plane_v.z.r);
+
+    lp_status = line_plane_icept( &lp_intercept_point,
+                                  &plane_u_norm, &plane_v_norm,
+                                  &lp_intercept_param,
+                                  &line_point, &line_direction,
+                                  &plane_point, &plane_normal,
+                                  &plane_u, &plane_v);
+
+    printf("     : line_plane_icept() returns %i\n\n", lp_status);
+
+    printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                 lp_intercept_point.x.r,
+                                 lp_intercept_point.y.r,
+                                 lp_intercept_point.z.r);
 
     return ( EXIT_SUCCESS );
 

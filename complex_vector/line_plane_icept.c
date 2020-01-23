@@ -56,7 +56,7 @@ int line_plane_icept( vec_type *icept_pt,
                       vec_type *pl0, vec_type *pn,
                       vec_type *plu, vec_type *plv) 
 {
-    int return_value = 0;
+    int status, return_value = 0;
     cplex_type ctmp[12];
     vec_type i_hat, j_hat, tmp[12];
     double lpr_pn_theta, u_mag, v_mag;
@@ -78,13 +78,17 @@ int line_plane_icept( vec_type *icept_pt,
        || ( cplex_vec_mag( pn  ) < RT_EPSILON ) )
                            return ( return_value );
 
-    /* check if lpr and pn are at orthogonal */
+    /* check if lpr and pn are orthogonal */
     cplex_vec_dot( ctmp, lpr, pn );
-    if ( cplex_mag( ctmp ) == 0.0 ) return ( return_value );
+    if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
+    if ( ctmp->r == 0.0 ) return ( return_value );
 
     /* we now check for an angle less than RT_ANGLE_EPSILON */
-    cplex_vec_normalize( tmp, lpr );
-    cplex_vec_normalize( tmp+1, pn );
+    status = cplex_vec_normalize( tmp, lpr );
+    if ( status == EXIT_FAILURE ) return ( return_value );
+
+    status = cplex_vec_normalize( tmp+1, pn );
+    if ( status == EXIT_FAILURE ) return ( return_value );
     /* So norm[ lpr ] --> tmp[0]
      *    norm[ pn  ] --> tmp[1]  */
 
@@ -148,22 +152,24 @@ uv:
 
         /* create an orthogonal vector plu in tmp+3 */
         cplex_vec_cross( tmp+3, tmp+1, tmp+2 );
+
         /* now we create the useful plun */
-        cplex_vec_normalize( plun, tmp+3 );
+        status = cplex_vec_normalize( plun, tmp+3 );
+        if ( status == EXIT_FAILURE ) return ( return_value );
 
         printf("dbug : u_hat = %+-16.9e    %+-16.9e    %+-16.9e\n",
                      plun->x.r, plun->y.r, plun->z.r );
 
         /* create an orthogonal vector plv in tmp+4 */
         cplex_vec_cross( tmp+4, tmp+1, plun );
-        cplex_vec_normalize( plvn, tmp+4 );
+        status = cplex_vec_normalize( plvn, tmp+4 );
+        if ( status == EXIT_FAILURE ) return ( return_value );
 
         printf("dbug : v_hat = %+-16.9e    %+-16.9e    %+-16.9e\n",
                      plvn->x.r, plvn->y.r, plvn->z.r );
 
     } else {
 
-        /* TODO : none of this will work obviously */
         /* We know that we have at least plu or plv now */
         if ( ( plu == NULL ) || ( plv == NULL ) ) {
             /* lovely, we only have one of them */
@@ -173,22 +179,59 @@ uv:
                 /* compute plv with the existing plu */
             }
         } else {
-            /* Okay great we have them both and need to
-             * check that they are linearly independant
-             * and then normalize them. */
-
-            /* check that we have a reasonable magnitude */
+            /* Both are non-null pointers.
+             * Do we have a reasonable magnitude? */
             u_mag = cplex_vec_mag( plu );
             v_mag = cplex_vec_mag( plv );
+
             if (    ( u_mag < RT_EPSILON )
                  || ( v_mag < RT_EPSILON ) ) {
-                /* so they are very small. Is either zero ? */
+                /* One or both are very small. Is either zero ? */
                 if ( ( u_mag == 0.0 ) || ( v_mag == 0.0 ) ) {
-                    /* well one of them is zero magnitude and 
-                     * we may as well toss them both away and 
-                     * start over. Not ideal but at least it 
-                     * is safe */
-                    goto uv;
+                    /* Well one of them is zero magnitude.
+                     * Do we have a u vector ? */
+                    if ( u_mag == 0.0 ) {
+                        /* no u vector so lets ask about v and
+                         * see if it is reasonable. Otherwise just
+                         * compute them both as above. */
+                        if ((v_mag==0.0)||(v_mag<RT_EPSILON)) goto uv;
+
+                        /* normalize plv */
+                        fprintf(stderr,"DBUG : ----------------------------------------------\n");
+                        fprintf(stderr,"DBUG : about to call cplex_vec_normalize( plvn, plv )\n");
+                        fprintf(stderr,"     : plv  = < %+-16.9e , %+-16.9e , %+-16.9e >\n", plv->x.r, plv->y.r, plv->z.r);
+                        status = cplex_vec_normalize( plvn, plv );
+                        if ( status == EXIT_FAILURE )
+                                               return ( return_value );
+                        fprintf(stderr,"     : plv  = < %+-16.9e , %+-16.9e , %+-16.9e >\n", plv->x.r, plv->y.r, plv->z.r);
+                        fprintf(stderr,"     : plvn = < %+-16.9e , %+-16.9e , %+-16.9e >\n", plvn->x.r, plvn->y.r, plvn->z.r);
+                        fprintf(stderr,"DBUG : ----------------------------------------------\n");
+
+                        /* check if norm[plv] is orthogonal to pn and
+                         * if not then start over */
+                        cplex_vec_dot( ctmp, pn, plvn );
+                        if ( check_dot( ctmp ) == EXIT_FAILURE )
+                            return ( return_value );
+
+                        if ( ctmp->r != 0.0 ) goto uv;
+
+                        /* we have a valid plvn and may compute plu with
+                         * a cross product of pn and plvn */
+                        cplex_vec_cross( tmp+3, pn, plvn );
+                        /* normalize that into plun */
+                        status = cplex_vec_normalize( plun, tmp+3 );
+                        if ( status == EXIT_FAILURE )
+                                               return ( return_value );
+
+                        printf("dbug : u_hat = %+-16.9e", plun->x.r);
+                        printf("    %+-16.9e", plun->y.r);
+                        printf("    %+-16.9e\n", plun->z.r );
+
+                        printf("dbug : v_hat = %+-16.9e", plvn->x.r);
+                        printf("    %+-16.9e", plvn->y.r);
+                        printf("    %+-16.9e\n", plvn->z.r );
+
+                    }
                 }
             }
         }

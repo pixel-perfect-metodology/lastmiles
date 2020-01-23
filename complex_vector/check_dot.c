@@ -19,11 +19,8 @@
 
 int check_dot(cplex_type *dat)
 {
-    /* check for a bizarre complex result from dot product */
+    /* bizarre complex result from dot product? */
     if ( !(dat->i == 0.0) ) {
-        fprintf(stderr,"FAIL : bizarre complex dot product");
-        fprintf(stderr,"     :  = ( %-+20.14e, %-+20.14e )\n",
-                              dat->r, dat->i );
         return ( EXIT_FAILURE );
     }
     return ( EXIT_SUCCESS );

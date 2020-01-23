@@ -51,6 +51,7 @@ int cplex_vec_set( vec_type *op, double r0, double i0,
                                  double r2, double i2 );
 
 int cplex_vec_print( vec_type *op );
+int cplex_vec_null( vec_type *op );
 int cplex_vec_copy( vec_type *dst, vec_type *src);
 int cplex_vec_add( vec_type *res, vec_type *op1, vec_type *op2 );
 int cplex_vec_scale( vec_type *res, vec_type *op1, double factor );

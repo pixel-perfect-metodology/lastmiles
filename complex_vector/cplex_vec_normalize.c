@@ -15,20 +15,25 @@
 #include <stdlib.h>
 #include "v.h"
 
-/* theddmage and we all agree that a vertor "normal" is a
- * vector with the same direction but a unit length. */
+/* a vector "normal" is a vector with the same direction
+ * but a unit length. */
 int cplex_vec_normalize( vec_type *res, vec_type *op1 )
 {
 
-    double magnitude = cplex_vec_mag( op1 );
-    /* TODO : come up with a better way to trap for a null vector */
+    double magnitude;
+    vec_type tmp;
+
+    if ( op1 == NULL ) return ( EXIT_FAILURE );
+
+    cplex_vec_copy( &tmp, op1);
+    magnitude = cplex_vec_mag( &tmp );
     if ( magnitude < RT_EPSILON ) {
-        return ( -1 );
+        return ( EXIT_FAILURE );
     }
 
-    res->x.r = op1->x.r / magnitude; res->x.i = op1->x.i / magnitude;
-    res->y.r = op1->y.r / magnitude; res->y.i = op1->y.i / magnitude;
-    res->z.r = op1->z.r / magnitude; res->z.i = op1->z.i / magnitude;
+    res->x.r = tmp.x.r / magnitude; res->x.i = tmp.x.i / magnitude;
+    res->y.r = tmp.y.r / magnitude; res->y.i = tmp.y.i / magnitude;
+    res->z.r = tmp.z.r / magnitude; res->z.i = tmp.z.i / magnitude;
 
     return ( 0 );
 
