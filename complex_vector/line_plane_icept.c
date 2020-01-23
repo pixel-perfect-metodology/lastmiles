@@ -58,7 +58,7 @@ int line_plane_icept( vec_type *icept_pt,
 {
     int status, return_value = 0;
     cplex_type ctmp[12];
-    vec_type i_hat, j_hat, tmp[12];
+    vec_type i_hat, j_hat, lpr_norm, pn_norm, tmp[12];
     double lpr_pn_theta, u_mag, v_mag;
 
     /* rh_col is right hand column for Cramer call with
@@ -83,16 +83,21 @@ int line_plane_icept( vec_type *icept_pt,
     if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
     if ( ctmp->r == 0.0 ) return ( return_value );
 
+    /* TODO : clean up the usage of tmp and tmp+1 ass we 
+     * have lpr_norm and pn_norm */
     /* we now check for an angle less than RT_ANGLE_EPSILON */
-    status = cplex_vec_normalize( tmp, lpr );
-    if ( status == EXIT_FAILURE ) return ( return_value );
+    if ( cplex_vec_normalize( tmp, lpr ) == EXIT_FAILURE ) return ( return_value );
+    if ( cplex_vec_normalize( tmp+1, pn ) == EXIT_FAILURE ) return ( return_value );
 
-    status = cplex_vec_normalize( tmp+1, pn );
-    if ( status == EXIT_FAILURE ) return ( return_value );
-    /* So norm[ lpr ] --> tmp[0]
-     *    norm[ pn  ] --> tmp[1]  */
+    /* At this point we have normalized vevtors for both lpr and pn
+     * thus :  norm[ lpr ] --> tmp[0]
+     *         norm[ pn  ] --> tmp[1] 
+     *
+     * Given how they are essential we should setup better vars */
+    cplex_vec_copy( &lpr_norm, tmp);
+    cplex_vec_copy( &pn_norm, tmp+1);
 
-    cplex_vec_dot( ctmp, tmp, tmp+1);
+    cplex_vec_dot( ctmp, &lpr_norm, &pn_norm);
     if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
 
     lpr_pn_theta = acos(ctmp[0].r);
@@ -129,7 +134,7 @@ int line_plane_icept( vec_type *icept_pt,
         /* We must compute both the plu and plv where the
          * i_hat or j_hat basis vectors are used. */
 
-uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
+uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
             return ( return_value );
 
@@ -137,7 +142,7 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
             /* we need to use j_hat because norm[pn] is
              * most likely near perfect parallel to i_hat */
 
-            cplex_vec_dot( ctmp+1, tmp+1, &j_hat);
+            cplex_vec_dot( ctmp+1, &pn_norm, &j_hat);
             if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
                 return ( return_value );
 
@@ -149,16 +154,14 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
         }
 
         /* create an orthogonal vector plu in tmp+3 */
-        cplex_vec_cross( tmp+3, tmp+1, tmp+2 );
+        cplex_vec_cross( tmp+3, &pn_norm, tmp+2 );
 
         /* now we create the useful plun */
-        status = cplex_vec_normalize( plun, tmp+3 );
-        if ( status == EXIT_FAILURE ) return ( return_value );
+        if ( cplex_vec_normalize( plun, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
 
         /* create an orthogonal vector plv in tmp+4 */
-        cplex_vec_cross( tmp+4, tmp+1, plun );
-        status = cplex_vec_normalize( plvn, tmp+4 );
-        if ( status == EXIT_FAILURE ) return ( return_value );
+        cplex_vec_cross( tmp+4, &pn_norm, plun );
+        if ( cplex_vec_normalize( plvn, tmp+4 ) == EXIT_FAILURE ) return ( return_value );
 
     } else {
 
@@ -183,8 +186,7 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
              * tiny triangles we may have very tiny vectors u and v as
              * well as plane normals. */
 
-            if (    ( u_mag < RT_EPSILON )
-                 || ( v_mag < RT_EPSILON ) ) {
+            if ( ( u_mag < RT_EPSILON ) || ( v_mag < RT_EPSILON ) ) {
 
                 /* One or both are very small. Is either zero ? */
                 if ( ( u_mag == 0.0 ) || ( v_mag == 0.0 ) ) {
@@ -199,8 +201,7 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
                         if ( ( v_mag == 0.0 ) || ( v_mag < RT_EPSILON ) ) goto uv;
 
                         /* normalize plv */
-                        status = cplex_vec_normalize( plvn, plv );
-                        if ( status == EXIT_FAILURE ) return ( return_value );
+                        if ( cplex_vec_normalize( plvn, plv ) == EXIT_FAILURE ) return ( return_value );
 
                         /* check if plvn is orthogonal to pn and
                          * if not then start over. Bear in mind that
@@ -208,7 +209,7 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
                          * thus we must use tmp[1] from above which is
                          * the plane normal actually normalized. */
 
-                        cplex_vec_dot( ctmp, tmp+1, plvn );
+                        cplex_vec_dot( ctmp, &pn_norm, plvn );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
                             return ( return_value );
 
@@ -218,8 +219,7 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
                          * a cross product of pn and plvn */
                         cplex_vec_cross( tmp+3, pn, plvn );
                         /* normalize that into plun */
-                        status = cplex_vec_normalize( plun, tmp+3 );
-                        if ( status == EXIT_FAILURE ) return ( return_value );
+                        if ( cplex_vec_normalize( plun, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
 
                     } else if ( v_mag == 0.0 ) {
 
@@ -230,12 +230,10 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
                         if ( ( u_mag == 0.0 ) || ( u_mag < RT_EPSILON ) ) goto uv;
 
                         /* normalize plu  */
-                        status = cplex_vec_normalize( plun, plu );
-                        if ( status == EXIT_FAILURE ) return ( return_value );
+                        if ( cplex_vec_normalize( plun, plu ) == EXIT_FAILURE ) return ( return_value );
 
-                        /* check if plun is orthogonal to pn. 
-                         * here we use tmp[1] which is pn normalized */
-                        cplex_vec_dot( ctmp, tmp+1, plun );
+                        /* check if plun is orthogonal to pn. */
+                        cplex_vec_dot( ctmp, &pn_norm, plun );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
                             return ( return_value );
 
@@ -245,8 +243,7 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
                          * with a cross product of pn and plun */
                         cplex_vec_cross( tmp+3, pn, plun );
                         /* normalize that into plvn */
-                        status = cplex_vec_normalize( plvn, tmp+3 );
-                        if ( status == EXIT_FAILURE ) return ( return_value );
+                        if ( cplex_vec_normalize( plvn, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
 
                     } else {
 
@@ -257,7 +254,27 @@ uv:     cplex_vec_dot( ctmp+1, tmp+1, &i_hat);
                     }
                 } else {
                     /* Neither u nor v is zero in size but at least
-                     * one of them is tiny. Smaller than RT_EPSILON. */
+                     * one of them is smaller than RT_EPSILON. */
+                    if ( u_mag < RT_EPSILON ) {
+                        /* check plv and the first step is to normalize it */
+                        if ( cplex_vec_normalize( plvn, plv ) == EXIT_FAILURE ) return ( return_value );
+                        /* check if plvn is orthogonal to pn. */
+                        cplex_vec_dot( ctmp, &pn_norm, plvn );
+                        if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
+                        if ( ctmp->r != 0.0 ) goto uv;
+                        /* compute plu with a cross product of pn and plvn */
+                        cplex_vec_cross( tmp+3, pn, plvn );
+                        /* normalize that into plun */
+                        if ( cplex_vec_normalize( plun, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
+                    } else {
+                        /* here we know that v_mag < RT_EPSILON */
+                        if ( cplex_vec_normalize( plun, plu ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_dot( ctmp, &pn_norm, plun );
+                        if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
+                        if ( ctmp->r != 0.0 ) goto uv;
+                        cplex_vec_cross( tmp+3, pn, plun );
+                        if ( cplex_vec_normalize( plvn, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
+                    }
                 }
             }
         }

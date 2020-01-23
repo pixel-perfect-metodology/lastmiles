@@ -17,7 +17,7 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 LIBS = -lm
 
 DEPS = v.h
-SRCS = $(wildcard c*.c)
+SRCS = $(wildcard c*.c) line_plane_icept.c
 OBJS = $(SRCS:.c=.o)
 
 %.o: %.c $(DEPS)

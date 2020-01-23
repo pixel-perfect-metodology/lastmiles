@@ -453,6 +453,7 @@ int main ( int argc, char **argv)
                                   &line_point, &line_direction,
                                   &plane_point, &plane_normal,
                                   (vec_type*)(NULL),(vec_type*)(NULL));
+
     printf("INFO : line_plane_icept() returns %i\n", lp_status);
 
     printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
@@ -462,8 +463,8 @@ int main ( int argc, char **argv)
 
     printf("\n\n--------------------------------------------------\n");
     /* try again with a zero magnitude u and v vectors */
-    cplex_vec_null(&plane_u);
-    cplex_vec_null(&plane_v);
+    cplex_vec_zero(&plane_u);
+    cplex_vec_zero(&plane_v);
     printf("\n\nINFO : line_plane_icept() again\n");
     printf("     : with zero mag plane_u and plane_v\n\n");
     printf("     : u = %+-16.9e", plane_u.x.r);
@@ -495,7 +496,7 @@ int main ( int argc, char **argv)
      *   v_y = -0.22237479499833035382
      *   v_z = -0.14824986333222023589
      */
-    cplex_vec_null(&plane_u);
+    cplex_vec_zero(&plane_u);
     cplex_vec_set( &plane_v, -0.96362411165943153325 / 10e10, 0.0,
                              -0.22237479499833035382 / 10e10, 0.0,
                              -0.14824986333222023589 / 10e10, 0.0 );
@@ -526,7 +527,7 @@ int main ( int argc, char **argv)
 
     printf("\n\n--------------------------------------------------\n");
     /* use a microscopic v vector that is NOT in the plane */
-    cplex_vec_null(&plane_u);
+    cplex_vec_zero(&plane_u);
     cplex_vec_set( &plane_v, -0.96362411165943153325 / 10e10, 0.0,
                               0.22237479499833035382 / 10e10, 0.0,
                               0.14824986333222023589 / 10e10, 0.0 );
@@ -566,7 +567,7 @@ int main ( int argc, char **argv)
      *
      * u_hat analytical data from Wolfram Mathematica */
 
-    cplex_vec_null(&plane_v);
+    cplex_vec_zero(&plane_v);
     cplex_vec_set( &plane_u, 0.0, 0.0,
                              ( -1.0 * 2.0 / sqrt( 13.0 ) ) / 10e10, 0.0,
                              ( 3.0 / sqrt( 13.0 ) ) / 10e10, 0.0 );
@@ -599,13 +600,13 @@ int main ( int argc, char **argv)
     }
 
     printf("\n\n--------------------------------------------------\n");
-    /* use a microscopic u vector that is NOT in the plan
+    /* use a microscopic u vector that is NOT in the plane
      * also a v vector that is zero
      *
      * u_hat analytical data from Wolfram Mathematica
      * and then that was messed with slightly. */
 
-    cplex_vec_null(&plane_v);
+    cplex_vec_zero(&plane_v);
     cplex_vec_set( &plane_u, 0.000000001, 0.0,
                              ( -1.0 * 2.0 / sqrt( 13.0 ) ) / 10e10, 0.0,
                              ( 3.0 / sqrt( 13.0 ) ) / 10e10, 0.0 );
@@ -613,6 +614,46 @@ int main ( int argc, char **argv)
     printf("\n\nINFO : line_plane_icept() again\n");
     printf("     : with microscopic and invalid plane_u\n");
     printf("     : also a zero plane_v\n");
+    printf("     : u = %+-16.9e", plane_u.x.r);
+    printf("    %+-16.9e", plane_u.y.r);
+    printf("    %+-16.9e\n", plane_u.z.r );
+    printf("     : v = %+-16.9e", plane_v.x.r);
+    printf("    %+-16.9e", plane_v.y.r);
+    printf("    %+-16.9e\n\n", plane_v.z.r );
+
+    lp_status = line_plane_icept( &lp_intercept_point,
+                                  &plane_u_norm, &plane_v_norm,
+                                  &lp_intercept_param,
+                                  &line_point, &line_direction,
+                                  &plane_point, &plane_normal,
+                                  &plane_u, &plane_v);
+
+    printf("     : line_plane_icept() returns %i\n\n", lp_status);
+
+    if ( lp_status != 1 ) {
+        printf("\nWARN : no valid solution found.\n");
+    } else {
+        printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                 lp_intercept_point.x.r,
+                                 lp_intercept_point.y.r,
+                                 lp_intercept_point.z.r);
+    }
+
+    printf("\n\n--------------------------------------------------\n");
+    /* Neither u nor v is zero in size but v vector magnitude
+     * is less than RT_EPSILON. */
+
+    cplex_vec_set( &plane_u, 0.0, 0.0,
+                             ( -1.0 * 2.0 / sqrt( 13.0 ) ), 0.0,
+                             ( 3.0 / sqrt( 13.0 ) ), 0.0 );
+
+    cplex_vec_set( &plane_v, -1.0 * sqrt( 13.0 / 14.0 ) / 10e13, 0.0,
+                             ( -3.0 / sqrt( 182.0 ) ) / 10e13, 0.0,
+                             -1.0 * sqrt( 2.0 / 91.0 ) / 10e13, 0.0 );
+
+    printf("\n\nINFO : line_plane_icept() again\n");
+    printf("     : with perfect plane_u\n");
+    printf("     : also a microscopic plane_v\n");
     printf("     : u = %+-16.9e", plane_u.x.r);
     printf("    %+-16.9e", plane_u.y.r);
     printf("    %+-16.9e\n", plane_u.z.r );

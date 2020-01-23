@@ -16,7 +16,7 @@
 #include "v.h"
 
 /* initialize the values inside a complex vector to zero */
-int cplex_vec_null( vec_type *op )
+int cplex_vec_zero( vec_type *op )
 {
     op->x.r = 0.0; op->x.i = 0.0;
     op->y.r = 0.0; op->y.i = 0.0;
