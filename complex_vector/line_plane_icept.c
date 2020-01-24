@@ -276,6 +276,43 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                         if ( cplex_vec_normalize( plvn, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
                     }
                 }
+            } else {
+                /* we have both u and v vectors and they have some 
+                 * reasonable magnitude. We have no idea if they are
+                 * in the plane or even if they are linearly dependant
+                 * or not. We hope not. In fact we need "not".
+                 *
+                 * The first task should be to determine that they 
+                 * are linearly independant and thus the dot product
+                 * of u and v will NOT be 1 or -1. */
+                cplex_vec_dot( ctmp, plv, plu );
+                if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
+                if ( ( fabs( ctmp->r ) - 1.0 ) < RT_EPSILON ) {
+                    /* the u and v vectors are so close to linear that
+                     * we shall call them useless */
+                    if ( ( fabs( ctmp->r ) - 1.0 ) == 0.0 ) {
+                        fprintf(stderr,"WARN : u and v vectors nearly linear.\n");
+                    } else {
+                        fprintf(stderr,"WARN : u and v vectors are linear.\n");
+                    }
+                    goto uv;
+                }
+
+/* TODO fix this crap wherein we need to do better tests for the 
+relationship between the line and the plane normal as well as 
+a check that the line point given may be in the damn plane 
+    lpr_pn_theta = acos(ctmp[0].r);
+    if ( fabs(lpr_pn_theta) < RT_ANGLE_EPSILON ) {
+        if ( lpr_pn_theta == 0.0 ) {
+            fprintf(stderr,"FAIL : lpr and pn orthogonal.\n");
+        } else {
+            fprintf(stderr,"FAIL : lpr and pn near orthogonal.\n");
+        }
+        return ( return_value );
+    }
+
+*/
+                
             }
         }
     }
