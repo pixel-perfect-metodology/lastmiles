@@ -29,6 +29,11 @@
  * a millionth of a degree or about 2.980232238770e-08 rad
  * and we may as well limit at twice that angle. */
 #define RT_ANGLE_EPSILON 5.96046447754e-08
+/* There may be a situation where we test for nearly
+ * orthogonal angles in which case the deviation from
+ * perfect cos(theta) = 1 may be a truely small amount
+ * that cooincides with RT_ANGLE_EPSILON variation */
+#define RT_ANGLE_COS_EPSILON 1.776356839400809e-15
 
 typedef struct cplex {
     double r, i;

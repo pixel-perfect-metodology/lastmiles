@@ -78,36 +78,60 @@ int line_plane_icept( vec_type *icept_pt,
        || ( cplex_vec_mag( pn  ) < RT_EPSILON ) )
                            return ( return_value );
 
-    /* check if lpr and pn are orthogonal */
-    cplex_vec_dot( ctmp, lpr, pn );
-    if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
-    if ( ctmp->r == 0.0 ) return ( return_value );
+    /* There are a few degenerate cases to check for. Firstly the
+     * point on the line lp0 may be the same as the point in the
+     * plane pl0. Unlikely but it solves the entire intercept
+     * computation right away. What would remain is the need for
+     * reasonable plane_u and plane_v vectors. Another possible
+     * situation is that the line may actually be in the plane. In
+     * such a situation there are an infinite number of intercepts
+     * however the obvious solution is simply the line point lp0
+     * and then we only need to know the vectors u and v again as
+     * well as the coordinates s and t within the plane. */ 
 
-    /* TODO : clean up the usage of tmp and tmp+1 ass we 
-     * have lpr_norm and pn_norm */
-    /* we now check for an angle less than RT_ANGLE_EPSILON */
-    if ( cplex_vec_normalize( tmp, lpr ) == EXIT_FAILURE ) return ( return_value );
-    if ( cplex_vec_normalize( tmp+1, pn ) == EXIT_FAILURE ) return ( return_value );
+    /* we will need a direction vector from the plane point pl0 to the
+     * line point lp0 below. We create this vector in tmp[0]. */
+    tmp[0].x.r = lp0->x.r - pl0->x.r; tmp[0].x.i = lp0->x.i - pl0->x.i;
+    tmp[0].y.r = lp0->y.r - pl0->y.r; tmp[0].y.i = lp0->y.i - pl0->y.i;
+    tmp[0].z.r = lp0->z.r - pl0->z.r; tmp[0].z.i = lp0->z.i - pl0->z.i;
 
-    /* At this point we have normalized vevtors for both lpr and pn
-     * thus :  norm[ lpr ] --> tmp[0]
-     *         norm[ pn  ] --> tmp[1] 
-     *
-     * Given how they are essential we should setup better vars */
-    cplex_vec_copy( &lpr_norm, tmp);
-    cplex_vec_copy( &pn_norm, tmp+1);
-
+    /* check if the line and the plane normal are orthogonal */
+    if ( cplex_vec_normalize( &lpr_norm, lpr ) == EXIT_FAILURE ) return ( return_value );
+    if ( cplex_vec_normalize( &pn_norm, pn ) == EXIT_FAILURE ) return ( return_value );
     cplex_vec_dot( ctmp, &lpr_norm, &pn_norm);
     if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
 
-    lpr_pn_theta = acos(ctmp[0].r);
-    if ( fabs(lpr_pn_theta) < RT_ANGLE_EPSILON ) {
-        if ( lpr_pn_theta == 0.0 ) {
-            fprintf(stderr,"FAIL : lpr and pn orthogonal.\n");
+    /* since the dot product of two normalized vectors results in the
+     * cosine of the angle between them we can just check for a zero
+     * result. */
+
+    if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
+        fprintf(stderr,"WARN : lpr and pn are orthogonal.\n");
+        /* Since the line is perfectly orthogonal to the plane normal
+         * we need to check if the line is actually in the plane. We
+         * may create a temporary vector from the plane point pl0 to
+         * the line point lp0 and then check if it is also perfectly
+         * orthogonal to the plane normal. See tmp vector above.
+         *
+         * If so then the point lp0 is in the plane. */
+        if ( cplex_vec_normalize( tmp+1, tmp ) == EXIT_FAILURE ) return ( return_value );
+        cplex_vec_dot( ctmp, &pn_norm, tmp+1 );
+        if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
+            fprintf(stderr,"WARN : line is in the plane\n");
+            /* we have the line in the plane and thus the parameter
+             * k for the line equation is zero. We are left to determine
+             * the scalar parameters for s and t with respect to the
+             * plane basis vectors plu and plv. */
         } else {
-            fprintf(stderr,"FAIL : lpr and pn near orthogonal.\n");
+            fprintf(stderr,"FAIL : no possible lp intercept\n");
+            return ( return_value );
         }
-        return ( return_value );
+    }
+
+    /* the other degenerate situation is that the line point lp0 is
+     * the same as the plane point pl0 */
+    if ( cplex_vec_mag( tmp ) < RT_EPSILON ) {
+        fprintf(stderr,"WARN : line point is same as plane point\n");
     }
 
     /* Common sense checks are done and we can proceed with 
@@ -120,12 +144,7 @@ int line_plane_icept( vec_type *icept_pt,
      * vectors i_hat and j_hat. We may also have the situation
      * where only one of them exists and we must compute the
      * other.
-     *
-     * if dot( N, i_hat ) != 1 then u = cross( N, i_hat )
-     *     else we use j_hat. 
-     *
-     *     note that tmp[1] is norm[pn] at the moment
-     * */
+     */
 
     cplex_vec_set ( &i_hat, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     cplex_vec_set ( &j_hat, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
