@@ -56,7 +56,7 @@ int line_plane_icept( vec_type *icept_pt,
                       vec_type *pl0, vec_type *pn,
                       vec_type *plu, vec_type *plv) 
 {
-    int status, return_value = 0;
+    int status, line_in_plane, lp_touch, return_value = 0;
     cplex_type ctmp[12];
     vec_type i_hat, j_hat, lpr_norm, pn_norm, tmp[12];
     double lpr_pn_theta, u_mag, v_mag;
@@ -105,6 +105,7 @@ int line_plane_icept( vec_type *icept_pt,
      * cosine of the angle between them we can just check for a zero
      * result. */
 
+    line_in_plane = 0;
     if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
         fprintf(stderr,"WARN : lpr and pn are orthogonal.\n");
         /* Since the line is perfectly orthogonal to the plane normal
@@ -118,6 +119,7 @@ int line_plane_icept( vec_type *icept_pt,
         cplex_vec_dot( ctmp, &pn_norm, tmp+1 );
         if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
             fprintf(stderr,"WARN : line is in the plane\n");
+            line_in_plane = 1;
             /* we have the line in the plane and thus the parameter
              * k for the line equation is zero. We are left to determine
              * the scalar parameters for s and t with respect to the
@@ -130,8 +132,10 @@ int line_plane_icept( vec_type *icept_pt,
 
     /* the other degenerate situation is that the line point lp0 is
      * the same as the plane point pl0 */
+    lp_touch = 0;
     if ( cplex_vec_mag( tmp ) < RT_EPSILON ) {
         fprintf(stderr,"WARN : line point is same as plane point\n");
+        lp_touch = 1;
     }
 
     /* Common sense checks are done and we can proceed with 
@@ -326,6 +330,16 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     printf("dbug : v_hat = %+-16.9e", plvn->x.r);
     printf("    %+-16.9e", plvn->y.r);
     printf("    %+-16.9e\n", plvn->z.r );
+
+    /* we need to take into consideration that the line may
+     * be in the plane or that the line and plane point meet
+     * in the same place. */
+    if ( lp_touch ) {
+        /* totally separate situation where k is zero and
+         * we may still get away with a Cramer situation.
+         * However if line_in_plane then forget it. */
+        printf ("\nWARN : line and plane point touch.\n");
+    }
 
     /* lets create the column of data for P3 - P0 in our
      * diagram. This would be  pl0 - lp0. */
