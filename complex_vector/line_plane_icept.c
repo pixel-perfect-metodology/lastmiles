@@ -316,22 +316,6 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                     }
                     goto uv;
                 }
-
-/* TODO fix this crap wherein we need to do better tests for the 
-relationship between the line and the plane normal as well as 
-a check that the line point given may be in the damn plane 
-    lpr_pn_theta = acos(ctmp[0].r);
-    if ( fabs(lpr_pn_theta) < RT_ANGLE_EPSILON ) {
-        if ( lpr_pn_theta == 0.0 ) {
-            fprintf(stderr,"FAIL : lpr and pn orthogonal.\n");
-        } else {
-            fprintf(stderr,"FAIL : lpr and pn near orthogonal.\n");
-        }
-        return ( return_value );
-    }
-
-*/
-                
             }
         }
     }
@@ -352,15 +336,19 @@ a check that the line point given may be in the damn plane
                              pl0->z.r - lp0->z.r,
                              pl0->z.i - lp0->z.i );
 
-    v[0].x.r = tmp[0].x.r;        v[0].x.i = tmp[0].x.i;
+    printf("dbug : rh_col= ");
+    printf("%+-16.9e    %+-16.9e    %+-16.9e\n\n",
+                 rh_col.x.r, rh_col.y.r, rh_col.z.r);
+
+    v[0].x.r = lpr_norm.x.r;      v[0].x.i = lpr_norm.x.i;
     v[0].y.r = plun->x.r;         v[0].y.i = plun->x.i;
     v[0].z.r = plvn->x.r;         v[0].z.i = plvn->x.i;
 
-    v[1].x.r = tmp[0].y.r;        v[1].x.i = tmp[0].y.i;
+    v[1].x.r = lpr_norm.y.r;      v[1].x.i = lpr_norm.y.i;
     v[1].y.r = plun->y.r;         v[1].y.i = plun->y.i;
     v[1].z.r = plvn->y.r;         v[1].z.i = plvn->y.i;
 
-    v[2].x.r = tmp[0].z.r;        v[2].x.i = tmp[0].z.i;
+    v[2].x.r = lpr_norm.z.r;      v[2].x.i = lpr_norm.z.i;
     v[2].y.r = plun->z.r;         v[2].y.i = plun->z.i;
     v[2].z.r = plvn->z.r;         v[2].z.i = plvn->z.i;
 
