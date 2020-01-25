@@ -400,7 +400,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
      */
 
     /* multiply     k * norm[ lpr ]     */
-    cplex_vec_scale( tmp+5, tmp, kst->x.r);
+    cplex_vec_scale( tmp+5, &lpr_norm, kst->x.r);
     cplex_vec_add( tmp+6, lp0, tmp+5 );
     printf("\n    icept_pt = lp0 + k * norm[ lpr ]\n");
     printf("             = < %+-16.9e, %+-16.9e, %+-16.9e >\n",
