@@ -13,7 +13,7 @@ DEPS = v.h
 
 LIBS = -lm
 
-SRCS = $(wildcard c*.c)
+SRCS = $(wildcard c*.c) line_plane_icept.c
 OBJS = $(SRCS:.c=.o)
 
 %.o: %.c $(DEPS)
