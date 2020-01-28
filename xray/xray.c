@@ -79,7 +79,9 @@ int main(int argc, char*argv[])
     roll_up = 0;
     roll_dn = 0;
 
-    uint64_t t_delta; /* left mouse button click timing */
+    uint64_t t_delta, t_ray_total = 0;
+    uint64_t t_sample_count = 0;
+
     struct timespec t0, t1, now_time;
     struct timespec soln_t0, soln_t1;
 
@@ -984,6 +986,12 @@ int main(int argc, char*argv[])
                 XSetForeground(dsp, gc3, green.pixel);
                 XDrawImageString( dsp, win3, gc3, 10, 290,
                                   buf, strlen(buf));
+
+                t_ray_total += t_delta;
+                t_sample_count += 1;
+                sprintf(buf,"         %16lld avg nsec", t_ray_total/t_sample_count);
+                fprintf(stderr,"%s\n",buf);
+                XDrawImageString( dsp, win3, gc3, 10, 310, buf, strlen(buf));
 
                 XSetForeground(dsp, gc3, cyan.pixel);
 
