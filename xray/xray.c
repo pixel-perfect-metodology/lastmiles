@@ -664,11 +664,11 @@ int main(int argc, char*argv[])
                                        invert_mouse_x, invert_mouse_y );
 
                 XSetForeground(dsp, gc2, green.pixel);
-                XDrawImageString( dsp, win2, gc2, 10, 240,
+                XDrawImageString( dsp, win2, gc2, 10, 230,
                                                       buf, strlen(buf));
 
                 sprintf(buf,"fp64( %-10.8e , %-10.8e )", win_x, win_y );
-                XDrawImageString( dsp, win2, gc2, 10, 260,
+                XDrawImageString( dsp, win2, gc2, 10, 250,
                                                       buf, strlen(buf));
 
                 /* a more useful value is the vbox[] coordinates for
@@ -676,7 +676,7 @@ int main(int argc, char*argv[])
                 box_x = ( mouse_x - offset_x ) / vbox_w;
                 box_y = ( eff_height - mouse_y + offset_y ) / vbox_h;
                 sprintf(buf,"box  [ %03i , %03i ]", box_x, box_y );
-                XDrawImageString( dsp, win2, gc2, 10, 280,
+                XDrawImageString( dsp, win2, gc2, 10, 270,
                                                       buf, strlen(buf));
 
 
@@ -702,7 +702,7 @@ int main(int argc, char*argv[])
                                                           win_x, win_y );
 
 
-                XDrawImageString( dsp, win2, gc2, 10, 300,
+                XDrawImageString( dsp, win2, gc2, 10, 290,
                                                        buf, strlen(buf));
 
 
@@ -1017,20 +1017,24 @@ int main(int argc, char*argv[])
              * XColor.pixel = (((unsigned long)XColor.red) << 16)
              *               + (((unsigned long)XColor.green) << 8)
              *               + (unsigned long)XColor.blue;
-             *
+             */
+            clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
+            /* X11 load test where we fire a ton of XLib calls */
 
-            for ( some_radius = 0; some_radius < vbox_w; some_radius++ ) {
-                for ( p=0; p<360; p++ ) {
+            double radius, angle, some_x, some_y, pi2 = M_PI * 2.0;
 
-                     * quick hack convert from tens of degrees to
-                     * radians should be (p)( ( 2 x pi )/360 ) *
+            for ( int radius = 0; radius < vbox_w; radius++ ) {
+                for ( int p=0; p<720; p++ ) {
 
-                    some_angle = pi2 * ( 1.0 * p ) / 360.0;
-                    some_x = some_radius * cos(some_angle);
-                    some_y = some_radius * sin(some_angle);
+                     /* quick hack convert from tens of degrees to
+                     * radians should be (p)( ( 2 x pi )/360 ) */
+
+                    angle = pi2 * ( (1.0 * p) / 2.0 ) / 360.0;
+                    some_x = radius * cos(angle);
+                    some_y = radius * sin(angle);
 
                     whatever.pixel = ( ( (unsigned long)p & 0xff ) << 16 )
-                                     + ( ( (unsigned long)some_radius ) << 8 );
+                                     + ( ( (unsigned long)radius ) << 8 );
 
                     XSetForeground(dsp, gc, whatever.pixel);
 
@@ -1038,12 +1042,19 @@ int main(int argc, char*argv[])
 
                 }
             }
+
             XSetForeground(dsp, gc, yellow.pixel);
-            */
+            clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
+            t_delta = timediff( soln_t0, soln_t1 );
+            sprintf(buf,"[load] = %16lld nsec", t_delta);
+            fprintf(stderr,"%s\n",buf);
+            XSetForeground(dsp, gc2, red.pixel);
+            XDrawImageString( dsp, win2, gc2, 10, 310,
+                                       buf, strlen(buf));
 
         } else if ( button == Button3 ) {
 
-            printf("rightclick");
+            printf("right click\n");
             clock_gettime( CLOCK_MONOTONIC, &t1 );
             t_delta = timediff( t0, t1 );
 
@@ -1059,24 +1070,25 @@ int main(int argc, char*argv[])
             /* If a 200ms right double click anywhere then quit */
             if ( t_delta < 200000000 ) {
                 printf("\n\n");
+                /* If we allocate memory for any purpose whatsoever
+                 * then we had better free() it. */
                 break;
             }
-
 
         } else if ( button == Button4 ) {
 
             /* TODO note that a mouse wheel event being used here to
              * track observation plane position will result in all
              * data being redrawn. */
-            printf("roll up");
+            printf("roll up\n");
 
         } else if ( button == Button5 ) {
 
-            printf("roll down");
+            printf("roll down\n");
 
         } else {
 
-            printf("unknown button");
+            printf("\n ??? unknown button ???\n");
 
         }
 
