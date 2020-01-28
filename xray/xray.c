@@ -181,7 +181,7 @@ int main(int argc, char*argv[])
     status = cplex_vec_normalize( &obs_normal, &obs_normal_dir );
     if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
 
-    /* TODO use the diagram 8x8 viewport */
+    /* 8x8 viewport */
     obs_x_width = 8.0;
     obs_y_height = 8.0;
 
