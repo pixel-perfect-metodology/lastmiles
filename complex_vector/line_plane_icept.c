@@ -410,7 +410,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
      *
      * It seems reasonable to try both and then compare the
      * results and verify they are within RT_EPSILON of each
-     * other. TODO : think about the wisdom of this.
+     * other.
      */
 
     /* multiply     k * norm[ lpr ]     */
