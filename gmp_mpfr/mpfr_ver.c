@@ -11,19 +11,37 @@
  *******************************************************************/
 #define _XOPEN_SOURCE 600
 
+#include <errno.h>
+#include <inttypes.h>
+#include <locale.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
+#include <string.h>
+#include <sys/resource.h>
+#include <sys/utsname.h>
+#include <time.h>
+#include <unistd.h>
 
 #include <gmp.h>
 #include <mpfr.h>
+
+uint64_t system_memory();
+int sysinfo(void);
+uint64_t timediff( struct timespec st, struct timespec en );
 
 int main(int argc, char *argv[])
 {
 
     int inex = 0;
-    mpfr_t pi_mpfr, e_mpfr, one_mpfr, atan_pi_mpfr, atan_pi4_mpfr,
-           theta_mpfr, delta_mpfr;
+
+    mpfr_t pi_mpfr, e_mpfr, one_mpfr, atan_pi_mpfr,
+           atan_pi4_mpfr, theta_mpfr, delta_mpfr;
+
+    struct timespec t0, t1;
+
+    setlocale( LC_ALL, "C" );
+    sysinfo();
 
     mpfr_prec_t prec = 113;
 
@@ -67,41 +85,42 @@ int main(int argc, char *argv[])
             printf("Merry Christmas, you asked for it!\n");
         }
     }
-
-    mpfr_inits2 ( prec, pi_mpfr, e_mpfr, one_mpfr, (mpfr_ptr*) 0 );
-
-    inex = mpfr_const_pi ( pi_mpfr, MPFR_RNDN);
-
     printf("INFO : using %li bits of precision.\n\n", (long)prec );
+
+    mpfr_inits2( prec, pi_mpfr, e_mpfr, one_mpfr, atan_pi_mpfr,
+                 atan_pi4_mpfr, theta_mpfr, delta_mpfr, (mpfr_ptr*) 0 );
+
+    /* Get the CLOCK_REALTIME time in a timespec struct */
+    if ( clock_gettime( CLOCK_REALTIME, &t0 ) == -1 ) {
+        /* We could not get the clock. Bail out. */
+        fprintf(stderr,"ERROR : could not attain CLOCK_REALTIME\n");
+        return(EXIT_FAILURE);
+    }
+
+    inex = mpfr_const_pi( pi_mpfr, MPFR_RNDN);
+    clock_gettime( CLOCK_REALTIME, &t1 );
+    printf("\ntime for mpfr_cont_pi() was %" PRIu64 " nsecs\n\n", 
+                                                  timediff( t0, t1 ) );
 
     mpfr_printf ("pi may be %.Re\n\n", pi_mpfr );
 
     printf("INFO : also Eulers number e\n");
-    inex = mpfr_set_flt ( one_mpfr, 1.0, MPFR_RNDN);
+    inex = mpfr_set_flt( one_mpfr, 1.0, MPFR_RNDN);
 
-    inex = mpfr_exp ( e_mpfr, one_mpfr, MPFR_RNDN);
+    inex = mpfr_exp( e_mpfr, one_mpfr, MPFR_RNDN);
     mpfr_printf ("may be %.Re\n\n", e_mpfr );
 
-    /*
-    printf("100 digits of pi is     3.141592653589793238462643383");
-    printf("27950288419716939937510582097494459230781640628620899");
-    printf("86280348253421170679\n\n\n");
-
-    inex = mpfr_set_flt ( theta_mpfr, 1.0, MPFR_RNDN);
-    mpfr_printf ("theta = %.Re\n\n", theta_mpfr );
-
-    inex = mpfr_atan ( atan_pi4_mpfr, theta_mpfr, MPFR_RNDN);
+    inex = mpfr_atan( atan_pi4_mpfr, one_mpfr, MPFR_RNDN);
     mpfr_printf ("pi/4 may be %.Re\n\n", atan_pi4_mpfr );
 
-    inex = mpfr_mul_si ( atan_pi_mpfr, atan_pi4_mpfr, 4, MPFR_RNDN);
-    mpfr_printf ("pi may be %.Re\n\n", atan_pi_mpfr );
+    inex = mpfr_mul_si( atan_pi_mpfr, atan_pi4_mpfr, 4, MPFR_RNDN);
+    mpfr_printf ("atan(1) * 4 may be %.Re\n\n", atan_pi_mpfr );
 
     inex = mpfr_sub (delta_mpfr, pi_mpfr, atan_pi_mpfr, MPFR_RNDN);
     inex = mpfr_abs (delta_mpfr, delta_mpfr, MPFR_RNDN);
-    mpfr_printf ("delta( 4 * atan(1) ) - pi = %.Re\n\n", delta_mpfr);
-    */
+    mpfr_printf ("delta( atan(1) * 4 ) - pi = %.Re\n\n", delta_mpfr);
 
-    mpfr_clears  ( pi_mpfr, e_mpfr, one_mpfr, (mpfr_ptr*) 0 );
+    mpfr_clears  ( pi_mpfr, e_mpfr, one_mpfr, atan_pi4_mpfr, atan_pi_mpfr, delta_mpfr, (mpfr_ptr*)0 );
     return ( EXIT_SUCCESS );
 
 }

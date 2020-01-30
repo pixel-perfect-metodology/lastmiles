@@ -19,4 +19,27 @@ sys 3.75
 C_esther$ 
 
 
+--- count the distribution of digits using awk and sed ---
+C_pi$ 
+C_pi$ ./mpfr_ver 3321929 > pi1000000.dat 2>&1 ; grep '^pi' pi1000000.dat | head -1 | cut -c11- | cut -c1-1000001 > pi1000000.ocd; cat count_dig.sh | sed 's/TEMPLATE/pi1000000/' > $TMPDIR/do_count.sh ; chmod 755 $TMPDIR/do_count.sh ; $TMPDIR/do_count.sh | awk 'BEGIN{ ttl=0;print "\n\ndigit    count\n--------------" }{ printf("%5i    %6i\n", $1 , $2 ); ttl=ttl + $2 }END{printf ("--------------\n         %7i\n\n", ttl) }'; grep '^time' pi1000000.dat
+
+
+digit    count
+--------------
+    0     99959
+    1     99757
+    2    100026
+    3    100230
+    4    100230
+    5    100359
+    6     99548
+    7     99800
+    8     99985
+    9    100106
+--------------
+         1000000
+
+time for mpfr_cont_pi() was 1800590010 nsecs
+C_pi$ 
+
 
