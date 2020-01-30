@@ -1,7 +1,3 @@
-
-IDIR = /opt/bw/include
-LDIR = /opt/bw/lib
-
 CC=/usr/bin/cc
 
 CFLAGS= -I$(IDIR) -std=iso9899:1999 -fno-builtin -g -march=armv7-a \
@@ -12,13 +8,24 @@ CFLAGS= -I$(IDIR) -std=iso9899:1999 -fno-builtin -g -march=armv7-a \
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE -D_X_OPEN_SOURCE=600
 LIBS = -lm -lgmp -lmpfr
 
-OBJ = mpfr_ver.o
+IDIR=/opt/bw/include
+LDIR=/opt/bw/lib
+
+SRC = mpfr_ver.c \
+	../time_and_date/timediff.c \
+	../pthread/sysinfo.c \
+   	../pthread/sysmem.c
+
+OBJ = mpfr_ver.o \
+	  ../time_and_date/timediff.o \
+	  ../pthread/sysinfo.o \
+	  ../pthread/sysmem.o
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I$(IDIR)
 
 mpfr_ver: $(OBJ)
-	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -L$(LDIR) $(LIBS)
 
 clean:
-	rm -f *.o mpfr_ver
+	rm -f $(OBJ) mpfr_ver.o mpfr_ver pi*
