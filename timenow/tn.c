@@ -120,7 +120,7 @@ int main( int argc, char *argv[] ) {
                         j = 32; /* some out of bounds val */
                     }
                 }
-                strncat( time_buffer, "000000000", (size_t)9 );
+                strncat( time_buffer, "000000000", (size_t)10 );
                 /* output no more than 20 chars from the result such
                  * that we get a time like 1447199009.123456789 or
                  * possibly 1447199009.000000000 with trailing zeros.

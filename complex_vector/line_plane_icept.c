@@ -95,6 +95,10 @@ int line_plane_icept( vec_type *icept_pt,
     tmp[0].y.r = lp0->y.r - pl0->y.r; tmp[0].y.i = lp0->y.i - pl0->y.i;
     tmp[0].z.r = lp0->z.r - pl0->z.r; tmp[0].z.i = lp0->z.i - pl0->z.i;
 
+    /* we will need the i and j basis vectors in various places */
+    cplex_vec_set ( &i_hat, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    cplex_vec_set ( &j_hat, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+
     /* check if the line and the plane normal are orthogonal */
     if ( cplex_vec_normalize( &lpr_norm, lpr ) == EXIT_FAILURE ) return ( return_value );
     if ( cplex_vec_normalize( &pn_norm, pn ) == EXIT_FAILURE ) return ( return_value );
@@ -119,11 +123,13 @@ int line_plane_icept( vec_type *icept_pt,
         cplex_vec_dot( ctmp, &pn_norm, tmp+1 );
         if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
             fprintf(stderr,"WARN : line is in the plane\n");
+            /* TODO think about this mess as we have to deal with
+             * the u and v vectors regardless and we only care if
+             * the line is in the plane when it comes to Cramers
+             * method later */
+
             line_in_plane = 1;
-            /* we have the line in the plane and thus the parameter
-             * k for the line equation is zero. We are left to determine
-             * the scalar parameters for s and t with respect to the
-             * plane basis vectors plu and plv. */
+
         } else {
             fprintf(stderr,"FAIL : no possible lp intercept\n");
             return ( return_value );
@@ -135,6 +141,7 @@ int line_plane_icept( vec_type *icept_pt,
     lp_touch = 0;
     if ( cplex_vec_mag( tmp ) < RT_EPSILON ) {
         fprintf(stderr,"WARN : line point is same as plane point\n");
+        /* TODO this flag serves no purpose really */
         lp_touch = 1;
     }
 
@@ -150,9 +157,6 @@ int line_plane_icept( vec_type *icept_pt,
      * other.
      */
 
-    cplex_vec_set ( &i_hat, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    cplex_vec_set ( &j_hat, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-
     if ( ( plu == NULL ) && ( plv == NULL ) ) {
         /* We must compute both the plu and plv where the
          * i_hat or j_hat basis vectors are used. */
@@ -164,7 +168,6 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         if ( fabs(fabs(ctmp[1].r) - 1.0) < RT_EPSILON ) {
             /* we need to use j_hat because norm[pn] is
              * most likely near perfect parallel to i_hat */
-
             cplex_vec_dot( ctmp+1, &pn_norm, &j_hat);
             if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
                 return ( return_value );
@@ -331,14 +334,17 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     printf("    %+-16.9e", plvn->y.r);
     printf("    %+-16.9e\n", plvn->z.r );
 
-    /* we need to take into consideration that the line may
-     * be in the plane or that the line and plane point meet
-     * in the same place. */
-    if ( lp_touch ) {
-        /* totally separate situation where k is zero and
-         * we may still get away with a Cramer situation.
-         * However if line_in_plane then forget it. */
-        printf ("\nWARN : line and plane point touch.\n");
+    if ( line_in_plane ) {
+        /* we have the line in the plane and thus the parameter
+         * k for the line equation is zero. We are left to determine
+         * the scalar parameters for s and t with respect to the
+         * plane basis vectors plu and plv. */
+        printf("INFO : the line is in the plane. k is zero.\n");
+
+        /* TODO do not call Cramer here and merely solve for 
+         * s and t using another method */
+        return ( return_value );
+
     }
 
     /* lets create the column of data for P3 - P0 in our

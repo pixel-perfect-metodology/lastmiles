@@ -447,6 +447,32 @@ int main ( int argc, char **argv)
                                  lp_intercept_point.z.r);
 
     printf("\n\n--------------------------------------------------\n");
+    printf("INFO : test the line point and plane point are same\n");
+
+    cplex_vec_set( &line_point, 0.0, 0.0, 6.0, 0.0, 3.0, 0.0);
+
+    cplex_vec_set( &line_direction, -1.0, 0.0, 2.0, 0.0, 1.0, 0.0);
+    cplex_vec_set( &plane_point, 0.0, 0.0, 6.0, 0.0, 3.0, 0.0);
+    cplex_vec_set( &plane_normal, 1.0, 0.0, -3.0, 0.0, -2.0, 0.0);
+
+    printf("     : u = NULL pointer\n");
+    printf("     : v = NULL pointer\n");
+
+    lp_status = line_plane_icept( &lp_intercept_point,
+                                  &plane_u_norm, &plane_v_norm,
+                                  &lp_intercept_param,
+                                  &line_point, &line_direction,
+                                  &plane_point, &plane_normal,
+                                  (vec_type*)(NULL),(vec_type*)(NULL));
+
+    printf("INFO : line_plane_icept() returns %i\n", lp_status);
+
+    printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                 lp_intercept_point.x.r,
+                                 lp_intercept_point.y.r,
+                                 lp_intercept_point.z.r);
+
+    printf("\n\n--------------------------------------------------\n");
 
 
     /* analytic test data for the line plane intercept

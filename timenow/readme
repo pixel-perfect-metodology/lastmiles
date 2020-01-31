@@ -19,6 +19,28 @@ beta$ /opt/developerstudio12.6/bin/c99 -Xc \
 beta$ 
 
 
+Trivial compile on FreeBSD 12.1 amd64 with LLVM/Clang : 
+
+vesta$ CC=/usr/bin/cc
+vesta$ export CC
+vesta$ CFLAGS='-std=iso9899:1999 -m64 -g -O0 -fno-fast-math -fno-builtin'
+vesta$ export CFLAGS
+vesta$ CPPFLAGS='-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE -D_X_OPEN_SOURCE=600'
+vesta$ export CPPFLAGS
+vesta$ 
+vesta$ 
+vesta$ ls 
+Makefile.rhel_6_x86_64  readme                  test.sh                 tn.c
+vesta$ 
+vesta$ $CC $CFLAGS $CPPFLAGS -o tn tn.c -lrt 
+vesta$ 
+vesta$ ./tn 
+1580428225
+vesta$ ./tn -f 
+1580428227.986511824
+vesta$ 
+
+
 
 The code may be compiled for a baseline amd opteron k8 with every processor option disabled thus : 
 
