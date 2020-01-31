@@ -56,9 +56,10 @@ int line_plane_icept( vec_type *icept_pt,
                       vec_type *pl0, vec_type *pn,
                       vec_type *plu, vec_type *plv) 
 {
-    int status, line_in_plane, lp_touch, return_value = 0;
+    int status, line_in_plane, return_value = 0;
     cplex_type ctmp[12];
-    vec_type i_hat, j_hat, lpr_norm, pn_norm, tmp[12];
+    vec_type i_hat, j_hat, lpr_norm, pn_norm,
+             pl0_lp0_dir, pl0_lp0_dirn, tmp[12];
     double lpr_pn_theta, u_mag, v_mag;
 
     /* rh_col is right hand column for Cramer call with
@@ -87,68 +88,81 @@ int line_plane_icept( vec_type *icept_pt,
      * such a situation there are an infinite number of intercepts
      * however the obvious solution is simply the line point lp0
      * and then we only need to know the vectors u and v again as
-     * well as the coordinates s and t within the plane. */ 
+     * well as the coordinates s and t within the plane.
+     *
+     * To be more clear we could argue that a line in a plane has
+     * an infinite number of intercept solutions and that if one
+     * were to select a single intercept point then it should be
+     * the point on the line which is nearest to the provided
+     * plane point pl0. While that may make sense from a geometric
+     * perspective it does not help with ray tracing. We therefore
+     * merely accept that the line parameter k is zero and thus the
+     * intercept is the point lp0 provided for the line. */ 
 
     /* we will need a direction vector from the plane point pl0 to the
-     * line point lp0 below. We create this vector in tmp[0]. */
-    tmp[0].x.r = lp0->x.r - pl0->x.r; tmp[0].x.i = lp0->x.i - pl0->x.i;
-    tmp[0].y.r = lp0->y.r - pl0->y.r; tmp[0].y.i = lp0->y.i - pl0->y.i;
-    tmp[0].z.r = lp0->z.r - pl0->z.r; tmp[0].z.i = lp0->z.i - pl0->z.i;
+     * line point lp0 below. We create this vector in pl0_lp0_dir. */
+    pl0_lp0_dir.x.r = lp0->x.r - pl0->x.r;
+    pl0_lp0_dir.x.i = lp0->x.i - pl0->x.i;
+    pl0_lp0_dir.y.r = lp0->y.r - pl0->y.r;
+    pl0_lp0_dir.y.i = lp0->y.i - pl0->y.i;
+    pl0_lp0_dir.z.r = lp0->z.r - pl0->z.r;
+    pl0_lp0_dir.z.i = lp0->z.i - pl0->z.i;
+    /* normalize that into pl0_lp0_dirn */
+    cplex_vec_normalize( &pl0_lp0_dirn, &pl0_lp0_dir );
 
-    /* we will need the i and j basis vectors in various places */
+    /* we will also need the i and j basis vectors */
     cplex_vec_set ( &i_hat, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     cplex_vec_set ( &j_hat, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
     /* check if the line and the plane normal are orthogonal */
-    if ( cplex_vec_normalize( &lpr_norm, lpr ) == EXIT_FAILURE ) return ( return_value );
-    if ( cplex_vec_normalize( &pn_norm, pn ) == EXIT_FAILURE ) return ( return_value );
-    cplex_vec_dot( ctmp, &lpr_norm, &pn_norm);
-    if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
+    cplex_vec_normalize( &lpr_norm, lpr );
 
-    /* since the dot product of two normalized vectors results in the
+    cplex_vec_normalize( &pn_norm, pn );
+
+    cplex_vec_dot( ctmp, &lpr_norm, &pn_norm);
+
+    if ( check_dot( ctmp ) == EXIT_FAILURE )
+        return ( return_value );
+
+    /* Since the dot product of two normalized vectors results in the
      * cosine of the angle between them we can just check for a zero
-     * result. */
+     * result.  We know that any angle theta = pi/2 + 2 * n * pi will
+     * be orthogonal for all integer n and cosine(theta) is zero in
+     * such cases. */
 
     line_in_plane = 0;
     if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
         fprintf(stderr,"WARN : lpr and pn are orthogonal.\n");
         /* Since the line is perfectly orthogonal to the plane normal
-         * we need to check if the line is actually in the plane. We
-         * may create a temporary vector from the plane point pl0 to
-         * the line point lp0 and then check if it is also perfectly
-         * orthogonal to the plane normal. See tmp vector above.
+         * we need to check if the line is actually in the plane. Here
+         * we check if the direction vector from the plane point pl0 to
+         * the line point lp0 is also orthogonal to the plane normal.
          *
-         * If so then the point lp0 is in the plane. */
-        if ( cplex_vec_normalize( tmp+1, tmp ) == EXIT_FAILURE ) return ( return_value );
-        cplex_vec_dot( ctmp, &pn_norm, tmp+1 );
+         * If so then the point lp0 is in the plane and that clearly
+         * means that the entire line is in the plane. */
+
+        /* dot product of pl0_lp0_dirn and the plane normal */
+        cplex_vec_dot( ctmp, &pn_norm, &pl0_lp0_dirn );
+
         if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
+
             fprintf(stderr,"WARN : line is in the plane\n");
-            /* TODO think about this mess as we have to deal with
-             * the u and v vectors regardless and we only care if
-             * the line is in the plane when it comes to Cramers
-             * method later */
+            /* This really is a non-issue. We have an infinite number
+             * of intercept points to choose from and we shall deal
+             * with this below. */
 
             line_in_plane = 1;
 
         } else {
+            /* This really is an impossible situation. The line is
+             * perfectly orthogonal to the plane normal with no
+             * possible intercepts. */
             fprintf(stderr,"FAIL : no possible lp intercept\n");
             return ( return_value );
         }
     }
 
-    /* the other degenerate situation is that the line point lp0 is
-     * the same as the plane point pl0 */
-    lp_touch = 0;
-    if ( cplex_vec_mag( tmp ) < RT_EPSILON ) {
-        fprintf(stderr,"WARN : line point is same as plane point\n");
-        /* TODO this flag serves no purpose really */
-        lp_touch = 1;
-    }
-
-    /* Common sense checks are done and we can proceed with 
-     * handling plu and plv which may not even exist.
-     *
-     * If plu and plv both exist then we need to check that
+    /* If plu and plv both exist then we need to check that
      * they are linearly independant and then create the 
      * normalized versions of them. If they do not exist then
      * we have the task of creation based on the existing basis
@@ -162,42 +176,81 @@ int line_plane_icept( vec_type *icept_pt,
          * i_hat or j_hat basis vectors are used. */
 
 uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
+
         if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
             return ( return_value );
 
+        /* if cosine(theta) is equal to either positive one or
+         * negative one then we have perfect linear alignment
+         * between the plane normal and i_hat. Thus we move on
+         * and test with j_hat basis vector. */
         if ( fabs(fabs(ctmp[1].r) - 1.0) < RT_EPSILON ) {
-            /* we need to use j_hat because norm[pn] is
-             * most likely near perfect parallel to i_hat */
+            /* we need to use j_hat instead */
             cplex_vec_dot( ctmp+1, &pn_norm, &j_hat);
             if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
                 return ( return_value );
 
             cplex_vec_copy( tmp+2, &j_hat);
+
         } else {
-            /* we may continue with i_hat as the reference
-             * basis vector */
+
+            /* use i_hat as the reference basis vector */
             cplex_vec_copy( tmp+2, &i_hat);
         }
 
         /* create an orthogonal vector plu in tmp+3 */
         cplex_vec_cross( tmp+3, &pn_norm, tmp+2 );
 
-        /* now we create the useful plun */
-        if ( cplex_vec_normalize( plun, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
+        /* normalize that into plun */
+        cplex_vec_normalize( plun, tmp+3 );
 
-        /* create an orthogonal vector plv in tmp+4 */
+        /* We have plun and may now proceed to create an orthogonal
+         * vector plv in tmp+4 */
         cplex_vec_cross( tmp+4, &pn_norm, plun );
-        if ( cplex_vec_normalize( plvn, tmp+4 ) == EXIT_FAILURE ) return ( return_value );
+        cplex_vec_normalize( plvn, tmp+4 );
 
     } else {
-
         /* We know that we have at least plu or plv now */
         if ( ( plu == NULL ) || ( plv == NULL ) ) {
-            /* lovely, we only have one of them */
+            /* we only have one of them */
             if ( plu == NULL ) {
-                /* compute plu with the existing plv */
+                /* check if plv is actually in the plane */
+                if ( cplex_vec_mag( plv ) < RT_EPSILON )
+                    return ( return_value );
+
+                cplex_vec_normalize( plvn, plv );
+                cplex_vec_dot( ctmp, &pn_norm, plvn );
+
+                if ( check_dot( ctmp ) == EXIT_FAILURE )
+                    return ( return_value );
+
+                /* If plv is orthogonal to the plane normal then the
+                 * cosine of the angle will be zero. */
+                if ( fabs(ctmp->r) > RT_EPSILON )
+                    return ( return_value );
+
+                /* compute plu */
+                cplex_vec_cross( tmp, &pn_norm, plvn );
+                cplex_vec_normalize( plun, tmp );
             } else {
-                /* compute plv with the existing plu */
+                /* check if plu is actually in the plane */
+                if ( cplex_vec_mag( plu ) < RT_EPSILON )
+                    return ( return_value );
+
+                cplex_vec_normalize( plun, plu );
+                cplex_vec_dot( ctmp, &pn_norm, plun );
+
+                if ( check_dot( ctmp ) == EXIT_FAILURE )
+                    return ( return_value );
+
+                /* If plu is orthogonal to the plane normal then 
+                 * the cosine of the angle will be zero. */
+                if ( fabs(ctmp->r) > RT_EPSILON )
+                    return ( return_value );
+
+                /* compute plv */
+                cplex_vec_cross( tmp, &pn_norm, plun );
+                cplex_vec_normalize( plvn, tmp );
             }
         } else {
             /* Both are non-null pointers.
@@ -224,10 +277,11 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                         /* u vector is zero so lets ask about v and
                          * see if it is reasonable. Otherwise just
                          * compute them both as above. */
-                        if ( ( v_mag == 0.0 ) || ( v_mag < RT_EPSILON ) ) goto uv;
+                        if (( v_mag == 0.0 ) || ( v_mag < RT_EPSILON ))
+                            goto uv;
 
                         /* normalize plv */
-                        if ( cplex_vec_normalize( plvn, plv ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_normalize( plvn, plv );
 
                         /* check if plvn is orthogonal to pn and
                          * if not then start over. Bear in mind that
@@ -245,7 +299,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                          * a cross product of pn and plvn */
                         cplex_vec_cross( tmp+3, pn, plvn );
                         /* normalize that into plun */
-                        if ( cplex_vec_normalize( plun, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_normalize( plun, tmp+3 );
 
                     } else if ( v_mag == 0.0 ) {
 
@@ -253,10 +307,11 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                          * we need to check u vector and then decide
                          * if we need to abandon the compute here and
                          * merely re-compute both u and v vectors. */
-                        if ( ( u_mag == 0.0 ) || ( u_mag < RT_EPSILON ) ) goto uv;
+                        if (( u_mag == 0.0 ) || ( u_mag < RT_EPSILON ))
+                            goto uv;
 
                         /* normalize plu  */
-                        if ( cplex_vec_normalize( plun, plu ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_normalize( plun, plu );
 
                         /* check if plun is orthogonal to pn. */
                         cplex_vec_dot( ctmp, &pn_norm, plun );
@@ -269,7 +324,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                          * with a cross product of pn and plun */
                         cplex_vec_cross( tmp+3, pn, plun );
                         /* normalize that into plvn */
-                        if ( cplex_vec_normalize( plvn, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_normalize( plvn, tmp+3 );
 
                     } else {
 
@@ -282,24 +337,35 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                     /* Neither u nor v is zero in size but at least
                      * one of them is smaller than RT_EPSILON. */
                     if ( u_mag < RT_EPSILON ) {
-                        /* check plv and the first step is to normalize it */
-                        if ( cplex_vec_normalize( plvn, plv ) == EXIT_FAILURE ) return ( return_value );
+                        /* check plv and the first step is
+                         * to normalize it */
+                        cplex_vec_normalize( plvn, plv );
+
                         /* check if plvn is orthogonal to pn. */
                         cplex_vec_dot( ctmp, &pn_norm, plvn );
-                        if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
-                        if ( ctmp->r != 0.0 ) goto uv;
+                        if ( check_dot( ctmp ) == EXIT_FAILURE )
+                            return ( return_value );
+
+                        if ( fabs(ctmp->r) > RT_EPSILON )
+                            goto uv;
+
                         /* compute plu with a cross product of pn and plvn */
                         cplex_vec_cross( tmp+3, pn, plvn );
                         /* normalize that into plun */
-                        if ( cplex_vec_normalize( plun, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_normalize( plun, tmp+3 );
+
                     } else {
                         /* here we know that v_mag < RT_EPSILON */
-                        if ( cplex_vec_normalize( plun, plu ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_normalize( plun, plu );
                         cplex_vec_dot( ctmp, &pn_norm, plun );
-                        if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
-                        if ( ctmp->r != 0.0 ) goto uv;
+                        if ( check_dot( ctmp ) == EXIT_FAILURE )
+                            return ( return_value );
+
+                        if ( fabs(ctmp->r) > RT_EPSILON )
+                            goto uv;
+
                         cplex_vec_cross( tmp+3, pn, plun );
-                        if ( cplex_vec_normalize( plvn, tmp+3 ) == EXIT_FAILURE ) return ( return_value );
+                        cplex_vec_normalize( plvn, tmp+3 );
                     }
                 }
             } else {
@@ -312,15 +378,13 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                  * are linearly independant and thus the dot product
                  * of u and v will NOT be 1 or -1. */
                 cplex_vec_dot( ctmp, plv, plu );
-                if ( check_dot( ctmp ) == EXIT_FAILURE ) return ( return_value );
-                if ( ( fabs( ctmp->r ) - 1.0 ) < RT_EPSILON ) {
+                if ( check_dot( ctmp ) == EXIT_FAILURE )
+                    return ( return_value );
+
+                if ( fabs(fabs( ctmp->r ) - 1.0) < RT_EPSILON ) {
                     /* the u and v vectors are so close to linear that
                      * we shall call them useless */
-                    if ( ( fabs( ctmp->r ) - 1.0 ) == 0.0 ) {
-                        fprintf(stderr,"WARN : u and v vectors nearly linear.\n");
-                    } else {
-                        fprintf(stderr,"WARN : u and v vectors are linear.\n");
-                    }
+                    fprintf(stderr,"WARN : u and v are linear.\n");
                     goto uv;
                 }
             }
@@ -338,11 +402,15 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         /* we have the line in the plane and thus the parameter
          * k for the line equation is zero. We are left to determine
          * the scalar parameters for s and t with respect to the
-         * plane basis vectors plu and plv. */
+         * plane basis vectors plun and plvn. */
         printf("INFO : the line is in the plane. k is zero.\n");
+        /* this would set the kst vector component for k to zero
+         *
+         *     kst->x.r = 0.0;
+         *     kst->x.i = 0.0;
+         */
 
-        /* TODO do not call Cramer here and merely solve for 
-         * s and t using another method */
+        /* For now lets just bail out */
         return ( return_value );
 
     }
