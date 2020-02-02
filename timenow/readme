@@ -41,6 +41,11 @@ vesta$ ./tn -f
 vesta$ 
 
 
+Ordinary k8 opteron target :
+
+lenovo# /usr/bin/gcc-9 -v -std=iso9899:1999 -m64 -O0 -g -fno-fast-math -fno-builtin -march=k8 -mtune=k8 -Wall -pedantic -Wextra -pedantic-errors -malign-double -mpc80 -D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE -D_X_OPEN_SOURCE=600 -o /opt/schily/bin/tn tn.c -lrt 
+
+
 
 The code may be compiled for a baseline amd opteron k8 with every processor option disabled thus : 
 
