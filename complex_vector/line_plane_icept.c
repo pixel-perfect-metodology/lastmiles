@@ -132,7 +132,11 @@ int line_plane_icept( vec_type *icept_pt,
 
     line_in_plane = 0;
     if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
+
+        /*
         fprintf(stderr,"WARN : lpr and pn are orthogonal.\n");
+        */
+
         /* Since the line is perfectly orthogonal to the plane normal
          * we need to check if the line is actually in the plane. Here
          * we check if the direction vector from the plane point pl0 to
@@ -146,7 +150,10 @@ int line_plane_icept( vec_type *icept_pt,
 
         if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
 
+            /*
             fprintf(stderr,"WARN : line is in the plane\n");
+            */
+
             /* This really is a non-issue. We have an infinite number
              * of intercept points to choose from and we shall deal
              * with this below. */
@@ -391,12 +398,14 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         }
     }
 
+    /*
     printf("dbug : u_hat = %+-16.9e", plun->x.r);
     printf("    %+-16.9e", plun->y.r);
     printf("    %+-16.9e\n", plun->z.r );
     printf("dbug : v_hat = %+-16.9e", plvn->x.r);
     printf("    %+-16.9e", plvn->y.r);
     printf("    %+-16.9e\n", plvn->z.r );
+    */
 
     if ( line_in_plane ) {
         /* we have the line in the plane and thus the parameter
@@ -424,10 +433,6 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                              pl0->z.r - lp0->z.r,
                              pl0->z.i - lp0->z.i );
 
-    printf("dbug : rh_col= ");
-    printf("%+-16.9e    %+-16.9e    %+-16.9e\n\n",
-                 rh_col.x.r, rh_col.y.r, rh_col.z.r);
-
     v[0].x.r = lpr_norm.x.r;      v[0].x.i = lpr_norm.x.i;
     v[0].y.r = plun->x.r;         v[0].y.i = plun->x.i;
     v[0].z.r = plvn->x.r;         v[0].z.i = plvn->x.i;
@@ -440,6 +445,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     v[2].y.r = plun->z.r;         v[2].y.i = plun->z.i;
     v[2].z.r = plvn->z.r;         v[2].z.i = plvn->z.i;
 
+    /*
     printf("Matrix with line plane intercept data.\n");
     printf("dbug : row 1 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
             v[0].x.r, v[0].y.r, v[0].z.r );
@@ -450,10 +456,16 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     printf("     : row 3 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
             v[2].x.r, v[2].y.r, v[2].z.r );
 
-    cplex_det( ctmp+2, &v[0], &v[1], &v[2] ); 
+    printf("dbug : rh_col= ");
+    printf("%+-16.9e    %+-16.9e    %+-16.9e\n\n",
+                 rh_col.x.r, rh_col.y.r, rh_col.z.r);
+
     printf("     :   det =    %+-16.9e\n", ctmp[2].r);
 
     printf("\nSolve for line plane intercept with Cramers rule.\n\n");
+    */
+
+    cplex_det( ctmp+2, &v[0], &v[1], &v[2] ); 
     if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) != 0 ) {
         printf("dbug : There is no valid solution.\n");
     } else {
@@ -517,8 +529,6 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     }
 
     cplex_vec_copy( icept_pt, tmp+6);
-
-    printf("\n--------------------------------------------\n");
 
     return ( return_value );
 

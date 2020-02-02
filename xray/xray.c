@@ -92,10 +92,8 @@ int main(int argc, char*argv[])
     int eff_width, eff_height, vbox_w, vbox_h;
     double obs_x_width, obs_y_height;
 
-    /* TODO : some hack test stuff
-     * double pi2, some_angle, some_radius, some_x, some_y;
-     * pi2 = 2.0 * M_PI;
-     */
+    /* a visual box region of pixel data for screen render */
+    pixel_type vb[64][64];
 
     setlocale( LC_ALL, "C" );
 

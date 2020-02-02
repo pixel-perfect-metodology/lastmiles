@@ -452,7 +452,6 @@ int main ( int argc, char **argv)
     printf("INFO : test the line point and plane point are same\n");
 
     cplex_vec_set( &line_point, 0.0, 0.0, 6.0, 0.0, 3.0, 0.0);
-
     cplex_vec_set( &line_direction, -1.0, 0.0, 2.0, 0.0, 1.0, 0.0);
     cplex_vec_set( &plane_point, 0.0, 0.0, 6.0, 0.0, 3.0, 0.0);
     cplex_vec_set( &plane_normal, 1.0, 0.0, -3.0, 0.0, -2.0, 0.0);
@@ -478,7 +477,6 @@ int main ( int argc, char **argv)
 
     printf("\n\n--------------------------------------------------\n");
 
-
     /* analytic test data for the line plane intercept
      * compliments of halirutan on twitch 
      *
@@ -494,8 +492,9 @@ int main ( int argc, char **argv)
      *    v[2].y.r =  3.0 / sqrt(13.0);       v[2].y.i = 0.0;
      *    v[2].z.r = -1.0 * sqrt(2.0/91.0);   v[2].z.i = 0.0;
      */
+
     printf("\n\n--------------------------------------------------\n");
-    /* we need to create a bucket of data elements for a call to the
+    /* create a bucket of data elements for a call to the
      * line_plane_icept() */
     cplex_vec_set( &line_point, 2.0, 0.0, 3.0, 0.0, -2.0, 0.0);
     cplex_vec_set( &line_direction, -1.0, 0.0, 2.0, 0.0, 1.0, 0.0);
@@ -963,6 +962,92 @@ int main ( int argc, char **argv)
         printf("\nWARN : no valid solution found.\n");\
     }
 
+    printf("\n\n--------------------------------------------------\n");
+    /* now a completely trivial situation */
+
+    cplex_vec_set( &line_point, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &line_direction, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &plane_point, 0.0, 0.0, 8.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &plane_normal, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &plane_u, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+    cplex_vec_set( &plane_v, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+
+    printf("\n\nINFO : line_plane_icept()\n");
+    printf("     : with plane at ( 0, 8, 0)\n");
+    printf("     : plane normal < 0, -1, 0>\n\n");
+    printf("     : line point ( 0, 0, 0)\n");
+    printf("     : line dir < 0, 1, 0>\n\n");
+
+    printf("     : u = %+-16.9e", plane_u.x.r);
+    printf("    %+-16.9e", plane_u.y.r);
+    printf("    %+-16.9e\n", plane_u.z.r );
+
+    printf("     : v = %+-16.9e", plane_v.x.r);
+    printf("    %+-16.9e", plane_v.y.r);
+    printf("    %+-16.9e\n", plane_v.z.r );
+
+    lp_status = line_plane_icept( &lp_intercept_point,
+                                  &plane_u_norm, &plane_v_norm,
+                                  &lp_intercept_param,
+                                  &line_point, &line_direction,
+                                  &plane_point, &plane_normal,
+                                  (vec_type*)(NULL), &plane_v);
+
+    printf("     : line_plane_icept() returns %i\n\n", lp_status);
+
+    if ( lp_status != 0 ) {
+        printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                 lp_intercept_point.x.r,
+                                 lp_intercept_point.y.r,
+                                 lp_intercept_point.z.r);
+    } else {
+        printf("\nWARN : no valid solution found.\n");\
+    }
+
+
+    printf("\n\n--------------------------------------------------\n");
+    /* also trivial situation */
+
+    cplex_vec_set( &line_point, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    cplex_vec_set( &line_direction, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &plane_point, 0.0, 0.0, 8.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &plane_normal, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &plane_u, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+    cplex_vec_set( &plane_v, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+
+    printf("\n\nINFO : line_plane_icept()\n");
+    printf("     : with plane at ( 0, 8, 0)\n");
+    printf("     : plane normal < 0, -1, 0>\n\n");
+    printf("     : line point ( 0, 0, 0)\n");
+    printf("     : line dir < 0, 1, 0>\n\n");
+
+    printf("     : u = %+-16.9e", plane_u.x.r);
+    printf("    %+-16.9e", plane_u.y.r);
+    printf("    %+-16.9e\n", plane_u.z.r );
+
+    printf("     : v = %+-16.9e", plane_v.x.r);
+    printf("    %+-16.9e", plane_v.y.r);
+    printf("    %+-16.9e\n", plane_v.z.r );
+
+    lp_status = line_plane_icept( &lp_intercept_point,
+                                  &plane_u_norm, &plane_v_norm,
+                                  &lp_intercept_param,
+                                  &line_point, &line_direction,
+                                  &plane_point, &plane_normal,
+                                  (vec_type*)(NULL), &plane_v);
+
+    printf("     : line_plane_icept() returns %i\n\n", lp_status);
+
+    if ( lp_status != 0 ) {
+        printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                 lp_intercept_point.x.r,
+                                 lp_intercept_point.y.r,
+                                 lp_intercept_point.z.r);
+    } else {
+        printf("\nWARN : no valid solution found.\n");\
+    }
+
+    printf("\n\n--------------------------------------------------\n");
 
     return ( EXIT_SUCCESS );
 

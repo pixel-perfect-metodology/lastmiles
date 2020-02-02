@@ -14,6 +14,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #define PI_L  3.141592653589793238462643383279502884L
 
@@ -42,6 +43,18 @@ typedef struct cplex {
 typedef struct vec {
     struct cplex x, y, z;
 } vec_type;
+
+/* The lowest level data inside a pixel will have red, green, blue
+ * and alpha data as well as luminosity. For now we will just go
+ * with a luminosity between zero and one packed into a 32-bit int */
+typedef struct pix_e {
+    uint32_t lum;    /* 32bit luminosity */
+} pix_e_type;
+
+/* a pixel is actually a set of samples in a 3x3 grid */
+typedef struct pixel {
+    pix_e_type p[3][3];
+} pixel_type;
 
 int cplex_add( cplex_type *res, cplex_type *op1, cplex_type *op2 );
 int cplex_sub( cplex_type *res, cplex_type *op1, cplex_type *op2 );
