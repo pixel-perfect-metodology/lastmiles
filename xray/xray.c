@@ -81,6 +81,7 @@ int main(int argc, char*argv[])
 
     uint64_t t_delta, t_ray_total = 0;
     uint64_t t_sample_count = 0;
+    double vec_T_mag;
 
     struct timespec t0, t1, now_time;
     struct timespec soln_t0, soln_t1;
@@ -91,6 +92,21 @@ int main(int argc, char*argv[])
     int j, k, p, q, offset_x, offset_y, lx, ly, ux, uy, px, py;
     int eff_width, eff_height, vbox_w, vbox_h;
     double obs_x_width, obs_y_height;
+    double x_prime, y_prime;
+    double theta_i;
+
+    /* These are the initial and normalized mouse fp64 values
+     * from within the observation viewport. */
+    double win_x, win_y;
+
+    /* Also we finally have use for the little box grid that we
+     * lay out and thus we will need the box coordinates */
+    int box_x, box_y;
+
+    /* small general purpose char buffer */
+    char *buf = calloc((size_t)128,sizeof(unsigned char));
+
+    char *disp_name = NULL;
 
     /* a visual box region of pixel data for screen render */
     pixel_type vb[64][64];
@@ -120,12 +136,9 @@ int main(int argc, char*argv[])
      * need to take advantage of parallel processing in some
      * manner. My preference is to look at NVidia CUDA style
      * workers. Eventually.
-     */
-
-    /* small general purpose char buffer */
-    char *buf = calloc((size_t)128,sizeof(unsigned char));
-
-    /* The whole objective here is to map a point on the display
+     *
+     *
+     * The whole objective here is to map a point on the display
      * to the observation plane for ray tracing.
      *
      * Therefore we need some very basic data about the actual
@@ -149,7 +162,6 @@ int main(int argc, char*argv[])
     cplex_type k_val[2];
 
     /* be able to compute the dot product of -Ri and N */
-    double theta_i;
     cplex_type dot_negRi_N;
 
     /* for the sake of looking at the Cramer denominator det */
@@ -178,8 +190,7 @@ int main(int argc, char*argv[])
      *
      *    cplex_vec_set( &obs_normal_dir, -1.0, 0.0, -1.0, 0.0, 0.0, 0.0 );
      */
-    status = cplex_vec_normalize( &obs_normal, &obs_normal_dir );
-    if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
+    cplex_vec_normalize( &obs_normal, &obs_normal_dir );
 
     /* 8x8 viewport */
     obs_x_width = 8.0;
@@ -188,8 +199,6 @@ int main(int argc, char*argv[])
     /* TODO compute the reasonable plank constant of this
      * observation viewport. Strictly a lowest level epsilon
      * to be used for resolution. */
-
-    double x_prime, y_prime;
 
     /*
      * We will also require the coordinate basis vectors within
@@ -210,8 +219,7 @@ int main(int argc, char*argv[])
 
     /* x_prime_vec is < 0, 1, 0 > */
     cplex_vec_set( &x_prime_vec_dir, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-    status = cplex_vec_normalize( &x_prime_vec, &x_prime_vec_dir );
-    if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
+    cplex_vec_normalize( &x_prime_vec, &x_prime_vec_dir );
 
     /* y_prime_vec is < 0, 0, 1 > */
     cplex_vec_set( &y_prime_vec, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
@@ -229,7 +237,6 @@ int main(int argc, char*argv[])
      */
     vec_type sign_data, object_location, semi_major_axi, ray_direct;
     vec_type reflect;
-    double vec_T_mag;
 
     /* Within the set of signs Sx, Sy, and Sz we do not care about
      * the complex component and merely want the real. The same
@@ -248,20 +255,11 @@ int main(int argc, char*argv[])
      * thus we will make a copy of the viewport plane normal vector */
     cplex_vec_copy( &ray_direct, &obs_normal );
 
-    /* These are the initial and normalized mouse fp64 values
-     * from within the observation viewport. */
-    double win_x, win_y;
-
-    /* Also we finally have use for the little box grid that we
-     * lay out and thus we will need the box coordinates */
-    int box_x, box_y;
-
     width = WIN_WIDTH;
     height = WIN_HEIGHT;
     fprintf(stdout,"INFO : ");
     fprintf(stdout,"default width=%4i height=%4i\n", width, height);
 
-    char *disp_name = NULL;
     XSetErrorHandler(X_error_handler);
 
     /* should work with a null display name */
@@ -420,8 +418,11 @@ int main(int argc, char*argv[])
 
     /* draw a blue box inside the second window */
     XSetForeground(dsp, gc2, blue.pixel);
-    retcode1 = XSetLineAttributes(dsp, gc2, 1, LineSolid, CapButt, JoinMiter);
-    /* fprintf(stdout,"gc2 XSetLineAttributes returns %i\n", retcode1 ); */
+
+    XSetLineAttributes(dsp, gc2, 1, LineSolid,
+                                    CapButt,
+                                    JoinMiter);
+
     XDrawRectangle(dsp, win2, gc2, 5, 5, 390, 320);
     XSetForeground(dsp, gc2, cyan.pixel);
 
@@ -435,14 +436,17 @@ int main(int argc, char*argv[])
 
     /* draw a blue box inside the third window */
     XSetForeground(dsp, gc3, blue.pixel);
-    retcode1 = XSetLineAttributes(dsp, gc3, 1, LineSolid, CapButt, JoinMiter);
-    /* fprintf(stdout,"gc3 XSetLineAttributes returns %i\n", retcode1 ); */
+    XSetLineAttributes(dsp, gc3, 1, LineSolid,
+                                    CapButt,
+                                    JoinMiter);
+
     XDrawRectangle(dsp, win3, gc3, 5, 5, 430, 320);
 
     /* initial line characteristics on the gc are set in the XCreateGC
      * calls that we do.
      *
-     * https://www.x.org/archive/X11R7.7/doc/man/man3/XSetLineAttributes.3.xhtml
+     * https://www.x.org/archive/X11R7.7/doc/
+     *              man/man3/XSetLineAttributes.3.xhtml
      */
 
     /* set our graph box inside by OFFSET pixels
@@ -461,24 +465,27 @@ int main(int argc, char*argv[])
     /* lower right point */
     lx = width - offset_x;
     ly = height - offset_y;
-    fprintf(stdout,"     : ( %5i , %5i ) to ( %5i , %5i )\n", ux, uy, lx, ly);
+    fprintf(stdout,"     : ( %5i , %5i ) to ( %5i , %5i )\n",
+                                                       ux, uy, lx, ly);
+
 
     /* therefore we have effective box width and height */
     eff_width = lx - ux;
     eff_height = ly - uy;
 
+
     fprintf(stdout,"     : eff_width = %5i    eff_height = %5i\n",
                            eff_width, eff_height);
 
-    retcode1 = XSetLineAttributes(dsp, gc, 1,
-                                  LineSolid, CapButt, JoinMiter);
-
-    /* fprintf(stdout,"XSetLineAttributes returns %i\n", retcode1 ); */
+    XSetLineAttributes(dsp, gc, 1, LineSolid,
+                                   CapButt,
+                                   JoinMiter);
 
     XSetForeground(dsp, gc, WhitePixel(dsp, screen_num));
     XSetForeground(dsp, gc2, green.pixel);
     XSetFont(dsp, gc2, type_font);
     XSetFont(dsp, gc3, type_font);
+
 
     /* horizontal minor tic marks at every 16th of the viewport
      * drawing area
@@ -768,13 +775,13 @@ int main(int argc, char*argv[])
                      * if all goes well and we get an intercept point
                      * in R3 space. */
                     intercept_point_flag = -1;
-                    intercept_point_flag = surface_icept_pt( &hit_point,
-                                                             intercept_cnt,
-                                                             &k_val[0],
-                                                             &obs_point,
-                                                             &obs_normal);
 
-                    fprintf(stderr,"\nintercept_point_flag = %i\n", intercept_point_flag );
+                    intercept_point_flag = surface_icept_pt(
+                                  &hit_point, intercept_cnt, &k_val[0],
+                                              &obs_point, &obs_normal);
+
+                    fprintf(stderr,"\nintercept_point_flag = %i\n",
+                                                intercept_point_flag );
 
                     if ( intercept_point_flag == 0 ) {
                         /* we have an intercept point H */
@@ -782,9 +789,10 @@ int main(int argc, char*argv[])
 
                         sprintf(buf,
                                 "i = ( %-+10.6e, %-+10.6e, %-+10.6e )",
-                                       hit_point.x.r,
-                                       hit_point.y.r,
-                                       hit_point.z.r );
+                                                   hit_point.x.r,
+                                                   hit_point.y.r,
+                                                   hit_point.z.r );
+
                         fprintf(stderr,"\n%s\n",buf);
 
                         XSetForeground(dsp, gc3, green.pixel);
@@ -795,18 +803,18 @@ int main(int argc, char*argv[])
                         gradient( &grad, &sign_data, &object_location,
                                          &semi_major_axi, &hit_point );
 
-                        status = cplex_vec_normalize( &grad_norm, &grad );
-                        if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
+                        cplex_vec_normalize( &grad_norm, &grad );
 
                         sprintf(buf,"^"); /* vector hat hack */
                         XSetForeground(dsp, gc3, cyan.pixel);
-                        XDrawImageString( dsp, win3, gc3, 9, 162, buf, (size_t)1);
+                        XDrawImageString( dsp, win3, gc3, 9, 162,
+                                                       buf, (size_t)1);
 
                         sprintf(buf,
                                 "N = < %-+10.6e, %-+10.6e, %-+10.6e )",
-                                       grad_norm.x.r,
-                                       grad_norm.y.r,
-                                       grad_norm.z.r );
+                                                   grad_norm.x.r,
+                                                   grad_norm.y.r,
+                                                   grad_norm.z.r );
 
                         fprintf(stderr,"\n%s\n",buf);
 
@@ -816,7 +824,6 @@ int main(int argc, char*argv[])
                         cplex_vec_scale( &neg_Ri, &ray_direct, -1.0 );
                         cplex_vec_dot( &dot_negRi_N, &neg_Ri, &grad_norm);
 
-                        /* TODO clean up the crap and get it onto gc3 */
                         if ( !(dot_negRi_N.i == 0.0) ) {
                             /* this should never happen */
                             fprintf(stderr,"FAIL : bizarre complex dot product");
@@ -900,8 +907,7 @@ int main(int argc, char*argv[])
                                                              buf, strlen(buf) );
                         } else {
                             /* Cramer's Method possible */
-                            status = cplex_vec_normalize( &T_norm, &T );
-                            if ( status == EXIT_FAILURE ) return ( EXIT_FAILURE );
+                            cplex_vec_normalize( &T_norm, &T );
 
                             sprintf(buf,"^");
                             XDrawImageString( dsp, win3, gc3, 9, 222, buf, (size_t)1);
