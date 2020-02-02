@@ -560,6 +560,7 @@ int main(int argc, char*argv[])
     /* TODO : at the moment the only events we are trapping are
      * the mouse buttons but in the future we will want to redraw
      * and re-expose the window if there other event types */
+
     XGrabPointer(dsp, win, False, ButtonPressMask, GrabModeAsync,
                            GrabModeAsync, None, None, CurrentTime);
 
@@ -569,6 +570,9 @@ int main(int argc, char*argv[])
     clock_gettime( CLOCK_MONOTONIC, &t0 );
     clock_gettime( CLOCK_MONOTONIC, &t1 );
     t_delta = timediff( t0, t1 );
+    /* this t_delta is a baseline offset value wherein we at least
+     * know how long the clock_gettime takes. Mostly. */
+
     sprintf(buf,"[0000] tdelta = %16lld nsec", t_delta);
     XDrawImageString( dsp, win3, gc3, 10, 20, buf, strlen(buf));
 
@@ -684,18 +688,8 @@ int main(int argc, char*argv[])
                 XDrawImageString( dsp, win2, gc2, 10, 270,
                                                       buf, strlen(buf));
 
-
-
-
-
-
                 /* TODO dispatch out a worker thread to process all
                  * pixel data in the vbox[ box_x, box_y ] */
-
-
-
-
-
 
                 /* Offset the floating point values such that the
                  * center point shall be ( 0.0, 0.0 ) */
@@ -709,8 +703,6 @@ int main(int argc, char*argv[])
 
                 XDrawImageString( dsp, win2, gc2, 10, 290,
                                                        buf, strlen(buf));
-
-
 
                 /* At this moment we have normalized values for a
                  * location within the observation viewport. We can
@@ -735,9 +727,10 @@ int main(int argc, char*argv[])
                 y_prime = obs_y_height * win_y / 2.0;
 
                 XSetForeground(dsp, gc3, cyan.pixel);
-                fprintf(stderr,"\n---------------------------------\n");
+
                 sprintf(buf,"x', y' = ( %-10.8e , %-10.8e )  ",
                               x_prime, y_prime );
+
                 fprintf(stderr,"\n%s\n",buf);
 
                 XDrawImageString( dsp, win3, gc3, 10, 70,
@@ -751,12 +744,15 @@ int main(int argc, char*argv[])
                 cplex_vec_copy( &obs_point, tmp );
 
                 XSetForeground(dsp, gc3, cornflowerblue.pixel);
+
                 sprintf(buf,"L = < %-8.6e, %-8.6e, %-8.6e >   ",
                         obs_point.x.r, obs_point.y.r, obs_point.z.r );
+
                 fprintf(stderr,"\n%s\n",buf);
 
                 XDrawImageString( dsp, win3, gc3, 10, 90,
                                   buf, strlen(buf));
+
                 XSetForeground(dsp, gc3, cyan.pixel);
 
                 /* time the computation of the intercepts etc */
@@ -766,6 +762,7 @@ int main(int argc, char*argv[])
                 intercept_cnt = icept ( k_val, &sign_data,
                                 &object_location, &semi_major_axi,
                                 &obs_point, &obs_normal );
+
                 fprintf(stderr,"\nintercept_cnt = %i\n", intercept_cnt );
 
                 /* check that we have a valid intercept */
@@ -824,17 +821,8 @@ int main(int argc, char*argv[])
                         cplex_vec_scale( &neg_Ri, &ray_direct, -1.0 );
                         cplex_vec_dot( &dot_negRi_N, &neg_Ri, &grad_norm);
 
-                        if ( !(dot_negRi_N.i == 0.0) ) {
-                            /* this should never happen */
-                            fprintf(stderr,"FAIL : bizarre complex dot product");
-                            fprintf(stderr," dot( N, -Ri )\n");
-                            fprintf(stderr,"     :  = ( %-20.14e, %-20.14e )\n",
-                                                  dot_negRi_N.r, dot_negRi_N.i );
-                            fprintf(stderr,"BAIL : we are done.\n\n");
-                            return ( EXIT_FAILURE );
-                        }
-          
                         theta_i = acos(dot_negRi_N.r);
+
                         fprintf(stderr,"theta_i = %-+20.14e\n",
                                                              theta_i );
 
@@ -843,19 +831,18 @@ int main(int argc, char*argv[])
           
                         if ( fabs(theta_i) < RT_ANGLE_EPSILON ) {
                             XSetForeground(dsp, gc3, red.pixel);
-                            if ( theta_i == 0.0 ) {
-                                fprintf(stderr,"WARN : theta_i is zero!\n");
-                            } else {
-                                fprintf(stderr,"WARN : theta_i too small.\n");
-                            }
                         } else {
                             XSetForeground(dsp, gc3, magenta.pixel);
                         }
+
                         sprintf(buf,"theta_i = %-+20.14e", theta_i );
+
                         XDrawImageString( dsp, win3, gc3, 10, 190,
                                                    buf, strlen(buf));
+
                         sprintf(buf,"theta_i = %-+20.14e degrees",
                                               theta_i * 180.0/M_PI );
+
                         XDrawImageString( dsp, win3, gc3, 10, 210,
                                                    buf, strlen(buf));
 
@@ -867,7 +854,7 @@ int main(int argc, char*argv[])
                          * null vector results from -Ri X N to throw
                          * the plane of incidence out the window. We
                          * should avoid that.
-                         **/
+                         */
 
                         if ( ( vec_T_mag < RT_EPSILON )
                                 ||
@@ -875,19 +862,24 @@ int main(int argc, char*argv[])
             
                             XSetForeground(dsp, gc3, red.pixel);
                             sprintf(buf," ");
-                            XDrawImageString( dsp, win3, gc3, 9, 222, buf, (size_t)1);
+                            XDrawImageString( dsp, win3, gc3, 9, 222,
+                                                       buf, (size_t)1);
+
                             if ( vec_T_mag == 0.0 ) {
-                                fprintf(stderr,"WARN : null vector result from -Ri x N\n");
-                                sprintf(buf,"T = < 0.0, 0.0, 0.0 > null vector");
-                                strncat(buf,"                  ",(size_t)18);
+                                fprintf(stderr,"WARN : null vector\n");
+                                sprintf(buf,"T = < 0.0, 0.0, 0.0 >");
+                                strncat(buf,"            ",(size_t)18);
                             } else {
                                 fprintf(stderr,"WARN : tiny vector result from -Ri x N\n");
                                 sprintf(buf,"T = < %-+10.6e, %-+10.6e, %-+10.6e >",
                                                                      T.x.r, T.y.r, T.z.r );
                             }
-                            XDrawImageString( dsp, win3, gc3, 10, 230, buf, strlen(buf) );
+
+                            XDrawImageString( dsp, win3, gc3, 10, 230,
+                                                    buf, strlen(buf) );
             
                             sprintf(buf,"det = zero determinant                         ");
+
                             fprintf(stderr,"%s\n",buf);
                             XDrawImageString( dsp, win3, gc3, 10, 250, buf, strlen(buf) );
 
@@ -905,7 +897,9 @@ int main(int argc, char*argv[])
                                        reflect.x.r, reflect.y.r, reflect.z.r );
                             XDrawImageString( dsp, win3, gc3, 10, 270,
                                                              buf, strlen(buf) );
+
                         } else {
+
                             /* Cramer's Method possible */
                             cplex_vec_normalize( &T_norm, &T );
 
@@ -928,18 +922,22 @@ int main(int argc, char*argv[])
 
                             sprintf(buf,"det = ( %-+14.10e, %-+14.10e )",
                                         cramer_denom_det.r, cramer_denom_det.i);
+
                             fprintf(stderr,"%s\n",buf);
+
                             XDrawImageString( dsp, win3, gc3, 10, 250,
                                                              buf, strlen(buf) );
 
                             cplex_vec_set( tmp+6, 0.0, 0.0,
                                            dot_negRi_N.r, 0.0,
-                                           cos(2 * theta_i), 0.0);
+                                           cos(2.0 * theta_i), 0.0);
 
                             status = cplex_cramer( tmp+7, tmp+3, tmp+4, tmp+5, tmp+6 );
 
                             if ( status != 0 ) {
+
                                 fprintf(stderr,"dbug : There is no valid solution.\n");
+
                             } else {
             
                                 sprintf(buf,
@@ -961,7 +959,9 @@ int main(int argc, char*argv[])
                         }
 
                     }
+
                 } else {
+
                     /* we have no intercept and no surface normal
                      * so clear those areas on gc3 */
                     fprintf(stderr,"\n we have no intercept and no surface normal\n");
@@ -981,7 +981,9 @@ int main(int argc, char*argv[])
                     XDrawImageString( dsp, win3, gc3, 10, 250, buf, strlen(buf));
                     sprintf(buf,"Rr = does not exist                                 ");
                     XDrawImageString( dsp, win3, gc3, 10, 270, buf, strlen(buf));
+
                 }
+
                 clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
 
                 t_delta = timediff( soln_t0, soln_t1 );
@@ -992,13 +994,15 @@ int main(int argc, char*argv[])
                                   buf, strlen(buf));
 
                 t_ray_total += t_delta;
+
                 t_sample_count += 1;
+
                 sprintf(buf,"         %16lld avg nsec", t_ray_total/t_sample_count);
                 fprintf(stderr,"%s\n",buf);
+
                 XDrawImageString( dsp, win3, gc3, 10, 310, buf, strlen(buf));
 
                 XSetForeground(dsp, gc3, cyan.pixel);
-
 
                 sprintf(buf,"root 0 = ( %-+10.6e + %-+10.6e i )",
                         k_val[0].r, k_val[0].i );

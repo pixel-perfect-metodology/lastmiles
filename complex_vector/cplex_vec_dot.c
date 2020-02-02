@@ -27,7 +27,10 @@ int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 )
     res->r = tmp[0].r + tmp[1].r + tmp[2].r;
     res->i = tmp[0].i + tmp[1].i + tmp[2].i;
 
-    return ( 0 );
+    /* for most computation we want real results only */
+    if ( res->i == 0.0 ) return ( 0 );
+
+    return ( EXIT_FAILURE );
 
 }
 
