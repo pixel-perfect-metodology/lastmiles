@@ -31,16 +31,17 @@ int main(int argc, char **argv)
      * scale=48
      * a = 77617
      * b = 33096
-     * f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 ) + 5.5 * b^8 + ( a / ( 2 * b ) )
-     * f
-     * -.827396059946821368141165095479816291999033115785
+     * f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *         + 5.5 * b^8 + ( a / ( 2 * b ) )
+     * 
+     * -0.827396059946821368141165095479816291999033115785
      * 
      *  we will most likely see some other result from IEEE-754 2008 
      *  type floating point math. 
      *
      */
 
-    double a, b, f, tmp[12];
+    long double a, b, f, tmp[12];
     int fp_status, fp_round_mode, fpe_raised;
 
 #ifdef FLT_EVAL_METHOD
@@ -79,17 +80,17 @@ int main(int argc, char **argv)
     }
     printf("\n");
 
-    a = 77617.0;
-    b = 33096.0;
+    a = 77617.0L;
+    b = 33096.0L;
 
     /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
      *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
 
-    f= 333.75 * pow(b,6.0)
-        + pow(a,2.0)
-            * ( 11.0 * pow(a,2.0) * pow(b,2.0) 
-                 - pow(b,6.0) - 121.0 * pow(b,4.0) - 2.0 )
-        + 5.5 * pow(b,8.0) + ( a / ( 2.0 * b ) );
+    f= 333.75 * powl(b,6.0)
+        + powl(a,2.0)
+            * ( 11.0 * powl(a,2.0) * powl(b,2.0) 
+                 - powl(b,6.0) - 121.0 * powl(b,4.0) - 2.0 )
+        + 5.5 * powl(b,8.0) + ( a / ( 2.0 * b ) );
 
     fpe_raised = fetestexcept(FE_ALL_EXCEPT);
     if (fpe_raised!=0){
@@ -121,7 +122,7 @@ int main(int argc, char **argv)
     /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
      *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
 
-    tmp[0] = 333.75 * b * b * b * b * b * b;
+    tmp[0] = 333.75L * b * b * b * b * b * b;
     fpe_raised = fetestexcept(FE_ALL_EXCEPT);
     if ( fpe_raised != 0 ) {
         printf("INFO : FP Exception raised is");
@@ -131,10 +132,35 @@ int main(int argc, char **argv)
         if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
         if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
         printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
     }
-    printf("     : done tmp[0] = 333.75 * b * b * b * b * b * b\n");
+    printf("     : done tmp[0] = 333.75L * b * b * b * b * b * b\n");
+    printf("     : tmp[0] = %-+42.36Le\n", tmp[0]);
 
-    tmp[1] = 11 * a * a;
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^..tmp[0]..^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) )
+     *
+     */
+
+    tmp[2] = 11.0L * a * a;
     fpe_raised = fetestexcept(FE_ALL_EXCEPT);
     if ( fpe_raised != 0 ) {
         printf("INFO : FP Exception raised is");
@@ -144,10 +170,33 @@ int main(int argc, char **argv)
         if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
         if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
         printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
     }
-    printf("     : done tmp[1] = 11 * a * a\n");
+    printf("     : done tmp[2] = 11.0 * a * a\n");
+    printf("     : tmp[2] = %-+42.36Le\n", tmp[2]);
 
-    tmp[2] = tmp[1] * b * b;
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^.. tmp[0].^           ^.tmp[2]
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
+
+    tmp[3] = tmp[2] * b * b;
     fpe_raised = fetestexcept(FE_ALL_EXCEPT);
     if ( fpe_raised != 0 ) {
         printf("INFO : FP Exception raised is");
@@ -157,11 +206,352 @@ int main(int argc, char **argv)
         if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
         if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
         printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
     }
-    printf("     : done tmp[2] = tmp[1] * b * b\n");
+    printf("     : done tmp[3] = tmp[2] * b * b\n");
+    printf("     : tmp[3] = %-+42.36Le\n", tmp[3]);
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
 
 
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^             ^.. tmp[3]...^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) )
+     *
+     */
 
+    tmp[4] = b * b * b * b * b * b;
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[4] = b * b * b * b * b * b\n");
+    printf("     : tmp[4] = %-+42.36Le\n", tmp[4]);
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^             ^.. tmp[3] ..^   tmp[4]
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
+
+    tmp[5] = 121.0L * b * b * b * b - 2.0L;
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[5] = 121.0 * b * b * b * b - 2.0\n");
+    printf("     : tmp[5] = %-+42.36Le\n", tmp[5]);
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^             ^.. tmp[3] ..^   tmp[4]  ^.. tmp[5]^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
+
+    tmp[1] = tmp[3] - tmp[4] - tmp[5];
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[1] = tmp[3] - tmp[4] - tmp[5]\n");
+    printf("     : tmp[1] = %-+42.36Le\n", tmp[1]);
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^             ^............. tmp[1] .............^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
+
+    tmp[6] = tmp[1] * a * a;
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[6] = tmp[1] * a * a\n");
+    printf("     : tmp[6] = %-+42.36Le\n", tmp[6]);
+    printf("     : correct= -7917111779274712207494296608131179134\n");
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^     ^............... tmp[6] ...................^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
+
+
+    tmp[7] = 5.5L * b * b * b * b * b * b * b * b;
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[7] = 5.5L * b * b * b * b * b * b * b * b\n");
+    printf("     : tmp[7] = %-+42.36Le\n", tmp[7]);
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^     ^............... tmp[6] ...................^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) )
+     *        ^ tmp[7]^
+     *
+     *
+     */
+
+    /* lets check if powl can do b^8 perfectly *
+    tmp[7] = powl( b, 8.0 );
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[7] = powl( b, 8.0 )\n");
+
+
+    printf("INFO : how borked is powl( b, 8.0 )?\n");
+    printf("     : tmp[6] = %-+42.36Le\n", tmp[6]);
+    printf("     : tmp[7] = %-+42.36Le\n", tmp[7]);
+    if ( ( tmp[6] - tmp[7] ) == 0.0L )
+        printf("DBUG : well gee tmp[6] equals tmp[7]\n");
+    */
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+    tmp[8] = a / ( 2.0L * b );
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[8] = a / ( 2.0L * b )\n");
+    printf("     : tmp[8] = %-+42.36Le\n", tmp[8]);
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^     ^............... tmp[6] ...................^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) )
+     *        ^ tmp[7]^    ^... tmp[8]...^
+     *
+     */
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+    tmp[9] = tmp[7] + tmp[8];
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[9] = tmp[7] + tmp[8]\n");
+    printf("     : tmp[9] = %-+42.36Le\n", tmp[9]);
+
+    /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
+     *    ^ tmp[0] ^     ^............... tmp[6] ...................^
+     *
+     *
+     *      + 5.5 * b^8 + ( a / ( 2 * b ) )
+     *        ^ ....... tmp[9] ..........^
+     *
+     */
+
+
+    if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+        printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+    } else {
+        printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+        return ( EXIT_FAILURE );
+    }
+    printf("\n");
+
+    tmp[10] = tmp[0] + tmp[6] + tmp[9];
+    fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+    if ( fpe_raised != 0 ) {
+        printf("INFO : FP Exception raised is");
+        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+        if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+        if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+        if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+        if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+        printf("\n");
+        if ( feclearexcept(FE_ALL_EXCEPT) == 0 ) {
+            printf("     : feclearexcept(FE_ALL_EXCEPT) done\n");
+        } else {
+            printf("\nFAIL : feclearexcept(FE_ALL_EXCEPT) fails\n");
+            return ( EXIT_FAILURE );
+        }
+    } else {
+        printf("     : precise result\n");
+    }
+    printf("     : done tmp[10] = tmp[0] + tmp[6] + tmp[9]\n");
+    printf("     : tmp[10] = %-+42.36Le\n", tmp[10]);
 
 
     return ( EXIT_SUCCESS );
