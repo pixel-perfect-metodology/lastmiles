@@ -28,47 +28,6 @@ int main(int argc, char *argv[])
 
     printf("pi could be %42.38Le\n", pi);
 
-
-/*
-    long double tenth = 0.1L;
-
-    long double sum = 0.0L;
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum + tenth;
-    printf("sum = %42.38Le\n", sum);
-
-    sum = sum - 1.0L;
-
-    printf("final sum is %42.38Le\n", sum);
-
-*/
     return ( EXIT_SUCCESS );
 
 }
