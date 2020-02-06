@@ -136,11 +136,13 @@ int main(int argc, char*argv[])
     sysinfo();
 
     /* TODO hack at this with 4x4 viewport or whatever scale we want */
-    magnify = 16384.0;
+    magnify = 256.0;
     obs_x_width = 4.0 / magnify;
     obs_y_height = 4.0 / magnify;
-    real_translate = -0.0730285645;
-    imag_translate = -0.9643554690;
+    /*    real_translate = -0.0730285645;
+     *    imag_translate = -0.9643554690; */
+    real_translate = -7.368164062500e-01;
+    imag_translate = -1.818847656250e-01;
 
     width = WIN_WIDTH;
     height = WIN_HEIGHT;
@@ -571,7 +573,8 @@ int main(int argc, char*argv[])
 
                 XSetForeground(dsp, gc3, red.pixel);
                 sprintf(buf,"c = ( %-10.8e , %-10.8e )  ", x_prime, y_prime );
-                fprintf(stderr,"\n%s\n",buf);
+                /* fprintf(stderr,"\n%s\n",buf); */
+                fprintf(stderr,"c = ( %-+18.12e , %-+18.12e )\n", x_prime, y_prime );
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
