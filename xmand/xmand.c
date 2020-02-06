@@ -100,9 +100,9 @@ int main(int argc, char*argv[])
     /* use the vbox lower left coords as reference */
     int vbox_ll_x, vbox_ll_y;
 
-    /* we need to track when a vbox has been computed 
+    /* we need to track when a vbox has been computed
      * as well as displayed via libX11. For now we just
-     * don't want to recompute the same region over and 
+     * don't want to recompute the same region over and
      * over and over. */
     int vbox_flag[16][16];
 
@@ -145,17 +145,22 @@ int main(int argc, char*argv[])
     sysinfo();
 
     /* scale and translate */
-    magnify = 256.0;
+    magnify = pow( 2.0, 16.0);
     obs_x_width = 4.0 / magnify;
     obs_y_height = 4.0 / magnify;
     /*
+     *    test region 1
      *    real_translate = -7.368164062500e-01;
      *    imag_translate = -1.818847656250e-01;
      *
+     *    test region 2
+     *    real_translate = -1.769241333008;
+     *    imag_translate = -5.691528320312e-02;
+     *
      */
 
-    real_translate = -7.368164062500e-01;
-    imag_translate = -1.818847656250e-01;
+    real_translate = -7.622470855713e-01;
+    imag_translate = -8.939456939698e-02;
 
     /* ensure we start with clear flags */
     for ( p=0; p<16; p++ )
@@ -649,12 +654,12 @@ int main(int argc, char*argv[])
                 }
                 /* thanks to mosh this was on the X11 clipboard
                  *
-                 * https://www.beeradvocate.com/beer/profile/813/7451/ 
+                 * https://www.beeradvocate.com/beer/profile/813/7451/
                  *
                  * regardless lets track that we actualyl did display
-                 * this vbox data already. 
+                 * this vbox data already.
                  *
-                 * Also .. what was that tripl kermeliet beer ? 
+                 * Also .. what was that tripl kermeliet beer ?
                  *
                  */
 
@@ -731,24 +736,24 @@ int main(int argc, char*argv[])
                                 vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
                                 for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
                                     vbox_ll_x = vbox_x * vbox_w + mand_x_pix;
-    
+
                                     /* deal with negative zeros */
-                                    win_x = ( ( ( 1.0 * vbox_ll_x ) 
+                                    win_x = ( ( ( 1.0 * vbox_ll_x )
                                                 / eff_width ) * 2.0 - 1.0 ) + 0.0;
-    
-                                    win_y = ( -1.0 * 
-                                              ( ( 
-                                                   ( 1.0 * ( eff_height - vbox_ll_y ) ) / eff_height 
-                                                ) * 2.0 - 1.0 
+
+                                    win_y = ( -1.0 *
+                                              ( (
+                                                   ( 1.0 * ( eff_height - vbox_ll_y ) ) / eff_height
+                                                ) * 2.0 - 1.0
                                               ) ) + 0.0;
-    
+
                                     x_prime = obs_x_width * win_x / 2.0;
                                     y_prime = obs_y_height * win_y / 2.0;
-    
+
                                     /* TODO hack in a translation */
                                     x_prime = x_prime + real_translate;
                                     y_prime = y_prime + imag_translate;
-    
+
                                     /* point c belongs to the Mandelbrot set if and only if
                                      * the magnitude of the f(c) <= 2.0 */
                                     mand_height = 0;
@@ -767,12 +772,13 @@ int main(int argc, char*argv[])
                                     }
                                     mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t) mand_height );
                                     XSetForeground(dsp, gc, mandlebrot.pixel);
-    
+
                                     XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x,
                                                     ( eff_height - vbox_ll_y + offset_y ) );
-    
+
                                 }
                             }
+                            vbox_flag[vbox_x][vbox_y] = 1;
                         }
                     }
                 }
@@ -843,9 +849,9 @@ int main(int argc, char*argv[])
 uint32_t mandle_col ( uint8_t height )
 {
     uint32_t cpixel;
-    /* the idea on the table is to compute a reasonable 
+    /* the idea on the table is to compute a reasonable
      * 32 bit value for RGBA data based on a range of
-     * possible mandlebrot evaluations : 
+     * possible mandlebrot evaluations :
      *
      *  range val
      *   0 - 31  : dark blue     ->  light blue
@@ -889,6 +895,18 @@ uint32_t mandle_col ( uint8_t height )
         cpixel = linear_inter( height, (uint32_t)0xb7307b,
                                        (uint32_t)0xecff3a,
                                        (uint8_t)128, (uint8_t)159);
+    } else if ( ( height > 159 ) && ( height < 192 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0xecff3a,
+                                       (uint32_t)0x721a1a,
+                                       (uint8_t)160, (uint8_t)191);
+    } else if ( ( height > 191 ) && ( height < 224 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0x721a1a,
+                                       (uint32_t)0x00ff00,
+                                       (uint8_t)192, (uint8_t)223);
+    } else if ( ( height > 223 ) && ( height < 240 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0x00ff00,
+                                       (uint32_t)0xff00ff,
+                                       (uint8_t)224, (uint8_t)239);
     } else {
         /* should never happen once this all works */
         cpixel = ( ( (uint32_t)( 255 - height ) ) << 16 )
@@ -906,20 +924,20 @@ uint32_t linear_inter( uint8_t  in_val,
 {
     /* in_val is some number that should fall between
      *        the low_val and upper_val. If not then
-     *        just assume low_val or upper_val as 
+     *        just assume low_val or upper_val as
      *        needed.
      *
      * low_col is the actual RGB value at the low end
      *         of the scale
      *
-     * high_col is the RGB colour at the high end of the 
+     * high_col is the RGB colour at the high end of the
      *           scale
      *
      * low_val and upper_val are the possible range values
      *          for the in_val
      *
      * How to do a linear interpolation between two 32-bit colour
-     * values?  We need a smooth function : 
+     * values?  We need a smooth function :
      *
      *    uint32_t cpixel = ( uint8_t   red_val << 16 )
      *                       + ( uint8_t green_val << 8 )
@@ -932,7 +950,7 @@ uint32_t linear_inter( uint8_t  in_val,
     uint8_t lower_blue, upper_blue;
     uint32_t cpixel;
 
-    if (    ( high_col & (uint32_t)0xff0000 )  
+    if (    ( high_col & (uint32_t)0xff0000 )
          <= (  low_col & (uint32_t)0xff0000 ) ) {
 
         lower_red = (uint8_t)( ( high_col & (uint32_t)0xff0000 ) >> 16 );
@@ -945,7 +963,7 @@ uint32_t linear_inter( uint8_t  in_val,
 
     }
 
-    if (    ( high_col & (uint32_t)0x00ff00 )  
+    if (    ( high_col & (uint32_t)0x00ff00 )
          <= (  low_col & (uint32_t)0x00ff00 ) ) {
 
         lower_green = (uint8_t)( ( high_col & (uint32_t)0x00ff00 ) >> 8 );
@@ -958,7 +976,7 @@ uint32_t linear_inter( uint8_t  in_val,
 
     }
 
-    if (    ( high_col & (uint32_t)0x0000ff )  
+    if (    ( high_col & (uint32_t)0x0000ff )
          <= (  low_col & (uint32_t)0x0000ff ) ) {
 
         lower_blue = (uint8_t)( high_col & (uint32_t)0x0000ff );
