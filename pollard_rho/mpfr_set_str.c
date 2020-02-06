@@ -48,7 +48,7 @@ int main (int argc, char *argv[])
     /* also we may need to copy input argv[1] to a place that can
      * be modified */
     char *input_buf;
-    size_t input_number_length;
+    size_t input_number_len, input_buffer_len;
     int chars_formatted;
     int input_attempt_loop = 0;
 
@@ -108,27 +108,32 @@ int main (int argc, char *argv[])
      * between decimal and binary precision needed. So we may assume
      * that whatever was entered in decimal will need strlen(argv[1])
      * multiplied by 3.32 and we have a guess on bit size needed. */
-    input_number_length = strlen(argv[1]);
-    decimal_to_bit_estimate = (long)floorf(3.32 * input_number_length);
-    if ( (float)bit_prec < ( 3.32 * (float)input_number_length ) ) {
+    input_number_len = strlen(argv[1]);
+    decimal_to_bit_estimate = (long)floorf(3.32 * input_number_len);
+    if ( (float)bit_prec < ( 3.32 * (float)input_number_len ) ) {
         /* at this time we have no idea if argv[1] is a decimal
          * number or some trash input. This is just a guess. */
         bit_prec = decimal_to_bit_estimate;
         printf("INFO : guess 3.3 x %i chars = %li bits needed.\n",
-                input_number_length, bit_prec );
+                input_number_len, bit_prec );
     }
 
-    /* whatever the above bit_prec is we want it to be modulo 32 */
+    /* whatever the above bit_prec is we want it to be on a 32bit
+     * boundary and thus we can just increse as needed. */
     if ( bit_prec%32 != 0 ) {
        printf("INFO : we shall adjust the requested precision to ");
        bit_prec = bit_prec + 32 - bit_prec%32;
        printf("%lu bits\n", bit_prec);
     }
 
+    /* if we need to increase the precision then we may do so in
+     * chunks that are half the current precision */
     delta_bit_prec = (bit_prec / 2);
-    /* check if the delta precision is a multiple of 32 */
+    /* ensure delta precision is a multiple of 32bits also */
     if ( delta_bit_prec%32 != 0 ) {
         delta_bit_prec = delta_bit_prec + 32 - delta_bit_prec%32;
+        printf("     : if we need to increase precision then we");
+        printf(" shall do so in %lu bit increments\n", delta_bit_prec);
     }
 
     /* we want the decimal_to_bit_estimate to always be at least this
@@ -143,23 +148,29 @@ int main (int argc, char *argv[])
 
     /* did we really get the requested precision ? */
     actual_prec=mpfr_get_default_prec();
-    mpfr_printf ("     : starting precision is %Pu bits.\n",
+    mpfr_printf ("     : we have precision at %Pu bits.\n",
                                                           actual_prec);
 
     /* setup an input buffer area for the argv[1] chars */
     /* 8-byte boundary and pad on plenty of extra room */
-    if ( input_number_length%8 != 0 ) {
-        input_number_length = input_number_length
-                                          + 16 - input_number_length%8;
+    if ( input_number_len%8 != 0 ) {
+
+        input_buffer_len = input_number_len + 16
+                                               - input_number_len%8;
+
+        fprintf(stderr,"dbug : input_buffer_len set at %lu\n",
+                                                     input_buffer_len);
+
     } else {
-        input_number_length = input_number_length + 8;
+        /* pad on another 8 bytes regardless */
+        input_buffer_len = input_number_len + 8;
     }
 
     printf("INFO : input number should fit well into %li bytes.\n",
-                                                  input_number_length);
+                                                     input_buffer_len);
 
     errno = 0;
-    input_buf = calloc( input_number_length, sizeof(unsigned char));
+    input_buf = calloc( input_buffer_len, sizeof(unsigned char));
     if ( input_buf == NULL ) {
         /* really? possible ENOMEM? */
         if ( errno == ENOMEM ) {
@@ -181,9 +192,9 @@ int main (int argc, char *argv[])
      * and thus the number of chars to copy is assured to be less
      * than the size of the buffer.
      */
-    input_buf = strncat( input_buf, argv[1], input_number_length);
+    input_buf = strncat( input_buf, argv[1], input_number_len + 1);
 
-    printf("INFO : input_buf = \"%s\"\n", input_buf);
+    printf("INFO : starting input_buf = \"%s\"\n", input_buf);
 
     /* int mpfr_set_str(mpfr_t rop, const char *s,
      *                  int base, mpfr_rnd_t rnd)
@@ -211,6 +222,8 @@ input_try:
     }
     printf("\n");
 
+    fprintf(stderr,"dbug : input_buf = \"%s\"\n", input_buf);
+
     inex = mpfr_set_str(input_m, input_buf, 10, MPFR_RNDN);
 
     if ( inex < 0 ) {
@@ -224,16 +237,17 @@ input_try:
     }
 
     if (mpfr_number_p(input_m)==0) {
-        fprintf(stderr,"FAIL : provide a reasonable decimal number.\n");
+        fprintf(stderr,"FAIL : mpfr_set_str returned not a number.\n");
         return (EXIT_FAILURE);
     }
 
     if ( input_attempt_loop < 1 ) {
-        printf("     : You seem to have entered %s\n", argv[1]);
+        printf("     : argv[1] seen as \"%s\"\n", argv[1]);
     }
-    printf("     : mpfr_set_str() returns  \"");
-    mpfr_printf("%.*RNe", input_number_length, input_m);
-    printf("\"\n");
+
+    printf("     : mpfr_set_str() returns \"");
+    /* mpfr_printf("%.*RNe\"\n", input_number_len, input_m); */
+    mpfr_printf("%.R*e\"\n", MPFR_RNDN, input_m);
 
     /* int mpfr_snprintf(char *buf, size_t n, const char *template, ...
      *
@@ -247,10 +261,11 @@ input_try:
      *    character, or a negative value if an error occurred. 
      */
 
-    /* buffer plenty big enough for the string plus a trailing null */
-    output_buf = calloc( input_number_length + 8, sizeof(unsigned char));
+    /* buffer plenty big enough for the string plus trailing nuls */
+    output_buf = calloc( input_buffer_len + 8, sizeof(unsigned char));
     if ( output_buf == NULL ) {
-        /* really? possible ENOMEM? */
+        /* really? who does all this stuff? Someone wanted it in the
+         * twitch stream. */
         if ( errno == ENOMEM ) {
             fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
                     __FILE__, __LINE__ );
@@ -263,27 +278,79 @@ input_try:
     }
 
     /* NOTE : be very careful with the format specification and
-     * do not embed a new line char or other special chars */
-    chars_formatted = mpfr_snprintf(output_buf, input_number_length + 1,
-                                                  "%.*RNe",
-                                                input_number_length + 1,
+     * do not embed a new line char or other special chars.
+     *
+     * From the manual : 
+     *
+     *     int mpfr_snprintf (char *buf, size_t n,
+     *                        const char *template, ...)
+     *
+     *     Form a null-terminated string corresponding to the optional
+     *     arguments under the control of the template string template,
+     *     and print it in buf. If n is zero, nothing is written and
+     *     buf may be a null pointer, otherwise, the n-1 first chars
+     *     are written in buf and the n-th is a null char. Return the
+     *     number of chars that would have been written had n been
+     *     sufficiently large, not counting the terminating null char,
+     *     or a negative value if an error occurred.
+     */
+
+    /* whatever this is ... it breaks badly and converts 0.125 to
+     * the string 1.25000000etc crap 
+     *
+    chars_formatted = mpfr_snprintf(output_buf, input_number_len + 1,
+                                                "%.*RNe",
+                                                input_number_len + 1,
                                                                input_m);
+                                                               */
+
+    fprintf(stderr,"dbug : input_number_len = %lu\n",
+                                                     input_number_len );
+    fprintf(stderr,"dbug : input_buffer_len = %lu\n",
+                                                     input_buffer_len );
+
+    chars_formatted = mpfr_snprintf( output_buf, input_buffer_len,
+                                    "%.*RNe", input_buffer_len, input_m);
+
 
     if ( chars_formatted < 0 ){
         fprintf(stderr,"FAIL : mpfr_snprintf tossed an error.\n");
         return (EXIT_FAILURE);
     }
-
     printf("INFO : chars_formatted = %i\n", chars_formatted);
-    printf("INFO : output_buf = \'%s\'\n", output_buf);
+
+    fprintf(stderr,"----------------------------------------------\n");
+    fprintf(stderr,"dbug : output_buf = \"%s\"\n", output_buf);
+    fprintf(stderr,"dbug :  input_buf = \"%s\"\n", input_buf);
+    fprintf(stderr,"----------------------------------------------\n");
+
 
     /* we need to compare the two values that we have in two string
      * buffers where one of them may be scientific notation and the
      * other just an ordinary number notation.
      *
+     * TODO : this seems to cause all manner of havok with numbers
+     *        that are not integers.
+     *
      * The only valid way to compare two floating point mpfr_t values
      * is with mpfr_cmp(mpfr_t op1, mpfr_t op2) which will return a
      * zero int value if the two operands are precisely equal.
+     *
+     * From the manual : 
+     *
+     *     Compare op1 and op2. Return a positive value if op1 > op2,
+     *     zero if op1 = op2, and a negative value if op1 < op2. Both
+     *     op1 and op2 are considered to their full own precision,
+     *     which may differ. If one of the operands is NaN, set the
+     *     erange flag and return zero.
+     *
+     * Note: These functions may be useful to distinguish the three
+     * possible cases. If you need to distinguish two cases only, it is
+     * recommended to use the predicate functions (e.g., mpfr_equal_p
+     * for the equality) described below; they behave like the IEEE 754
+     * comparisons, in particular when one or both arguments are NaN.
+     * But only floating-point numbers can be compared (you may need to
+     * do a conversion first).
      */
 
     if ( input_attempt_loop > 0 ) {
@@ -291,13 +358,21 @@ input_try:
          * comparison. Also expects the last parameter
          * to be a null pointer whose type must be mpfr_ptr */
         mpfr_clears ( check_in, check_out, (mpfr_ptr) 0 );
+        /* what is the current requested precision ? */
+        actual_prec=mpfr_get_default_prec();
+        mpfr_printf ("     : starting precision is %Pu bits.\n",
+                                                          actual_prec);
     }
 
-    printf("DBUG : actual_prec = ");
-    mpfr_printf ("%Pu bits.\n", actual_prec);
-
-    /* strange va list call that expects the last parameter to
+    /* va list call that expects the last parameter to
      * be a null pointer (whose type must also be mpfr_ptr) */
+    if ( actual_prec != decimal_to_bit_estimate ) {
+        fprintf(stderr,"dbug : possible precision problem\n");
+        fprintf(stderr,"     : actual_prec = ");
+        mpfr_fprintf (stderr,"%Pu bits.\n", actual_prec);
+        fprintf(stderr,"     : decimal_to_bit_estimate =");
+        mpfr_fprintf (stderr,"%Pu bits.\n", decimal_to_bit_estimate);
+    }
     mpfr_inits2 ( actual_prec, check_out, (mpfr_ptr) 0 );
     mpfr_inits2 ( decimal_to_bit_estimate, check_in, (mpfr_ptr) 0 );
 
@@ -321,7 +396,8 @@ input_try:
         return (EXIT_FAILURE);
     }
 
-    if ( mpfr_cmp( check_in, check_out ) == 0 ) {
+    inex = mpfr_cmp( check_in, check_out );
+    if ( inex == 0 ) {
         printf("INFO : perfect match?\n");
         printf("\n\n-------------------------------------------\n\n");
         printf("INFO : here is the actual value of check_out\n\n");
@@ -329,11 +405,24 @@ input_try:
         mpfr_printf("%.R*e", MPFR_RNDN, check_out);
         printf("\n\n-------------------------------------------\n\n");
     } else {
-        fprintf(stderr,"WARN : incorrect data on input.\n");
+        fprintf(stderr,"WARN : mpfr_cmp() comparison not equal\n");
         if ( input_attempt_loop < 1 ) {
-            fprintf(stderr,"     : insufficient bits of precision\n");
-            fprintf(stderr,"     : to represent the data.\n");
+            fprintf(stderr,"     : insufficient bits of precision?\n");
         }
+
+        fprintf(stderr,"dbug : mpfr_cmp returns %+i\n",inex<0? -1 : 1);
+        if ( inex < 0 ) {
+            fprintf(stderr,"     : check_in < check_out\n");
+        } else {
+            fprintf(stderr,"     : check_out < check_in\n");
+        }
+        fprintf(stderr,"     : where check_in seems to be ");
+        mpfr_fprintf(stderr,"%.R*e\n", MPFR_RNDN, check_in);
+        fprintf(stderr,"     : check_out claims to be ");
+        mpfr_fprintf(stderr,"%.R*e\n", MPFR_RNDN, check_out);
+
+        /* TODO we may be caught in a situation where the scientific
+         * notation output does not match the input string. */
 
         /* gradually increase the precision */
         bit_prec = bit_prec + delta_bit_prec;
