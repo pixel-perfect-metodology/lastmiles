@@ -96,8 +96,15 @@ int main(int argc, char*argv[])
     double obs_x_width, obs_y_height;
     double magnify, real_translate, imag_translate;
     double x_prime, y_prime;
+
     /* use the vbox lower left coords as reference */
-    int vbox_lower_left_x, vbox_lower_left_y;
+    int vbox_ll_x, vbox_ll_y;
+
+    /* we need to track when a vbox has been computed 
+     * as well as displayed via libX11. For now we just
+     * don't want to recompute the same region over and 
+     * over and over. */
+    int vbox_flag[16][16];
 
     int mand_height, mand_bail = 255; /* some initial bail out value */
 
@@ -138,21 +145,22 @@ int main(int argc, char*argv[])
     sysinfo();
 
     /* scale and translate */
-    /* magnify = 256.0; */
-    magnify = 8192.0;
+    magnify = 256.0;
     obs_x_width = 4.0 / magnify;
     obs_y_height = 4.0 / magnify;
     /*
-     *    real_translate = -0.0730285645;
-     *    imag_translate = -0.9643554690;
-     * 
      *    real_translate = -7.368164062500e-01;
      *    imag_translate = -1.818847656250e-01;
      *
      */
 
-    real_translate = -1.656192779541;
-    imag_translate = 0.0;
+    real_translate = -7.368164062500e-01;
+    imag_translate = -1.818847656250e-01;
+
+    /* ensure we start with clear flags */
+    for ( p=0; p<16; p++ )
+        for ( q=0; q<16; q++ )
+            vbox_flag[p][q] = 0;
 
     width = WIN_WIDTH;
     height = WIN_HEIGHT;
@@ -592,15 +600,15 @@ int main(int argc, char*argv[])
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
                 for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
-                    vbox_lower_left_y = vbox_y * vbox_h + mand_y_pix;
+                    vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
                     for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
-                        vbox_lower_left_x = vbox_x * vbox_w + mand_x_pix;
-                        sprintf(buf,"foo = %-4i , %-4i", vbox_lower_left_x, vbox_lower_left_y);
+                        vbox_ll_x = vbox_x * vbox_w + mand_x_pix;
+                        sprintf(buf,"foo = %-4i , %-4i", vbox_ll_x, vbox_ll_y);
                         /* fprintf(stderr,"%s    ",buf); */
                         XDrawImageString( dsp, win3, gc3, 10, 40, buf, strlen(buf));
                         /* sad little hackary here to deal with negative zeros */
-                        win_x = ( ( ( 1.0 * vbox_lower_left_x ) / eff_width ) * 2.0 - 1.0 ) + 0.0;
-                        win_y = ( -1.0 * ( ( ( 1.0 * ( eff_height - vbox_lower_left_y ) ) / eff_height ) * 2.0 - 1.0 ) ) + 0.0;
+                        win_x = ( ( ( 1.0 * vbox_ll_x ) / eff_width ) * 2.0 - 1.0 ) + 0.0;
+                        win_y = ( -1.0 * ( ( ( 1.0 * ( eff_height - vbox_ll_y ) ) / eff_height ) * 2.0 - 1.0 ) ) + 0.0;
 
                         x_prime = obs_x_width * win_x / 2.0;
                         y_prime = obs_y_height * win_y / 2.0;
@@ -636,9 +644,21 @@ int main(int argc, char*argv[])
                         mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t) mand_height );
 
                         XSetForeground(dsp, gc, mandlebrot.pixel);
-                        XDrawPoint(dsp, win, gc, vbox_lower_left_x + offset_x, ( eff_height - vbox_lower_left_y + offset_y ) );
+                        XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x, ( eff_height - vbox_ll_y + offset_y ) );
                     }
                 }
+                /* thanks to mosh this was on the X11 clipboard
+                 *
+                 * https://www.beeradvocate.com/beer/profile/813/7451/ 
+                 *
+                 * regardless lets track that we actualyl did display
+                 * this vbox data already. 
+                 *
+                 * Also .. what was that tripl kermeliet beer ? 
+                 *
+                 */
+
+                vbox_flag[vbox_x][vbox_y] = 1;
 
                 clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
 
@@ -706,50 +726,52 @@ int main(int argc, char*argv[])
                 /* here we loop over the vbox coords */
                 for ( vbox_y = 0; vbox_y < 16; vbox_y++ ) {
                     for ( vbox_x = 0; vbox_x < 16; vbox_x++ ) {
-                        for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
-                            vbox_lower_left_y = vbox_y * vbox_h + mand_y_pix;
-                            for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
-                                vbox_lower_left_x = vbox_x * vbox_w + mand_x_pix;
-
-                                /* deal with negative zeros */
-                                win_x = ( ( ( 1.0 * vbox_lower_left_x ) 
-                                            / eff_width ) * 2.0 - 1.0 ) + 0.0;
-
-                                win_y = ( -1.0 * 
-                                          ( ( 
-                                               ( 1.0 * ( eff_height - vbox_lower_left_y ) ) / eff_height 
-                                            ) * 2.0 - 1.0 
-                                          ) ) + 0.0;
-
-                                x_prime = obs_x_width * win_x / 2.0;
-                                y_prime = obs_y_height * win_y / 2.0;
-
-                                /* TODO hack in a translation */
-                                x_prime = x_prime + real_translate;
-                                y_prime = y_prime + imag_translate;
-
-                                /* point c belongs to the Mandelbrot set if and only if
-                                 * the magnitude of the f(c) <= 2.0 */
-                                mand_height = 0;
-                                mand_c.r = x_prime;
-                                mand_c.i = y_prime;
-                                mand_z.r = 0.0;
-                                mand_z.i = 0.0;
-                                mand_mag = 0.0;
-                                while ( ( mand_height < mand_bail ) && ( mand_mag < 2.0 ) ) {
-                                    mand_tmp.r = mand_z.r * mand_z.r - ( mand_z.i * mand_z.i ) + 0.0;
-                                    mand_tmp.i = mand_z.r * mand_z.i + ( mand_z.r * mand_z.i ) + 0.0;
-                                    mand_z.r = mand_tmp.r + mand_c.r;
-                                    mand_z.i = mand_tmp.i + mand_c.i;
-                                    mand_mag = sqrt( mand_z.r * mand_z.r + mand_z.i * mand_z.i );
-                                    mand_height += 1;
+                        if ( vbox_flag[vbox_x][vbox_y] == 0 ) {
+                            for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
+                                vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
+                                for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
+                                    vbox_ll_x = vbox_x * vbox_w + mand_x_pix;
+    
+                                    /* deal with negative zeros */
+                                    win_x = ( ( ( 1.0 * vbox_ll_x ) 
+                                                / eff_width ) * 2.0 - 1.0 ) + 0.0;
+    
+                                    win_y = ( -1.0 * 
+                                              ( ( 
+                                                   ( 1.0 * ( eff_height - vbox_ll_y ) ) / eff_height 
+                                                ) * 2.0 - 1.0 
+                                              ) ) + 0.0;
+    
+                                    x_prime = obs_x_width * win_x / 2.0;
+                                    y_prime = obs_y_height * win_y / 2.0;
+    
+                                    /* TODO hack in a translation */
+                                    x_prime = x_prime + real_translate;
+                                    y_prime = y_prime + imag_translate;
+    
+                                    /* point c belongs to the Mandelbrot set if and only if
+                                     * the magnitude of the f(c) <= 2.0 */
+                                    mand_height = 0;
+                                    mand_c.r = x_prime;
+                                    mand_c.i = y_prime;
+                                    mand_z.r = 0.0;
+                                    mand_z.i = 0.0;
+                                    mand_mag = 0.0;
+                                    while ( ( mand_height < mand_bail ) && ( mand_mag < 2.0 ) ) {
+                                        mand_tmp.r = mand_z.r * mand_z.r - ( mand_z.i * mand_z.i ) + 0.0;
+                                        mand_tmp.i = mand_z.r * mand_z.i + ( mand_z.r * mand_z.i ) + 0.0;
+                                        mand_z.r = mand_tmp.r + mand_c.r;
+                                        mand_z.i = mand_tmp.i + mand_c.i;
+                                        mand_mag = sqrt( mand_z.r * mand_z.r + mand_z.i * mand_z.i );
+                                        mand_height += 1;
+                                    }
+                                    mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t) mand_height );
+                                    XSetForeground(dsp, gc, mandlebrot.pixel);
+    
+                                    XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x,
+                                                    ( eff_height - vbox_ll_y + offset_y ) );
+    
                                 }
-                                mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t) mand_height );
-                                XSetForeground(dsp, gc, mandlebrot.pixel);
-
-                                XDrawPoint(dsp, win, gc, vbox_lower_left_x + offset_x,
-                                                ( eff_height - vbox_lower_left_y + offset_y ) );
-
                             }
                         }
                     }
