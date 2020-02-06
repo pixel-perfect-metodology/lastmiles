@@ -1,0 +1,36 @@
+Horrifically slow example on ye VIA EDen Esther machine :
+
+    magnify = pow( 2.0, 16.0);
+    obs_x_width = 4.0 / magnify;
+    obs_y_height = 4.0 / magnify;
+    real_translate = -7.622470855713e-01;
+    imag_translate = -8.939456939698e-02;
+
+C_esther$ ./xmand 
+-------------------------------------------------------------
+        system name = Linux
+          node name = esther
+            release = 5.5.0-rc5-genunix
+            version = #1 Mon Jan 6 12:01:18 UTC 2020
+            machine = i686
+          page size = 4096
+       avail memory = 166174720
+                    = 162280 kB
+                    = 158 MB
+-------------------------------------------------------------
+INFO : default width=1044 height=1044
+connection number 3
+screen number 0
+default depth is 24
+display seems to be 3840 wide and 1080 high.
+INFO : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+vbox  [ 003 , 002 ]
+c = ( -7.622639536858e-01 , -8.941692113877e-02 )
+[mand] =     473607757867 nsec
+click at 239 897 
+right click
+click at 550 459 
+right click
+
+
