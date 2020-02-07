@@ -169,9 +169,10 @@ int main(int argc, char*argv[])
      */
 
     /* scale and translate */
-    magnify = 8192.0;
-    real_translate = -7.406959533691e-01;
-    imag_translate = -1.685485839844e-01;
+    magnify = pow( 2.0, 16.0);
+    real_translate = -7.622470855713e-01;
+    imag_translate = -8.939456939698e-02;
+
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
                                       real_translate, imag_translate );
 
