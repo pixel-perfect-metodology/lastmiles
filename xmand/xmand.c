@@ -668,7 +668,7 @@ int main(int argc, char*argv[])
                                    ( eff_height - vbox_ll_y + offset_y ) );
 
                         /* TODO subpixel average */
-                        mbrot_subpixel ( &dsp, &win2, &gc2,
+                        mbrot_subpixel ( dsp, &win2, &gc2,
                                          mand_x_pix, mand_y_pix,
                                          x_prime, y_prime,
                                          pixel_width, pixel_height,
@@ -929,8 +929,8 @@ uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g,
             green += ( sub_pixel[j][k] & 0x00ff00 ) >> 8;
             blue  += ( sub_pixel[j][k] & 0x0000ff );
 
-            XSetForeground( d, g, (unsigned long)sub_pixel[j][k] );
-        /*  XDrawPoint( d, w, g, gc2_x + j, gc2_y + k ); */
+            XSetForeground( d, *g, (unsigned long)sub_pixel[j][k] );
+            XDrawPoint( d, *w, *g, gc2_x + j, gc2_y + k );
 
         }
     }
