@@ -40,7 +40,14 @@ uint64_t timediff( struct timespec st, struct timespec en );
 int sysinfo(void);
 
 uint32_t mandle_col ( uint8_t height );
+
 uint32_t mbrot( double c_r, double c_i, uint32_t bail_out );
+
+uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g,
+                          int mand_x_pix, int mand_y_pix,
+                          double x_prime, double y_prime,
+                          double pixel_width, double pixel_height,
+                          uint32_t mand_bail );
 
 /* local defs where 1044 pixels is more or less full screen
  * and 660 pixels square fits into a neat 720p res OBS setup */
@@ -98,6 +105,7 @@ int main(int argc, char*argv[])
     double obs_x_width, obs_y_height;
     double magnify, real_translate, imag_translate;
     double x_prime, y_prime;
+    double pixel_width, pixel_height;
 
     /* use the vbox lower left coords as reference */
     int vbox_ll_x, vbox_ll_y;
@@ -115,10 +123,8 @@ int main(int argc, char*argv[])
     int mand_x_pix, mand_y_pix;
     double mand_mag;
 
-
-
     /* These are the initial and normalized mouse fp64 values
-     * from within the observation viewport. */
+     * from within the viewport. */
     double win_x, win_y;
 
     /* Also we finally have use for the little box grid that we
@@ -127,7 +133,6 @@ int main(int argc, char*argv[])
 
     /* small general purpose char buffer */
     char *buf = calloc((size_t)128,sizeof(unsigned char));
-    char *buf0 = calloc((size_t)128,sizeof(unsigned char));
 
     char *disp_name = NULL;
 
@@ -156,18 +161,24 @@ int main(int argc, char*argv[])
      *    magnify = pow( 2.0, 16.0);
      *    real_translate = -7.622470855713e-01;
      *    imag_translate = -8.939456939698e-02;
+     *    real_translate = -1.609520912171e-01;
+     *    imag_translate = -1.038573741913;
      */
 
     /* scale and translate */
-    magnify = pow( 2.0, 16.0);
-    real_translate = -1.609520912171e-01;
-    imag_translate = -1.038573741913;
+    magnify = pow( 2.0, 20.0);
+    real_translate = -1.609513163567e-01;
+    imag_translate = -1.038571417332e+00;
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
                                       real_translate, imag_translate );
+
     printf("  magnify = %g\n", magnify );
 
     obs_x_width = 4.0 / magnify;
     obs_y_height = 4.0 / magnify;
+
+    pixel_width = obs_x_width / width;
+    pixel_height = obs_y_height / height;
 
     /* ensure we start with clear vbox flags */
     for ( p=0; p<16; p++ )
@@ -210,7 +221,7 @@ int main(int argc, char*argv[])
     printf("     : display seems to be %i wide and %i high.\n",
                                    disp_width, disp_height);
 
-    if ((disp_width<width)||(disp_height<height)){
+    if ( ( disp_width < width ) || ( disp_height < height ) ) {
         fprintf(stderr, "ERROR: screen is too small\n\n");
         exit(EXIT_FAILURE);
     }
@@ -615,10 +626,11 @@ int main(int argc, char*argv[])
                     vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
                     for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
                         vbox_ll_x = vbox_x * vbox_w + mand_x_pix;
-                        sprintf(buf,"foo = %-4i , %-4i", vbox_ll_x, vbox_ll_y);
-                        /* fprintf(stderr,"%s    ",buf); */
+                        /*
+                        sprintf(buf,"vbox_ll = %-6i , %-6i", vbox_ll_x, vbox_ll_y);
                         XDrawImageString( dsp, win3, gc3, 10, 40, buf, strlen(buf));
-                        /* sad little hackary here to deal with negative zeros */
+                        */
+
                         win_x = ( ( ( 1.0 * vbox_ll_x ) / eff_width ) * 2.0 - 1.0 ) + 0.0;
                         win_y = ( -1.0 * ( ( ( 1.0 * ( eff_height - vbox_ll_y ) ) / eff_height ) * 2.0 - 1.0 ) ) + 0.0;
 
@@ -628,14 +640,19 @@ int main(int argc, char*argv[])
                         x_prime = x_prime + real_translate;
                         y_prime = y_prime + imag_translate;
 
+                        /*
                         sprintf(buf,"c = ( %-10.8e , %-10.8e )", x_prime, y_prime );
-                        /* fprintf(stderr,"%s    ",buf); */
+                        fprintf(stderr,"%s    ",buf);
                         XDrawImageString( dsp, win3, gc3, 10, 60, buf, strlen(buf));
+                        */
 
                         mand_height = mbrot( x_prime, y_prime, mand_bail );
+
+                        /*
                         sprintf(buf,"mand_height = %-8i", mand_height);
-                        /* fprintf(stderr,"%s\n",buf); */
+                        fprintf(stderr,"%s\n",buf);
                         XDrawImageString( dsp, win3, gc3, 10, 100, buf, strlen(buf));
+                        */
 
                         if ( mand_height == mand_bail ) {
                             XSetForeground(dsp, gc, (unsigned long)0 );
@@ -645,9 +662,19 @@ int main(int argc, char*argv[])
                             XSetForeground(dsp, gc, mandlebrot.pixel);
                             XSetForeground(dsp, gc2, mandlebrot.pixel);
                         }
-                        XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x, ( eff_height - vbox_ll_y + offset_y ) );
 
-                        /* this is fairly senseless but just a hack */
+                        XDrawPoint(dsp, win, gc,
+                                   vbox_ll_x + offset_x,
+                                   ( eff_height - vbox_ll_y + offset_y ) );
+
+                        /* TODO subpixel average */
+                        mbrot_subpixel ( &dsp, &win2, &gc2,
+                                         mand_x_pix, mand_y_pix,
+                                         x_prime, y_prime,
+                                         pixel_width, pixel_height,
+                                         mand_bail );
+
+                        /*
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
                         XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y );
@@ -659,6 +686,7 @@ int main(int argc, char*argv[])
                         XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y + 2 );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 1, gc2_y + 2 );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 2, gc2_y + 2 );
+                        */
                     }
                 }
                 /* thanks to mosh this was on the X11 clipboard
@@ -835,7 +863,6 @@ int main(int argc, char*argv[])
     printf("\n");
 
     free(buf);
-    free(buf0);
     return EXIT_SUCCESS;
 }
 
@@ -860,6 +887,61 @@ uint32_t mbrot( double c_r, double c_i, uint32_t bail_out )
     }
 
     return ( height );
+
+}
+
+uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g,
+                          int mand_x_pix, int mand_y_pix,
+                          double x_prime, double y_prime,
+                          double pixel_width, double pixel_height,
+                          uint32_t mand_bail )
+{
+
+    int j, k, gc2_x, gc2_y;
+    uint32_t sub_pixel_height, sub_pixel[3][3];
+    uint32_t red, green, blue, color_avg;
+    double x, y, delta_x, delta_y;
+
+    delta_x = pixel_width / 3.0;
+    delta_y = pixel_height / 3.0;
+
+    gc2_x = 16 + ( 3 * mand_x_pix );
+    gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
+
+    red = 0;
+    green = 0;
+    blue = 0;
+    color_avg = 0;
+
+    for ( j=0; j<3; j++ ) {
+        for ( k=0; k<3; k++ ) {
+            x = ( (double)( j - 1 ) * delta_x ) + x_prime;
+            y = ( (double)( k - 1 ) * delta_y ) + y_prime;
+            sub_pixel_height = mbrot( x, y, mand_bail );
+
+            if ( sub_pixel_height == mand_bail ) {
+                sub_pixel[j][k] = 0;
+            } else {
+                sub_pixel[j][k] = mandle_col( (uint8_t)(sub_pixel_height & 0xff) );
+            }
+
+            red   += ( sub_pixel[j][k] & 0xff0000 ) >> 16;
+            green += ( sub_pixel[j][k] & 0x00ff00 ) >> 8;
+            blue  += ( sub_pixel[j][k] & 0x0000ff );
+
+            XSetForeground( d, g, (unsigned long)sub_pixel[j][k] );
+        /*  XDrawPoint( d, w, g, gc2_x + j, gc2_y + k ); */
+
+        }
+    }
+
+    color_avg = ( ( ( red / 9 ) & 0xff ) << 16 )
+                ||
+                ( ( ( green / 9 ) & 0xff ) << 8 )
+                ||
+                ( ( blue / 9 ) & 0xff );
+
+    return ( color_avg );
 
 }
 
