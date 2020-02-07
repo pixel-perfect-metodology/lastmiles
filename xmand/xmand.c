@@ -43,7 +43,7 @@ uint32_t mandle_col ( uint8_t height );
 
 uint32_t mbrot( double c_r, double c_i, uint32_t bail_out );
 
-uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g,
+uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g, XColor *clr,
                           int mand_x_pix, int mand_y_pix,
                           double x_prime, double y_prime,
                           double pixel_width, double pixel_height,
@@ -117,7 +117,7 @@ int main(int argc, char*argv[])
     int vbox_flag[16][16];
 
     uint32_t mand_height;
-    uint32_t mand_bail = 1024;
+    uint32_t mand_bail = 32768;
 
     cplex_type mand_tmp, mand_z, mand_c;
     int mand_x_pix, mand_y_pix;
@@ -163,12 +163,15 @@ int main(int argc, char*argv[])
      *    imag_translate = -8.939456939698e-02;
      *    real_translate = -1.609520912171e-01;
      *    imag_translate = -1.038573741913;
-     */
-
-    /* scale and translate */
     magnify = pow( 2.0, 20.0);
     real_translate = -1.609513163567e-01;
     imag_translate = -1.038571417332e+00;
+     */
+
+    /* scale and translate */
+    magnify = 8192.0;
+    real_translate = -7.406959533691e-01;
+    imag_translate = -1.685485839844e-01;
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
                                       real_translate, imag_translate );
 
@@ -667,14 +670,15 @@ int main(int argc, char*argv[])
                                    vbox_ll_x + offset_x,
                                    ( eff_height - vbox_ll_y + offset_y ) );
 
-                        /* TODO subpixel average */
-                        mbrot_subpixel ( dsp, &win2, &gc2,
+                        /* TODO subpixel average 
+                        mbrot_subpixel ( dsp, &win2, &gc2, &mandlebrot,
                                          mand_x_pix, mand_y_pix,
                                          x_prime, y_prime,
                                          pixel_width, pixel_height,
                                          mand_bail );
+                                         */
 
-                        /*
+                        /*  */
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
                         XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y );
@@ -686,7 +690,7 @@ int main(int argc, char*argv[])
                         XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y + 2 );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 1, gc2_y + 2 );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 2, gc2_y + 2 );
-                        */
+
                     }
                 }
                 /* thanks to mosh this was on the X11 clipboard
@@ -890,7 +894,7 @@ uint32_t mbrot( double c_r, double c_i, uint32_t bail_out )
 
 }
 
-uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g,
+uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g, XColor *clr,
                           int mand_x_pix, int mand_y_pix,
                           double x_prime, double y_prime,
                           double pixel_width, double pixel_height,
@@ -929,8 +933,19 @@ uint32_t mbrot_subpixel ( Display *d, Window *w, GC *g,
             green += ( sub_pixel[j][k] & 0x00ff00 ) >> 8;
             blue  += ( sub_pixel[j][k] & 0x0000ff );
 
-            XSetForeground( d, *g, (unsigned long)sub_pixel[j][k] );
+            clr->pixel = (unsigned long)sub_pixel[j][k];
+            XSetForeground( d, *g, clr->pixel );
             XDrawPoint( d, *w, *g, gc2_x + j, gc2_y + k );
+            /*
+             *  mand_height = mbrot( x_prime, y_prime, mand_bail );
+             *  if ( mand_height == mand_bail ) {
+             *      XSetForeground(dsp, gc, (unsigned long)0 );
+             *  } else {
+             *      mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t)(mand_height & 0xff) );
+             *      XSetForeground(dsp, gc, mandlebrot.pixel);
+             *  }
+             *  XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x, ( eff_height - vbox_ll_y + offset_y ) );
+             */
 
         }
     }
