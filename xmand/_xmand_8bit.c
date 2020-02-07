@@ -27,6 +27,9 @@
 
 #include <pthread.h>
 
+/* we shall need the complex math functions */
+#include "v.h"
+
 Window create_borderless_topwin(Display *dsp,
                          int width, int height,
                          int x, int y, int bg_color);
@@ -38,19 +41,16 @@ int X_error_handler(Display *dsp, XErrorEvent *errevt);
 uint64_t timediff( struct timespec st, struct timespec en );
 
 int sysinfo(void);
-
 uint32_t mandle_col ( uint8_t height );
-uint32_t mbrot( double c_r, double c_i, uint32_t bail_out );
+uint32_t linear_inter( uint8_t  in_val,
+                       uint32_t low_col, uint32_t high_col,
+                       uint8_t  low_val, uint8_t upper_val);
 
 /* local defs where 1044 pixels is more or less full screen
  * and 660 pixels square fits into a neat 720p res OBS setup */
 #define WIN_WIDTH 1044
 #define WIN_HEIGHT 1044
 #define OFFSET 10
-
-typedef struct cplex {
-    double r, i;
-} cplex_type;
 
 int main(int argc, char*argv[])
 {
@@ -108,8 +108,7 @@ int main(int argc, char*argv[])
      * over and over. */
     int vbox_flag[16][16];
 
-    uint32_t mand_height;
-    uint32_t mand_bail = 1024;
+    int mand_height, mand_bail = 255; /* some initial bail out value */
 
     cplex_type mand_tmp, mand_z, mand_c;
     int mand_x_pix, mand_y_pix;
@@ -131,6 +130,9 @@ int main(int argc, char*argv[])
 
     char *disp_name = NULL;
 
+    /* a visual box region of pixel data for screen render */
+    pixel_type vb[64][64];
+
     setlocale( LC_ALL, "C" );
 
     /* Get the REALTIME_CLOCK time in a timespec struct */
@@ -144,40 +146,33 @@ int main(int argc, char*argv[])
     }
     sysinfo();
 
-    /* test region 1
+    /* scale and translate */
+    magnify = pow( 2.0, 16.0);
+    obs_x_width = 4.0 / magnify;
+    obs_y_height = 4.0 / magnify;
+    /*
+     *    test region 1
      *    real_translate = -7.368164062500e-01;
      *    imag_translate = -1.818847656250e-01;
      *
-     * test region 2
+     *    test region 2
      *    real_translate = -1.769241333008;
      *    imag_translate = -5.691528320312e-02;
      *
-     * test region 3
-     *    magnify = pow( 2.0, 16.0);
-     *    real_translate = -7.622470855713e-01;
-     *    imag_translate = -8.939456939698e-02;
      */
 
-    /* scale and translate */
-    magnify = pow( 2.0, 16.0);
-    real_translate = -1.609520912171e-01;
-    imag_translate = -1.038573741913;
-    printf("translate = ( %-+18.12e , %-+18.12e )\n",
-                                      real_translate, imag_translate );
-    printf("  magnify = %g\n", magnify );
+    real_translate = -7.622470855713e-01;
+    imag_translate = -8.939456939698e-02;
 
-    obs_x_width = 4.0 / magnify;
-    obs_y_height = 4.0 / magnify;
-
-    /* ensure we start with clear vbox flags */
+    /* ensure we start with clear flags */
     for ( p=0; p<16; p++ )
         for ( q=0; q<16; q++ )
             vbox_flag[p][q] = 0;
 
     width = WIN_WIDTH;
     height = WIN_HEIGHT;
-    printf("\n X11 : ");
-    printf("default width=%4i height=%4i\n", width, height);
+    fprintf(stdout,"INFO : ");
+    fprintf(stdout,"default width=%4i height=%4i\n", width, height);
 
     XSetErrorHandler(X_error_handler);
 
@@ -189,13 +184,13 @@ int main(int argc, char*argv[])
         exit(EXIT_FAILURE);
     }
     conn_num = XConnectionNumber(dsp);
-    printf("     : connection number %i\n", conn_num);
+    printf("connection number %i\n", conn_num);
 
     screen_num = DefaultScreen(dsp);
-    printf("     : screen number %i\n", screen_num);
+    printf("screen number %i\n", screen_num);
 
     depth = XDefaultDepth(dsp,screen_num);
-    printf("     : default depth is %i\n", depth);
+    printf("default depth is %i\n", depth);
 
     fixed_font = XLoadFont(dsp, "fixed");
 
@@ -207,7 +202,7 @@ int main(int argc, char*argv[])
     disp_width = DisplayWidth(dsp, screen_num);
     disp_height = DisplayHeight(dsp, screen_num);
 
-    printf("     : display seems to be %i wide and %i high.\n",
+    printf("display seems to be %i wide and %i high.\n",
                                    disp_width, disp_height);
 
     if ((disp_width<width)||(disp_height<height)){
@@ -219,7 +214,7 @@ int main(int argc, char*argv[])
     offset_x = 20;
     offset_y = 20;
 
-    printf("     : offset x=%i y=%i\n", offset_x, offset_y);
+    printf("INFO : offset x=%i y=%i\n", offset_x, offset_y);
 
     /* Our primary plotting windows is pale grey on the screen */
     win = create_borderless_topwin(dsp, width, height,
@@ -384,9 +379,8 @@ int main(int argc, char*argv[])
     eff_width = lx - ux;
     eff_height = ly - uy;
 
-    printf("     : eff_width = %5i    eff_height = %5i\n\n",
+    fprintf(stdout,"     : eff_width = %5i    eff_height = %5i\n",
                            eff_width, eff_height);
-    printf("--------------------------------------------\n");
 
     XSetLineAttributes(dsp, gc, 1, LineSolid,
                                    CapButt,
@@ -598,6 +592,7 @@ int main(int argc, char*argv[])
                 x_prime = obs_x_width * win_x / 2.0;
                 y_prime = obs_y_height * win_y / 2.0;
 
+                /* TODO hack in a translation */
                 x_prime = x_prime + real_translate;
                 y_prime = y_prime + imag_translate;
 
@@ -625,6 +620,7 @@ int main(int argc, char*argv[])
                         x_prime = obs_x_width * win_x / 2.0;
                         y_prime = obs_y_height * win_y / 2.0;
 
+                        /* TODO hack in a translation */
                         x_prime = x_prime + real_translate;
                         y_prime = y_prime + imag_translate;
 
@@ -632,24 +628,35 @@ int main(int argc, char*argv[])
                         /* fprintf(stderr,"%s    ",buf); */
                         XDrawImageString( dsp, win3, gc3, 10, 60, buf, strlen(buf));
 
-                        mand_height = mbrot( x_prime, y_prime, mand_bail );
-                        sprintf(buf,"mand_height = %-8i", mand_height);
+                        /* point c belongs to the Mandelbrot set if and only if
+                         * the magnitude of the f(c) <= 2.0 */
+                        mand_height = 0;
+                        mand_c.r = x_prime;
+                        mand_c.i = y_prime;
+                        mand_z.r = 0.0;
+                        mand_z.i = 0.0;
+                        mand_mag = 0.0;
+                        while ( ( mand_height < mand_bail ) && ( mand_mag < 2.0 ) ) {
+                            mand_tmp.r = mand_z.r * mand_z.r - ( mand_z.i * mand_z.i ) + 0.0;
+                            mand_tmp.i = mand_z.r * mand_z.i + ( mand_z.r * mand_z.i ) + 0.0;
+                            mand_z.r = mand_tmp.r + mand_c.r;
+                            mand_z.i = mand_tmp.i + mand_c.i;
+                            mand_mag = sqrt( mand_z.r * mand_z.r + mand_z.i * mand_z.i );
+                            mand_height += 1;
+                        }
+                        sprintf(buf,"mand_height = %-4i", mand_height);
                         /* fprintf(stderr,"%s\n",buf); */
                         XDrawImageString( dsp, win3, gc3, 10, 100, buf, strlen(buf));
 
-                        if ( mand_height == mand_bail ) {
-                            XSetForeground(dsp, gc, (unsigned long)0 );
-                            XSetForeground(dsp, gc2, (unsigned long)0 );
-                        } else {
-                            mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t)(mand_height & 0xff) );
-                            XSetForeground(dsp, gc, mandlebrot.pixel);
-                            XSetForeground(dsp, gc2, mandlebrot.pixel);
-                        }
+                        mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t) mand_height );
+
+                        XSetForeground(dsp, gc, mandlebrot.pixel);
                         XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x, ( eff_height - vbox_ll_y + offset_y ) );
 
                         /* this is fairly senseless but just a hack */
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
+                        XSetForeground(dsp, gc2, mandlebrot.pixel);
                         XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 1, gc2_y );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 2, gc2_y );
@@ -746,6 +753,7 @@ int main(int argc, char*argv[])
                                 for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
                                     vbox_ll_x = vbox_x * vbox_w + mand_x_pix;
 
+                                    /* deal with negative zeros */
                                     win_x = ( ( ( 1.0 * vbox_ll_x )
                                                 / eff_width ) * 2.0 - 1.0 ) + 0.0;
 
@@ -758,17 +766,31 @@ int main(int argc, char*argv[])
                                     x_prime = obs_x_width * win_x / 2.0;
                                     y_prime = obs_y_height * win_y / 2.0;
 
+                                    /* TODO hack in a translation */
                                     x_prime = x_prime + real_translate;
                                     y_prime = y_prime + imag_translate;
 
-                                    mand_height = mbrot( x_prime, y_prime, mand_bail );
-                                    if ( mand_height == mand_bail ) {
-                                        XSetForeground(dsp, gc, (unsigned long)0 );
-                                    } else {
-                                        mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t)(mand_height & 0xff) );
-                                        XSetForeground(dsp, gc, mandlebrot.pixel);
+                                    /* point c belongs to the Mandelbrot set if and only if
+                                     * the magnitude of the f(c) <= 2.0 */
+                                    mand_height = 0;
+                                    mand_c.r = x_prime;
+                                    mand_c.i = y_prime;
+                                    mand_z.r = 0.0;
+                                    mand_z.i = 0.0;
+                                    mand_mag = 0.0;
+                                    while ( ( mand_height < mand_bail ) && ( mand_mag < 2.0 ) ) {
+                                        mand_tmp.r = mand_z.r * mand_z.r - ( mand_z.i * mand_z.i ) + 0.0;
+                                        mand_tmp.i = mand_z.r * mand_z.i + ( mand_z.r * mand_z.i ) + 0.0;
+                                        mand_z.r = mand_tmp.r + mand_c.r;
+                                        mand_z.i = mand_tmp.i + mand_c.i;
+                                        mand_mag = sqrt( mand_z.r * mand_z.r + mand_z.i * mand_z.i );
+                                        mand_height += 1;
                                     }
-                                    XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x, ( eff_height - vbox_ll_y + offset_y ) );
+                                    mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t) mand_height );
+                                    XSetForeground(dsp, gc, mandlebrot.pixel);
+
+                                    XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x,
+                                                    ( eff_height - vbox_ll_y + offset_y ) );
 
                                 }
                             }
@@ -782,7 +804,7 @@ int main(int argc, char*argv[])
             clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
             t_delta = timediff( soln_t0, soln_t1 );
             sprintf(buf,"[mand] = %16lld nsec", t_delta);
-            fprintf(stderr,"%s\n\n",buf);
+            fprintf(stderr,"%s\n",buf);
             XSetForeground(dsp, gc2, red.pixel);
             XDrawImageString( dsp, win2, gc2, 10, 310,
                                        buf, strlen(buf));
@@ -796,6 +818,7 @@ int main(int argc, char*argv[])
             sprintf(buf,"[%04i] tdelta = %16lld nsec",
                                             right_count, t_delta);
 
+            /* throw the tdelta in the same place always */
             XDrawImageString( dsp, win3, gc3, 10, 20,
                                buf, strlen(buf));
 
@@ -839,27 +862,166 @@ int main(int argc, char*argv[])
     return EXIT_SUCCESS;
 }
 
-uint32_t mbrot( double c_r, double c_i, uint32_t bail_out )
+uint32_t mandle_col ( uint8_t height )
 {
+    uint32_t cpixel;
+    /* the idea on the table is to compute a reasonable
+     * 32 bit value for RGBA data based on a range of
+     * possible mandlebrot evaluations :
+     *
+     *  range val
+     *   0 - 31  : dark blue     ->  light blue
+     *             0x0b104b          0x6973ee
+     *
+     *  32 - 63  : light blue    ->  light red
+     *             0x6973ee          0xf73f3f
+     *
+     *  64 - 127 : light red     ->  dark cyan
+     *             0xf73f3f          0xb7307b
+     *
+     * 128 - 159 : dark cyan     ->  bright yellow
+     *             0xb7307b          0xecff3a
+     *
+     * 160 - 191 : bright yellow -> dark red
+     *             0xecff3a         0x721a1a
+     *
+     * 192 - 223 : dark red      -> green
+     *             0x721a1a         0x00ff00
+     *
+     * 224 - 239 : green         -> magenta
+     *             0x00ff00         0xff00ff
+     *
+     * 240 - 255 : magenta       -> white
+     *             0xff00ff         0xffffff
+     */
 
-    /* point c belongs to the Mandelbrot set if and only if
-     * the magnitude of the f(c) <= 2.0 */
-    uint32_t height = 0;
-    double zr = 0.0;
-    double zi = 0.0;
-    double tmp_r, tmp_i;
-    double mag = 0.0;
-
-    while ( ( height < bail_out ) && ( mag < 2.0 ) ) {
-        tmp_r = ( zr * zr ) - ( zi * zi );
-        tmp_i = ( zr * zi ) + ( zr * zi );
-        zr = tmp_r + c_r;
-        zi = tmp_i + c_i;
-        mag = sqrt( zr * zr + zi * zi );
-        height += 1;
+    if ( height < 32 ) {
+        cpixel = linear_inter( height, (uint32_t)0x0b104b,
+                                       (uint32_t)0x6973ee,
+                                       (uint8_t)0, (uint8_t)31);
+    } else if ( ( height > 31 ) && ( height < 64 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0x6973ee,
+                                       (uint32_t)0xf73f3f,
+                                       (uint8_t)32, (uint8_t)63);
+    } else if ( ( height > 63 ) && ( height < 128 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0xf73f3f,
+                                       (uint32_t)0xb7307b,
+                                       (uint8_t)64, (uint8_t)127);
+    } else if ( ( height > 127 ) && ( height < 160 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0xb7307b,
+                                       (uint32_t)0xecff3a,
+                                       (uint8_t)128, (uint8_t)159);
+    } else if ( ( height > 159 ) && ( height < 192 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0xecff3a,
+                                       (uint32_t)0x721a1a,
+                                       (uint8_t)160, (uint8_t)191);
+    } else if ( ( height > 191 ) && ( height < 224 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0x721a1a,
+                                       (uint32_t)0x00ff00,
+                                       (uint8_t)192, (uint8_t)223);
+    } else if ( ( height > 223 ) && ( height < 240 ) ) {
+        cpixel = linear_inter( height, (uint32_t)0x00ff00,
+                                       (uint32_t)0xff00ff,
+                                       (uint8_t)224, (uint8_t)239);
+    } else {
+        /* should never happen once this all works */
+        cpixel = ( ( (uint32_t)( 255 - height ) ) << 16 )
+               + ( ( (uint32_t)( 255 - height ) ) << 8 )
+               +   ( (uint32_t)( 255 - height ) );
     }
 
-    return ( height );
+    return ( cpixel );
+
+}
+
+uint32_t linear_inter( uint8_t  in_val,
+                       uint32_t low_col, uint32_t high_col,
+                       uint8_t  low_val, uint8_t upper_val)
+{
+    /* in_val is some number that should fall between
+     *        the low_val and upper_val. If not then
+     *        just assume low_val or upper_val as
+     *        needed.
+     *
+     * low_col is the actual RGB value at the low end
+     *         of the scale
+     *
+     * high_col is the RGB colour at the high end of the
+     *           scale
+     *
+     * low_val and upper_val are the possible range values
+     *          for the in_val
+     *
+     * How to do a linear interpolation between two 32-bit colour
+     * values?  We need a smooth function :
+     *
+     *    uint32_t cpixel = ( uint8_t   red_val << 16 )
+     *                       + ( uint8_t green_val << 8 )
+     *                       +   uint8_t  blue_val
+     **/
+
+    uint8_t red, green, blue;
+    uint8_t lower_red, upper_red;
+    uint8_t lower_green, upper_green;
+    uint8_t lower_blue, upper_blue;
+    uint32_t cpixel;
+
+    if (    ( high_col & (uint32_t)0xff0000 )
+         <= (  low_col & (uint32_t)0xff0000 ) ) {
+
+        lower_red = (uint8_t)( ( high_col & (uint32_t)0xff0000 ) >> 16 );
+        upper_red = (uint8_t)( (  low_col & (uint32_t)0xff0000 ) >> 16 );
+
+    } else {
+
+        upper_red = (uint8_t)( ( high_col & (uint32_t)0xff0000 ) >> 16 );
+        lower_red = (uint8_t)( (  low_col & (uint32_t)0xff0000 ) >> 16 );
+
+    }
+
+    if (    ( high_col & (uint32_t)0x00ff00 )
+         <= (  low_col & (uint32_t)0x00ff00 ) ) {
+
+        lower_green = (uint8_t)( ( high_col & (uint32_t)0x00ff00 ) >> 8 );
+        upper_green = (uint8_t)( (  low_col & (uint32_t)0x00ff00 ) >> 8 );
+
+    } else {
+
+        upper_green = (uint8_t)( ( high_col & (uint32_t)0x00ff00 ) >> 8 );
+        lower_green = (uint8_t)( (  low_col & (uint32_t)0x00ff00 ) >> 8 );
+
+    }
+
+    if (    ( high_col & (uint32_t)0x0000ff )
+         <= (  low_col & (uint32_t)0x0000ff ) ) {
+
+        lower_blue = (uint8_t)( high_col & (uint32_t)0x0000ff );
+        upper_blue = (uint8_t)(  low_col & (uint32_t)0x0000ff );
+
+    } else {
+
+        upper_blue = (uint8_t)( high_col & (uint32_t)0x0000ff );
+        lower_blue = (uint8_t)(  low_col & (uint32_t)0x0000ff );
+
+    }
+
+    red = lower_red
+           + ( upper_red - lower_red )
+             * ( in_val - low_val ) / ( upper_val - low_val );
+
+    green = lower_green
+           + ( upper_green - lower_green )
+             * ( in_val - low_val ) / ( upper_val - low_val );
+
+    blue = lower_blue
+           + ( upper_blue - lower_blue )
+             * ( in_val - low_val ) / ( upper_val - low_val );
+
+    cpixel = ( (uint32_t)red << 16 )
+           | ( (uint32_t)green << 8 )
+           |   (uint32_t)blue;
+
+    return ( cpixel );
 
 }
 

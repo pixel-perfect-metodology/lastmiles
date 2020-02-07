@@ -63,3 +63,36 @@ right click
 click at 524 626 
 right click
 
+
+vesta$ ./xmand
+-------------------------------------------------------------
+        system name = FreeBSD
+          node name = vesta
+            release = 12.1-RELEASE-p2
+            version = FreeBSD 12.1-RELEASE-p2 GENERIC
+            machine = amd64
+          page size = 4096
+       avail memory = 10328125440
+                    = 10086060 kB
+                    = 9849 MB
+-------------------------------------------------------------
+INFO : default width=1044 height=1044
+connection number 3
+screen number 0
+default depth is 24
+display seems to be 3840 wide and 1080 high.
+INFO : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+vbox  [ 009 , 005 ]
+c = ( -7.622411847115e-01 , -8.940351009370e-02 )
+[mand] =       3824966395 nsec
+click at 621 672 
+vbox  [ 006 , 008 ]
+c = ( -7.622517943382e-01 , -8.939337730408e-02 )
+[soln] =         53617779 nsec
+click at 443 502 
+right click
+click at 551 678 
+right click
+
+
