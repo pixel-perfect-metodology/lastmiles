@@ -1,0 +1,218 @@
+
+
+On the old Intel Pentium II machine with unreasonable compiler
+flags wherein we enable debug symbols and disable all possible
+optimizations as well as builtin optimizations provided by gcc
+without even asking for them. Also the mbrot() function will
+use the floating point sqrt() call.
+
+/usr/bin/gcc-9 -o xmand xmand.o mandel_col.o linear_inter.o mbrot.o ../xwin/x_error_handler.o ../xwin/create_gc.o ../xwin/create_borderless_topwin.o ../time_and_date/timediff.o ../pthread/sysmem.o ../pthread/sysinfo.o -I/usr/local/include -std=iso9899:1999 -m32 -g -O0 -march=i686 -mtune=i686 -Wl,-rpath=/opt/bw/lib,--enable-new-dtags -fno-builtin -malign-double -mpc80 -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-ssse3 -mno-sse4 -mno-sse4a -mno-sse4.1 -mno-sse4.2 -mno-avx -mno-avx2 -mno-avx512f -mno-avx512pf -mno-avx512er -mno-avx512cd -mno-avx512vl -mno-avx512bw -mno-avx512dq -mno-avx512ifma -mno-avx512vbmi -mno-sha -mno-aes -mno-pclmul -mno-clflushopt -mno-clwb -mno-fsgsbase -mno-rdrnd -mno-f16c -mno-fma -mno-pconfig -mno-wbnoinvd -mno-fma4 -mno-prfchw -mno-rdpid -mno-prefetchwt1 -mno-rdseed -mno-sgx -mno-xop -mno-lwp -mno-3dnow -mno-3dnowa -mno-popcnt -mno-abm -mno-adx -mno-bmi -mno-bmi2 -mno-lzcnt -mno-fxsr -mno-xsave -mno-xsaveopt -mno-xsavec -mno-xsaves -mno-rtm -mno-hle -mno-tbm -mno-mpx -mno-mwaitx -mno-clzero -mno-pku -mno-avx512vbmi2 -mno-gfni -mno-vaes -mno-vpclmulqdq -mno-avx512bitalg -mno-movdiri -mno-movdir64b -mno-avx512vpopcntdq -mno-avx5124fmaps -mno-avx512vnni -mno-avx5124vnniw -D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE -D_X_OPEN_SOURCE=600 -L/usr/local/lib -lX11 -lrt -lm
+
+
+C_titan$ uname -a 
+Linux titan 5.5.2-blastwave #1 SMP Sat Feb 8 05:57:47 GMT 2020 i686 GNU/Linux
+C_titan$ ./xmand 
+-------------------------------------------------------------
+        system name = Linux
+          node name = titan
+            release = 5.5.2-blastwave
+            version = #1 SMP Sat Feb 8 05:57:47 GMT 2020
+            machine = i686
+          page size = 4096
+       avail memory = 780636160
+                    = 762340 kB
+                    = 744 MB
+-------------------------------------------------------------
+
+mand_bail = 2048
+translate = ( -7.177734375000e-01 , -2.932128906250e-01 )
+  magnify = 1024
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 3840 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 005 , 005 ]
+c = ( -7.184867858887e-01 , -2.938652038574e-01 )
+[mand] =      55056785151 nsec
+
+click at 335 693 
+vbox  [ 009 , 005 ]
+c = ( -7.174072265625e-01 , -2.937545776367e-01 )
+[soln] =        236086797 nsec
+click at 618 664 
+right click
+click at 501 539 
+right click
+
+
+Exact same run again reports : 
+
+[mand] =      54983154513 nsec
+
+
+--------------------------------------------------------------
+
+
+However if we remove the sqrt() function call from the mbrot()
+function we get a massive speedup : 
+
+C_titan$ ./xmand 
+-------------------------------------------------------------
+        system name = Linux
+          node name = titan
+            release = 5.5.2-blastwave
+            version = #1 SMP Sat Feb 8 05:57:47 GMT 2020
+            machine = i686
+          page size = 4096
+       avail memory = 780636160
+                    = 762340 kB
+                    = 744 MB
+-------------------------------------------------------------
+
+mand_bail = 2048
+translate = ( -7.177734375000e-01 , -2.932128906250e-01 )
+  magnify = 1024
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 3840 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 005 , 003 ]
+c = ( -7.183227539062e-01 , -2.942619323730e-01 )
+[mand] =      12655861666 nsec
+
+click at 378 797 
+right click
+click at 484 725 
+right click
+
+
+next run with exact same parameters : 
+
+[mand] =      11861128906 nsec
+
+
+
+
+
+If we only change the compiler flags and still keep around the sqrt()
+call then we are back to this : 
+
+/usr/bin/gcc-9 -o xmand xmand.o mandel_col.o linear_inter.o mbrot.o ../xwin/x_error_handler.o ../xwin/create_gc.o ../xwin/create_borderless_topwin.o ../time_and_date/timediff.o ../pthread/sysmem.o ../pthread/sysinfo.o -I/usr/local/include -std=iso9899:1999 -m32 -O2 -march=i686 -mtune=i686 -Wl,-rpath=/opt/bw/lib,--enable-new-dtags -malign-double -mpc80 -D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE -D_X_OPEN_SOURCE=600 -L/usr/local/lib -lX11 -lrt -lm
+C_titan$ 
+C_titan$ ./xmand 
+-------------------------------------------------------------
+        system name = Linux
+          node name = titan
+            release = 5.5.2-blastwave
+            version = #1 SMP Sat Feb 8 05:57:47 GMT 2020
+            machine = i686
+          page size = 4096
+       avail memory = 780636160
+                    = 762340 kB
+                    = 744 MB
+-------------------------------------------------------------
+
+mand_bail = 2048
+translate = ( -7.177734375000e-01 , -2.932128906250e-01 )
+  magnify = 1024
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 3840 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 011 , 007 ]
+c = ( -7.168121337891e-01 , -2.933158874512e-01 )
+[mand] =      53539750093 nsec
+
+click at 774 549 
+right click
+click at 474 578 
+right click
+
+
+Second run : 
+
+[mand] =      53986058616 nsec
+
+
+
+
+
+
+Merely changing the CFLAGS will result in very little change in the
+computation time. The removal of the sqrt() call is essential : 
+
+/usr/bin/gcc-9 -o xmand xmand.o mandel_col.o linear_inter.o mbrot.o ../xwin/x_error_handler.o ../xwin/create_gc.o ../xwin/create_borderless_topwin.o ../time_and_date/timediff.o ../pthread/sysmem.o ../pthread/sysinfo.o -I/usr/local/include -std=iso9899:1999 -m32 -O2 -march=i686 -mtune=i686 -Wl,-rpath=/opt/bw/lib,--enable-new-dtags -malign-double -mpc80 -D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE -D_X_OPEN_SOURCE=600 -L/usr/local/lib -lX11 -lrt -lm
+C_titan$ 
+C_titan$ 
+C_titan$ 
+C_titan$ ls 
+Makefile.deb_arm7       Makefile.deb_i686_slow  Makefile.fbsd_ppc64  linear_inter.o  mbrot.c           readme        xmand.c
+Makefile.deb_i686       Makefile.deb_x86_64     _xmand_8bit.c        mandel_col.c    mbrot.o           readme.speed  xmand.o
+Makefile.deb_i686_fast  Makefile.fbsd_amd64     linear_inter.c       mandel_col.o    mbrot_subpixel.c  xmand
+C_titan$ 
+C_titan$ ./xmand 
+-------------------------------------------------------------
+        system name = Linux
+          node name = titan
+            release = 5.5.2-blastwave
+            version = #1 SMP Sat Feb 8 05:57:47 GMT 2020
+            machine = i686
+          page size = 4096
+       avail memory = 780636160
+                    = 762340 kB
+                    = 744 MB
+-------------------------------------------------------------
+
+mand_bail = 2048
+translate = ( -7.177734375000e-01 , -2.932128906250e-01 )
+  magnify = 1024
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 3840 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 007 , 004 ]
+c = ( -7.178153991699e-01 , -2.941169738770e-01 )
+[mand] =      12727731716 nsec
+
+click at 511 759 
+right click
+click at 473 573 
+right click
+
+Second run : 
+
+[mand] =      12453106652 nsec
+
+
+We may as well keep around the CFLAGS with the debug option as well
+as a few other sensible options.
+
+
