@@ -35,6 +35,7 @@ uint32_t mbrot( double c_r, double c_i, uint32_t bail_out )
         /* mag = sqrt( zr * zr + zi * zi ); 
          *
          * lets speed this up a little and lose the sqrt
+         *
          * mag = zr * zr + zi * zi;
          */
 

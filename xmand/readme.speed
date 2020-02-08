@@ -216,3 +216,58 @@ We may as well keep around the CFLAGS with the debug option as well
 as a few other sensible options.
 
 
+
+On the slowest machine I have laying about we see : 
+
+processor	: 0
+vendor_id	: CentaurHauls
+cpu family	: 6
+model		: 10
+model name	: VIA Esther processor 1200MHz
+stepping	: 9
+cpu MHz		: 400.000
+cache size	: 128 KB
+
+Lets try a worst case scenario : 
+
+C_esther$ ./xmand 
+-------------------------------------------------------------
+        system name = Linux
+          node name = esther
+            release = 5.5.2-genunix
+            version = #1 Fri Feb 7 17:42:45 GMT 2020
+            machine = i686
+          page size = 4096
+       avail memory = 962306048
+                    = 939752 kB
+                    = 917 MB
+-------------------------------------------------------------
+
+mand_bail = 2048
+translate = ( -7.177734375000e-01 , -2.932128906250e-01 )
+  magnify = 1024
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 3840 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 005 , 005 ]
+c = ( -7.182884216309e-01 , -2.939147949219e-01 )
+[mand] =     261121600590 nsec
+
+click at 387 706 
+right click
+click at 574 553 
+right click
+
+
+Again with the sqrt call removed from the hot loop : 
+
+[mand] =     120302153725 nsec
+
