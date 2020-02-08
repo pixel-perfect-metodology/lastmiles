@@ -68,6 +68,19 @@ int main(int argc, char*argv[])
     XColor cornflowerblue, royal_blue, very_dark_grey;
     XColor mandlebrot;
 
+    /* We have a whole new method of dealing with color for
+     * the mandlebrot and thus we need some intermediate vars */
+    double t_param, gamma, hue, rotation, shift, t_factor;
+    /* please see https://arxiv.org/abs/1108.5083 
+     * A colour scheme for the display of astronomical intensity images
+     * D. A. Green 25 Aug 2011 (v1), revised 30 Aug 2011
+     *
+     * I describe a colour scheme that is appropriate for the screen
+     * display of intensity images. This -- unlike many currently
+     * available schemes -- is designed to be monotonically increasing
+     * in terms of its perceived brightness.
+     */
+
     Status retcode0;  /* not really needed for trivial stuff */
     int retcode1, status;     /* curious what some funcs return */
 
@@ -173,6 +186,12 @@ int main(int argc, char*argv[])
                                       real_translate, imag_translate );
 
     printf("  magnify = %g\n\n", magnify );
+
+    /* some values for the new color computation */
+    gamma = 2.3;
+    hue = 2.0;
+    rotation = 2.2;
+    shift = 2.4;
 
     obs_x_width = 4.0 / magnify;
     obs_y_height = 4.0 / magnify;
@@ -327,7 +346,9 @@ int main(int argc, char*argv[])
     }
 
     /* this is a hack color data value that we will abuse later
-     * inside the mouse Xevent loop */
+     * inside the main mandlebrot computation loop. Colors to
+     * be determined via a smooth function brought to use by 
+     * Patrick Scheibe. */
     mandlebrot.flags= DoRed | DoGreen | DoBlue;
     /* some dummy values */
     mandlebrot.green = 0x0000;
@@ -619,17 +640,13 @@ int main(int argc, char*argv[])
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
-                /* time the computation of the intercepts etc */
+                /* time the computation */
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
                 for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
                     vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
                     for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
                         vbox_ll_x = vbox_x * vbox_w + mand_x_pix;
-                        /*
-                        sprintf(buf,"vbox_ll = %-6i , %-6i", vbox_ll_x, vbox_ll_y);
-                        XDrawImageString( dsp, win3, gc3, 10, 40, buf, strlen(buf));
-                        */
 
                         win_x = ( ( ( 1.0 * vbox_ll_x ) / eff_width ) * 2.0 - 1.0 ) + 0.0;
                         win_y = ( -1.0 * ( ( ( 1.0 * ( eff_height - vbox_ll_y ) ) / eff_height ) * 2.0 - 1.0 ) ) + 0.0;
@@ -640,25 +657,41 @@ int main(int argc, char*argv[])
                         x_prime = x_prime + real_translate;
                         y_prime = y_prime + imag_translate;
 
-                        /*
-                        sprintf(buf,"c = ( %-10.8e , %-10.8e )", x_prime, y_prime );
-                        fprintf(stderr,"%s    ",buf);
-                        XDrawImageString( dsp, win3, gc3, 10, 60, buf, strlen(buf));
-                        */
-
                         mand_height = mbrot( x_prime, y_prime, mand_bail );
 
+                        /* Our color situation has become a tad more messy and
+                         * yet essential. We need a smooth color function as 
+                         * opposed to the lurch of our initial testing. */
+                        t_param = 1.0 - ( double)mand_height / (double)mand_bail;
+                        t_factor = pow( t_param, gamma );
+
+                        mandlebrot.red   = (uint16_t)( 65536.0 * 
+                                              t_factor + ( hue * t_factor * ( 1.0 - t_factor )
+                                              * ( -0.14861 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
+                                              + 1.78277 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0);
+
+                        mandlebrot.green = (uint16_t)( 65536.0 * 
+                                              t_factor + ( hue * t_factor * ( 1.0 - t_factor )
+                                              * ( -0.29227 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
+                                              - 0.90649 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0);
+
+                        mandlebrot.blue  = (uint16_t)( 65536.0 *
+                                              t_factor + ( hue * t_factor * ( 1.0 - t_factor)
+                                                  * (1.97294 * cos( 2.0 * M_PI * (shift/3.0 + rotation * t_param ))))/2.0);
+
+                        mandlebrot.pixel = XAllocColor(dsp, screen_colormap, &mandlebrot);
+
                         /*
-                        sprintf(buf,"mand_height = %-8i", mand_height);
-                        fprintf(stderr,"%s\n",buf);
-                        XDrawImageString( dsp, win3, gc3, 10, 100, buf, strlen(buf));
+                        if ( XAllocColor(dsp, screen_colormap, &mandlebrot) == 0 ) {
+                            fprintf(stderr, "XAllocColor - gee .. mandlebrot fail.\n");
+                             exit(EXIT_FAILURE);
+                        }
                         */
 
                         if ( mand_height == mand_bail ) {
                             XSetForeground(dsp, gc, (unsigned long)0 );
                             XSetForeground(dsp, gc2, (unsigned long)0 );
                         } else {
-                            mandlebrot.pixel = (unsigned long)mandle_col ( (uint8_t)(mand_height & 0xff) );
                             XSetForeground(dsp, gc, mandlebrot.pixel);
                             XSetForeground(dsp, gc2, mandlebrot.pixel);
                         }
