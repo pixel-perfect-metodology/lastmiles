@@ -189,9 +189,9 @@ int main(int argc, char*argv[])
 
 
     mand_bail = 4096;
-    magnify = 64.0;
-    real_translate = -1.601562500000e-01;
-    imag_translate = -1.035156250000e+00;
+    magnify = 1024.0;
+    real_translate = -1.733398437500e-01;
+    imag_translate = -1.060058593750e+00;
 
 
     printf("\nmand_bail = %i\n", mand_bail);
