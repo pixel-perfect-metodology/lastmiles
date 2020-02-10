@@ -71,9 +71,16 @@ int main(int argc, char*argv[])
 
     /* We have a whole new method of dealing with color for
      * the mandlebrot and thus we need some intermediate vars */
-    double t_param, t_param_exponent, gamma, hue, rotation, shift, gamma_factor;
+    double t_param, t_param_exponent, gamma, hue, rotation;
+    double shift, gamma_factor;
     uint8_t red_bits, green_bits, blue_bits;
     double red_level, green_level, blue_level;
+
+    /* we can swap back and forth on the colour method with
+     * a trivial flag */
+    int colour_method_flag = 0;
+    int invert_me_dammit = 0;
+
     /* please see https://arxiv.org/abs/1108.5083 
      * A colour scheme for the display of astronomical intensity images
      * D. A. Green 25 Aug 2011 (v1), revised 30 Aug 2011
@@ -125,6 +132,14 @@ int main(int argc, char*argv[])
      * don't want to recompute the same region over and
      * over and over. */
     int vbox_flag[16][16];
+    /* Also we finally have use for the little box grid that we
+     * lay out and thus we will need the box coordinates */
+    int vbox_x, vbox_y;
+    /* well sooner or later we had to deal with this and 
+     * dropping it all on the stack is horrific but gets
+     * the job done */
+    uint32_t mandel_val[16][16][64][64];
+    memset( &mandel_val, 0x00, (size_t)(64*64*16*16)* sizeof(uint32_t));
 
     uint32_t mand_height, mand_bail;
 
@@ -134,10 +149,6 @@ int main(int argc, char*argv[])
     /* These are the initial and normalized mouse fp64 values
      * from within the viewport. */
     double win_x, win_y;
-
-    /* Also we finally have use for the little box grid that we
-     * lay out and thus we will need the box coordinates */
-    int vbox_x, vbox_y;
 
     /* small general purpose char buffer */
     char *buf = calloc((size_t)128,sizeof(unsigned char));
@@ -186,13 +197,16 @@ int main(int argc, char*argv[])
     imag_translate = -8.939456939698e-02;
     */
 
-
-
-    mand_bail = 4096;
-    magnify = 1024.0;
-    real_translate = -1.733398437500e-01;
-    imag_translate = -1.060058593750e+00;
-
+    mand_bail = 8192;
+    /*
+    magnify = pow( 2.0, 24.0 );
+    real_translate = -1.733230426908e-01;
+    imag_translate = -1.060097519309;
+    */
+    /* just a tad deeper */
+    magnify = pow( 2.0, 28.0 );
+    real_translate = -1.733230871615e-01;
+    imag_translate = -1.060097514187;
 
     printf("\nmand_bail = %i\n", mand_bail);
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
@@ -671,18 +685,18 @@ int main(int argc, char*argv[])
                         x_prime = x_prime + real_translate;
                         y_prime = y_prime + imag_translate;
 
-                        mand_height = mbrot( x_prime, y_prime, mand_bail );
-                        if ( mand_height == mand_bail ) {
-                            XSetForeground(dsp, gc, (unsigned long)0 );
+                        if ( vbox_flag[vbox_x][vbox_y] == 1 ) {
+                            mand_height = mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix];
                         } else {
-                            mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
-                            XSetForeground(dsp, gc, mandlebrot.pixel);
+                            mand_height = mbrot( x_prime, y_prime, mand_bail );
+                            mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix] = mand_height;
                         }
 
                         if ( mand_height == mand_bail ) {
                             XSetForeground(dsp, gc, (unsigned long)0 );
                             XSetForeground(dsp, gc2, (unsigned long)0 );
                         } else {
+                            mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
                             XSetForeground(dsp, gc, mandlebrot.pixel);
                             XSetForeground(dsp, gc2, mandlebrot.pixel);
                         }
@@ -705,17 +719,6 @@ int main(int argc, char*argv[])
 
                     }
                 }
-                /* thanks to mosh this was on the X11 clipboard
-                 *
-                 * https://www.beeradvocate.com/beer/profile/813/7451/
-                 *
-                 * regardless lets track that we actualyl did display
-                 * this vbox data already.
-                 *
-                 * Also .. what was that tripl kermeliet beer ?
-                 *
-                 */
-
                 vbox_flag[vbox_x][vbox_y] = 1;
 
                 clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
@@ -782,9 +785,19 @@ int main(int argc, char*argv[])
 
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
                 /* here we loop over the vbox coords */
+                if ( colour_method_flag ) {
+                    colour_method_flag = 0;
+                } else {
+                    colour_method_flag = 1;
+                    if ( invert_me_dammit == 0 ) {
+                        invert_me_dammit = 1;
+                    } else {
+                        invert_me_dammit = 0;
+                    }
+                }
                 for ( vbox_y = 0; vbox_y < 16; vbox_y++ ) {
                     for ( vbox_x = 0; vbox_x < 16; vbox_x++ ) {
-                        if ( 1 ) {   /* (vbox_flag[vbox_x][vbox_y] == 0) */
+                        if ( 1 ) { /* replace this with vbox_flag[vbox_x][vbox_y] == 0 */
                             for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
                                 vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
                                 for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
@@ -805,45 +818,57 @@ int main(int argc, char*argv[])
                                     x_prime = x_prime + real_translate;
                                     y_prime = y_prime + imag_translate;
 
-                                    mand_height = mbrot( x_prime, y_prime, mand_bail );
-
-                                    /* Patrick says we experiment with some better LSD color */
-                                    t_param = pow( 1.0 - ( (double)mand_height / (double)mand_bail ), t_param_exponent);
-                                    /* t_param = 1.0 - ( double)mand_height / (double)mand_bail; */
-                                    gamma_factor = pow( t_param, gamma );
-            
-                                    red_level  =  gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor )
-                                                    * ( -0.14861 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
-                                                    + 1.78277 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0;
-            
-                                    green_level = gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor )
-                                                    * ( -0.29227 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
-                                                    - 0.90649 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0;
-            
-                                    blue_level  = gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor)
-                                                    * (1.97294 * cos( 2.0 * M_PI * (shift/3.0 + rotation * t_param ))))/2.0;
-            
-                                    red_bits   = (uint8_t) ( 255.0 * cramp(red_level) );
-                                    green_bits = (uint8_t) ( 255.0 * cramp(green_level) );
-                                    blue_bits  = (uint8_t) ( 255.0 * cramp(blue_level) );
-            
-                                    mandlebrot.pixel = (unsigned long)( ( red_bits<<16 ) + ( green_bits<<8 ) + blue_bits );
-                                    XSetForeground(dsp, gc, mandlebrot.pixel);
-
-                                    /*
-                                    if ( mand_height == mand_bail ) {
-                                        XSetForeground(dsp, gc, (unsigned long)0 );
+                                    if ( vbox_flag[vbox_x][vbox_y] == 1 ) {
+                                        mand_height = mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix];
                                     } else {
-                                        mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
-                                        XSetForeground(dsp, gc, mandlebrot.pixel);
+                                        mand_height = mbrot( x_prime, y_prime, mand_bail );
+                                        mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix] = mand_height;
                                     }
-                                    */
+
+                                    if ( colour_method_flag ) {
+
+                                        if ( invert_me_dammit == 0 ) {
+                                            t_param = pow( ( (double)mand_height / (double)mand_bail ), t_param_exponent);
+                                        } else {
+                                            t_param = pow( 1.0 - ( (double)mand_height / (double)mand_bail ), t_param_exponent);
+                                        }
+    
+                                        gamma_factor = pow( t_param, gamma );
+                
+                                        red_level  =  gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor )
+                                                        * ( -0.14861 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
+                                                        + 1.78277 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0;
+                
+                                        green_level = gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor )
+                                                        * ( -0.29227 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
+                                                        - 0.90649 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0;
+                
+                                        blue_level  = gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor)
+                                                        * (1.97294 * cos( 2.0 * M_PI * (shift/3.0 + rotation * t_param ))))/2.0;
+                
+                                        red_bits   = (uint8_t) ( 255.0 * cramp(red_level) );
+                                        green_bits = (uint8_t) ( 255.0 * cramp(green_level) );
+                                        blue_bits  = (uint8_t) ( 255.0 * cramp(blue_level) );
+                
+                                        mandlebrot.pixel = (unsigned long)( ( red_bits<<16 ) + ( green_bits<<8 ) + blue_bits );
+
+                                        XSetForeground(dsp, gc, mandlebrot.pixel);
+
+                                    } else {
+
+                                        if ( mand_height == mand_bail ) {
+                                            XSetForeground(dsp, gc, (unsigned long)0 );
+                                        } else {
+                                            mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
+                                            XSetForeground(dsp, gc, mandlebrot.pixel);
+                                        }
+                                    }
 
                                     XDrawPoint(dsp, win, gc, vbox_ll_x + offset_x, ( eff_height - vbox_ll_y + offset_y ) );
 
                                 }
                             }
-                            /* vbox_flag[vbox_x][vbox_y] = 1; */
+                            vbox_flag[vbox_x][vbox_y] = 1;
                         }
                     }
                 }
