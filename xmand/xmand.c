@@ -181,38 +181,21 @@ int main(int argc, char*argv[])
      *    real_translate = -7.622470855713e-01;
      *    imag_translate = -8.939456939698e-02;
      *    real_translate = -1.609520912171e-01;
-     *    imag_translate = -1.038573741913;
-    magnify = pow( 2.0, 20.0);
-    real_translate = -1.609513163567e-01;
-    imag_translate = -1.038571417332e+00;
-     */
+     *    imag_translate = -1.038573741913; */
 
     /* TODO : scale and translate data should come from the command
      *          line as well as from mouse actions. */
 
-    /*
-    mand_bail = 512;
+    mand_bail = 8192;
     magnify = pow( 2.0, 16.0);
     real_translate = -7.622470855713e-01;
     imag_translate = -8.939456939698e-02;
-    */
-
-    mand_bail = 8192;
-    /*
-    magnify = pow( 2.0, 24.0 );
-    real_translate = -1.733230426908e-01;
-    imag_translate = -1.060097519309;
-    */
-    /* just a tad deeper */
-    magnify = pow( 2.0, 28.0 );
-    real_translate = -1.733230871615e-01;
-    imag_translate = -1.060097514187;
 
     printf("\nmand_bail = %i\n", mand_bail);
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
                                       real_translate, imag_translate );
 
-    printf("  magnify = %g\n\n", magnify );
+    printf("  magnify = %-+18.12e\n\n", magnify );
 
     /* some values for the new color computation */
     gamma = 1.5;
