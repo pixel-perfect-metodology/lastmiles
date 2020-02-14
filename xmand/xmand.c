@@ -186,7 +186,7 @@ int main(int argc, char*argv[])
     /* TODO : scale and translate data should come from the command
      *          line as well as from mouse actions. */
 
-    mand_bail = 1024;
+    mand_bail = 4096;
     magnify = pow( 2.0, 12.0 );
     /* real_translate = -1.74218750; */
     real_translate = -1.748657226562e+00;
