@@ -1,0 +1,82 @@
+
+
+C_nix$ 
+C_nix$ nvcc -ccbin g++ -I./inc -m64 -gencode arch=compute_30,code=sm_30 -c -o vadd.o vadd.cu 
+C_nix$ nvcc -ccbin g++ -m64 -gencode arch=compute_30,code=sm_30 -o vadd vadd.o -lgomp
+C_nix$ nvprof ./vadd
+
+---------+---------+---------+---------+---------+---------+---------+--
+==15335== NVPROF is profiling process 15335, command: ./vadd
+INFO : number of host CPUs:     2
+INFO : number of CUDA devices:  1
+     :    0: Quadro K4200
+---------+---------+---------+---------+---------+---------+---------+--
+[Vector addition of 500000 elements]
+INFO : Copy of vector A from host to device done.
+INFO : Copy of vector B from host to device done.
+CUDA kernel launch with 489 blocks of 1024 threads
+INFO : vectorAdd done.
+INFO : Copy output data from CUDA device to host memory done.
+INFO : A + B correct within error epsilon = 1e-09
+Done
+==15335== Warning: The user does not have permission to profile on the target device. See the following link for instructions to enable permissions and get more information: https://developer.nvidia.com/NVSOLN1000 
+==15335== Profiling application: ./vadd
+==15335== Profiling result:
+No kernels were profiled.
+No API activities were profiled.
+==15335== Warning: Some profiling data are not recorded. Make sure cudaProfilerStop() or cuProfilerStop() is called before application exit to flush profile data.
+C_nix$ getcap vadd
+C_nix$ 
+
+
+C_nix$ su - 
+Password: 
+nix# 
+nix# cd /home/dclarke/pgm/src/cuda/experiment0/
+nix# setcap cap_sys_admin+ep vadd
+nix# getcap vadd
+vadd = cap_sys_admin+ep
+nix# exit
+logout
+C_nix$ getcap vadd
+vadd = cap_sys_admin+ep
+C_nix$ nvprof ./vadd
+ERROR: ld.so: object 'libaccinj64.so.10.1' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored.
+
+---------+---------+---------+---------+---------+---------+---------+--
+==15484== NVPROF is profiling process 15484, command: ./vadd
+INFO : number of host CPUs:     2
+INFO : number of CUDA devices:  1
+     :    0: Quadro K4200
+---------+---------+---------+---------+---------+---------+---------+--
+[Vector addition of 500000 elements]
+INFO : Copy of vector A from host to device done.
+INFO : Copy of vector B from host to device done.
+CUDA kernel launch with 489 blocks of 1024 threads
+INFO : vectorAdd done.
+INFO : Copy output data from CUDA device to host memory done.
+INFO : A + B correct within error epsilon = 1e-09
+Done
+==15484== Profiling application: ./vadd
+==15484== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   62.83%  610.37us         2  305.18us  305.06us  305.31us  [CUDA memcpy HtoD]
+                   30.99%  301.09us         1  301.09us  301.09us  301.09us  [CUDA memcpy DtoH]
+                    6.18%  60.064us         1  60.064us  60.064us  60.064us  vectorAdd(float const *, float const *, float*, int)
+      API calls:   94.36%  50.124ms         3  16.708ms  83.705us  49.956ms  cudaMalloc
+                    3.38%  1.7930ms         3  597.65us  191.43us  1.2159ms  cudaMemcpy
+                    0.70%  374.36us         1  374.36us  374.36us  374.36us  cudaGetDeviceProperties
+                    0.45%  241.62us        97  2.4900us     241ns  101.42us  cuDeviceGetAttribute
+                    0.42%  224.98us         3  74.993us  53.751us  111.63us  cudaFree
+                    0.37%  198.29us         1  198.29us  198.29us  198.29us  cuDeviceTotalMem
+                    0.18%  98.013us         1  98.013us  98.013us  98.013us  cudaLaunchKernel
+                    0.09%  50.456us         1  50.456us  50.456us  50.456us  cuDeviceGetName
+                    0.01%  6.3670us         1  6.3670us  6.3670us  6.3670us  cuDeviceGetPCIBusId
+                    0.00%  2.4940us         3     831ns     247ns  1.7960us  cuDeviceGetCount
+                    0.00%  1.7930us         2     896ns     358ns  1.4350us  cuDeviceGet
+                    0.00%  1.2460us         1  1.2460us  1.2460us  1.2460us  cudaGetDeviceCount
+                    0.00%     431ns         1     431ns     431ns     431ns  cuDeviceGetUuid
+                    0.00%     269ns         1     269ns     269ns     269ns  cudaGetLastError
+C_nix$ 
+
+

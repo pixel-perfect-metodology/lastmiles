@@ -1,0 +1,134 @@
+
+
+lab$ sudo setcap cap_sys_admin+ep /home/dclarke/pgm/src/cuda/vector_add/vaddd
+lab$ getcap /home/dclarke/pgm/src/cuda/vector_add/vaddd
+/home/dclarke/pgm/src/cuda/vector_add/vaddd = cap_sys_admin+ep
+lab$ 
+
+
+nix$ 
+nix$ dpkg-query -l | grep 'NVIDIA Performance Primitive' | cut -c1-130
+ii  libnppc9.2:amd64                     9.2.148-7                           amd64        NVIDIA Performance Primitives core runti
+ii  libnppial9.2:amd64                   9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppicc9.2:amd64                   9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppicom9.2:amd64                  9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppidei9.2:amd64                  9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppif9.2:amd64                    9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppig9.2:amd64                    9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppim9.2:amd64                    9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppist9.2:amd64                   9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppisu9.2:amd64                   9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnppitc9.2:amd64                   9.2.148-7                           amd64        NVIDIA Performance Primitives lib for Im
+ii  libnpps9.2:amd64                     9.2.148-7                           amd64        NVIDIA Performance Primitives for signal
+nix$ nvidia-smi
+Sun Jan 26 21:18:08 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 418.74       Driver Version: 418.74       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Quadro K4200        On   | 00000000:01:00.0  On |                  N/A |
+| 31%   45C    P8    24W / 110W |     95MiB /  4036MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|    0      1035      G   /usr/lib/xorg/Xorg                            91MiB |
++-----------------------------------------------------------------------------+
+nix$ nvcc --version 
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2018 NVIDIA Corporation
+Built on Tue_Jun_12_23:07:04_CDT_2018
+Cuda compilation tools, release 9.2, V9.2.148
+nix$ 
+
+nix$ nvcc -ccbin g++ -I../include -m64 -gencode arch=compute_30,code=sm_30 -c -o vaddd.o vaddd.cu
+nix$ nvcc -ccbin g++ -m64 -gencode arch=compute_30,code=sm_30 -o vaddd vaddd.o -lgomp
+nix$ 
+
+
+
+nix$ 
+nix$ nvprof ./vaddd 
+
+---------+---------+---------+---------+---------+---------+---------+--
+==14521== NVPROF is profiling process 14521, command: ./vaddd
+INFO : number of host CPUs:     2
+INFO : number of CUDA devices:  1
+     :    0: Quadro K4200
+---------+---------+---------+---------+---------+---------+---------+--
+INFO : Vector addition of 500000 double FP64 elements
+     : Memory size is 4000000 bytes
+INFO : Copy of vector A from host to device done.
+INFO : Copy of vector B from host to device done.
+INFO : CUDA kernel launch with 489 blocks of 1024 threads
+INFO : vectorAdd done.
+INFO : Copy result vector A from device to host done.
+INFO : A + B correct within error epsilon =  1.000000000e-12
+INFO : host memory free and we are done
+==14521== Profiling application: ./vaddd
+==14521== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   49.31%  1.2210ms         2  610.49us  610.37us  610.62us  [CUDA memcpy HtoD]
+                   47.17%  1.1680ms         1  1.1680ms  1.1680ms  1.1680ms  [CUDA memcpy DtoH]
+                    3.52%  87.071us         1  87.071us  87.071us  87.071us  vectorAdd(double const *, double const *, double*, int)
+      API calls:   89.38%  49.645ms         3  16.548ms  110.27us  49.422ms  cudaMalloc
+                    6.09%  3.3843ms         3  1.1281ms  510.99us  2.1864ms  cudaMemcpy
+                    1.59%  884.10us         1  884.10us  884.10us  884.10us  cudaGetDeviceProperties
+                    1.47%  814.57us        96  8.4850us     360ns  358.64us  cuDeviceGetAttribute
+                    0.63%  350.48us         3  116.83us  91.443us  161.40us  cudaFree
+                    0.59%  327.58us         1  327.58us  327.58us  327.58us  cuDeviceTotalMem
+                    0.18%  101.96us         1  101.96us  101.96us  101.96us  cuDeviceGetName
+                    0.05%  25.095us         1  25.095us  25.095us  25.095us  cudaLaunchKernel
+                    0.01%  5.2350us         1  5.2350us  5.2350us  5.2350us  cuDeviceGetPCIBusId
+                    0.01%  3.1080us         3  1.0360us     433ns  2.0350us  cuDeviceGetCount
+                    0.00%  1.9060us         1  1.9060us  1.9060us  1.9060us  cudaGetDeviceCount
+                    0.00%  1.8250us         2     912ns     460ns  1.3650us  cuDeviceGet
+                    0.00%     224ns         1     224ns     224ns     224ns  cudaGetLastError
+nix$ 
+
+We may use the visual profiler also :
+
+nix$ nvcc -ccbin g++ -I./inc -m64 -gencode arch=compute_30,code=sm_30 -c -o vaddd.o vaddd.cu
+nix$ nvcc -ccbin g++ -m64 -gencode arch=compute_30,code=sm_30 -o vaddd vaddd.o -lgomp
+nix$ 
+nix$ pwd                                                       
+/home/dclarke/pgm/src/cuda/experiment0
+nix$ 
+nix$ nvvp -vm /usr/lib/jvm/nvidia-java-8-openjdk-amd64/bin/java
+nix$ 
+
+
+--------------------------------------------------------
+
+
+
+HOWEVER for a newer NVidia Quadro device we must use compute
+capability ( NVidia sales language ) level 7.0
+
+nix$ nvcc -ccbin g++ -I./inc -m64 -gencode arch=compute_70,code=sm_70 -c -o vaddd.o vaddd.cu
+nix$ nvcc -ccbin g++ -m64 -gencode arch=compute_70,code=sm_70 -o vaddd vaddd.o -lgomp
+
+That will NOT run on an older smaller K4200 : 
+
+nix$ nvprof ./vaddd 
+
+---------+---------+---------+---------+---------+---------+---------+--
+==15035== NVPROF is profiling process 15035, command: ./vaddd
+INFO : number of host CPUs:     2
+INFO : number of CUDA devices:  1
+     :    0: Quadro K4200
+---------+---------+---------+---------+---------+---------+---------+--
+INFO : Vector addition of 500000 double FP64 elements
+     : Memory size is 4000000 bytes
+INFO : Copy of vector A from host to device done.
+INFO : Copy of vector B from host to device done.
+INFO : CUDA kernel launch with 489 blocks of 1024 threads
+FAIL : CUDA failed vectorAdd
+FAIL : error no kernel image is available for execution on the device
+
+
+
