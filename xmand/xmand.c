@@ -187,10 +187,9 @@ int main(int argc, char*argv[])
      *          line as well as from mouse actions. */
 
     mand_bail = 4096;
-    magnify = pow( 2.0, 12.0 );
-    /* real_translate = -1.74218750; */
-    real_translate = -1.748657226562e+00;
-    imag_translate = -1.269531250000e-02;
+    magnify = pow( 2.0, 20 );
+    real_translate = -1.228348617542;
+    imag_translate =  1.055820466886e-01;
 
     printf("\nmand_bail = %i\n", mand_bail);
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
