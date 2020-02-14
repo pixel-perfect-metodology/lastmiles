@@ -271,3 +271,56 @@ Again with the sqrt call removed from the hot loop :
 
 [mand] =     120302153725 nsec
 
+
+--------------- memory starved VIA Eden Esther ---------------
+
+C_esther$ 
+C_esther$ ./xmand 
+-------------------------------------------------------------
+        system name = Linux
+          node name = esther
+            release = 5.5.2-genunix
+            version = #1 Fri Feb 7 17:42:45 GMT 2020
+            machine = i686
+          page size = 4096
+       avail memory = 166174720
+                    = 162280 kB
+                    = 158 MB
+-------------------------------------------------------------
+
+mand_bail = 8192
+translate = ( -1.733230871615e-01 , -1.060097514187e+00 )
+  magnify = 2.68435e+08
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 5760 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 007 , 003 ]
+c = ( -1.733230880346e-01 , -1.060097518174e+00 )
+[mand] =    1406688074906 nsec
+
+click at 462 796 
+vbox  [ 001 , 000 ]
+c = ( -1.733230932588e-01 , -1.060097521070e+00 )
+[mand] =      66110794949 nsec
+
+click at 103 995 
+vbox  [ 001 , 001 ]
+c = ( -1.733230933606e-01 , -1.060097520037e+00 )
+[mand] =      89261500267 nsec
+
+click at 96 924 
+right click
+click at 441 756 
+right click
+
+
+
+

@@ -78,7 +78,7 @@ int main(int argc, char*argv[])
 
     /* we can swap back and forth on the colour method with
      * a trivial flag */
-    int colour_method_flag = 0;
+    int colour_method_flag = 1;  /* Dennis Clarke LSD trippy */
     int invert_me_dammit = 0;
 
     /* please see https://arxiv.org/abs/1108.5083 
@@ -186,10 +186,11 @@ int main(int argc, char*argv[])
     /* TODO : scale and translate data should come from the command
      *          line as well as from mouse actions. */
 
-    mand_bail = 16384;
-    magnify = pow( 2.0, 0.0 );
-    real_translate = 0.0;
-    imag_translate = 0.0;
+    mand_bail = 1024;
+    magnify = pow( 2.0, 12.0 );
+    /* real_translate = -1.74218750; */
+    real_translate = -1.748657226562e+00;
+    imag_translate = -1.269531250000e-02;
 
     printf("\nmand_bail = %i\n", mand_bail);
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
