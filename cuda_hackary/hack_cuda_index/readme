@@ -1,0 +1,29 @@
+
+
+C_nix$ 
+C_nix$ nvidia-smi 
+Fri Feb 14 09:54:04 2020       
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 418.74       Driver Version: 418.74       CUDA Version: 10.1     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|===============================+======================+======================|
+|   0  Quadro K4200        On   | 00000000:01:00.0 Off |                  N/A |
+| 31%   45C    P8    23W / 110W |      1MiB /  4036MiB |      0%      Default |
++-------------------------------+----------------------+----------------------+
+                                                                               
++-----------------------------------------------------------------------------+
+| Processes:                                                       GPU Memory |
+|  GPU       PID   Type   Process name                             Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+C_nix$ 
+
+C_nix$ 
+C_nix$ nvcc -ccbin g++ -I../include -m64 -gencode arch=compute_30,code=sm_30 -c -o index_hack.o index_hack.cu
+C_nix$ nvcc -ccbin g++ -m64 -gencode arch=compute_30,code=sm_30 -o index_hack index_hack.o -lgomp 
+C_nix$ 
+
+

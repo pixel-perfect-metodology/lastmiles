@@ -26,7 +26,8 @@
 #include <cuda_profiler_api.h>
 #include <omp.h>
 
-#include "dat.h"
+#define NUM_ELEMENTS 1024
+#define THREADS_PER_BLOCK 1024
 
 int sysinfo(void);
 uint64_t system_memory();
@@ -39,7 +40,7 @@ __global__ void
 vector_idx_dump(uint64_t *C, int num_elements)
 {
     int i = blockDim.x * blockIdx.x + threadIdx.x;
-    C[i] = ( blockDim.x >> 20 ) + ( blockIdx.x >> 10 ) + threadIdx.x;
+    C[i] = ( blockDim.x << 20 ) + ( blockIdx.x << 10 ) + threadIdx.x;
 }
 
 int main(int argc, char *argv[])
@@ -143,17 +144,16 @@ int main(int argc, char *argv[])
     uint64_t foo, bar;
     for (int i = 0; i < num_elements; ++i)
     {
-        /* Lets undo this hackary 
-          * C[i] = blockDim.x * 1048576.0 + blockIdx.x * 1024.0 + threadIdx.x; 
-         */
-        fprintf(stderr,"%-10i    ",num_elements);
-        foo = d_C[i] >> 20;
-        fprintf(stderr,"blockDim.x = %" PRIu64 "    ", foo );
+        /* Lets undo this hackary */
+        printf("%-10i    ", i);
 
-        bar = ( ( d_C[i] >> 10 ) & 0x03ff );
-        fprintf(stderr,"blockIdx.x = %" PRIu64 "    ", bar );
+        foo = h_C[i] >> 20;
+        printf("blockDim.x = %" PRIu64 "    ", foo );
 
-        fprintf(stderr,"threadIdx.x = %-6i\n", d_C[i] & 0x03ff );
+        bar = ( ( h_C[i] >> 10 ) & 0x03ff );
+        printf("blockIdx.x = %" PRIu64 "    ", bar );
+
+        printf("threadIdx.x = %" PRIu64 "\n", h_C[i] & 0x03ff );
 
     }
 
