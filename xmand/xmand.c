@@ -633,7 +633,7 @@ int main(int argc, char*argv[])
     /* this t_delta is a baseline offset value wherein we at least
      * know how long the clock_gettime takes. Mostly. */
 
-    sprintf(buf,"[0000] tdelta = %16lld nsec", t_delta);
+    sprintf(buf,"[0000] tdelta = %14lld nsec", t_delta);
     XDrawImageString( dsp, win3, gc3, 10, 20, buf, (int)strlen(buf));
 
     /* plot some points on the grid that we created */
@@ -829,12 +829,14 @@ int main(int argc, char*argv[])
                 clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
 
                 t_delta = timediff( soln_t0, soln_t1 );
-                sprintf(buf,"[soln] = %16lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
+                sprintf(buf,"[soln] = %14lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
                 fprintf(stderr,"%s\n",buf);
                 XSetForeground(dsp, gc3, green.pixel);
                 XDrawImageString( dsp, win3, gc3, 10, 290, buf, (int)strlen(buf));
 
             }
+            /* TODO here we implement the FiggleFratz "jank" slider idea
+             * for input controls to modify essential parameters */
 
         } else if ( button == Button2 ) {
 
@@ -981,7 +983,7 @@ int main(int argc, char*argv[])
                             vbox_flag[vbox_x][vbox_y] = 1;
                             clock_gettime( CLOCK_MONOTONIC, &vbox_t1 );
                             t_delta = timediff( vbox_t0, vbox_t1);
-                            sprintf(buf,"[vbox] = %16lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
+                            sprintf(buf,"[vbox] = %14lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
                             XSetForeground(dsp, gc3, yellow.pixel);
                             XDrawImageString( dsp, win3, gc3, 10, 310, buf, (int)strlen(buf));
                         }
@@ -992,11 +994,10 @@ int main(int argc, char*argv[])
             XSetForeground(dsp, gc, yellow.pixel);
             clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
             t_delta = timediff( soln_t0, soln_t1 );
-            sprintf(buf,"[mand] = %16lld nsec", t_delta);
+            sprintf(buf,"[mand] = %14lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
             fprintf(stderr,"%s\n\n",buf);
             XSetForeground(dsp, gc2, red.pixel);
-            XDrawImageString( dsp, win2, gc2, 10, 310,
-                                       buf, (int)strlen(buf));
+            XDrawImageString( dsp, win2, gc2, 10, 310, buf, (int)strlen(buf));
 
         } else if ( button == Button3 ) {
 
@@ -1004,7 +1005,7 @@ int main(int argc, char*argv[])
             clock_gettime( CLOCK_MONOTONIC, &t1 );
             t_delta = timediff( t0, t1 );
 
-            sprintf(buf,"[%04i] tdelta = %16lld nsec",
+            sprintf(buf,"[%04i] tdelta = %14lld nsec",
                                             right_count, t_delta);
 
             XDrawImageString( dsp, win3, gc3, 10, 20,
