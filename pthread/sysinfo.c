@@ -27,8 +27,6 @@ uint64_t system_memory();
 int sysinfo(void) {
 
     struct utsname uname_data;
-    int inex;
-
     uint64_t sysmem = system_memory();
     uint64_t pagesize = (uint64_t)sysconf(_SC_PAGESIZE);
 

@@ -1,20 +1,19 @@
 
 CC=/usr/local/bin/gcc9
 
-CFLAGS= -I$(IDIR) -std=iso9899:1999 -pedantic -fno-builtin -m64 \
+CFLAGS= -I$(IDIR) -std=iso9899:1999 -pedantic -g -O0 -fno-builtin -m64 \
 	-mcpu=970 -mcall-freebsd -mno-altivec -mno-isel -mno-vsx \
 	-mno-crypto -mno-htm -mno-quad-memory-atomic -mfull-toc \
 	-mno-multiple -mupdate -mno-avoid-indexed-addresses \
 	-mno-dlmzb -mno-bit-align -mno-strict-align -mbig -mregnames \
-	-mno-recip -fno-unsafe-math-optimizations -O2
+	-mno-recip -fno-unsafe-math-optimizations -pedantic-errors \
+        -Wall
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600
 
 LIBS = -lX11 -lrt -lm
 
-CMPLEX_DIR=../complex_vector
-IDIR=/usr/local/include
 LDIR=/usr/local/lib
 
 SRCS = ./mandel_col.c \
@@ -37,7 +36,7 @@ OBJS = ./mandel_col.o \
 	../pthread/sysmem.o ../pthread/sysinfo.o
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I$(CMPLEX_DIR) -I$(IDIR)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
 xmand: xmand.o $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -L$(LDIR) $(LIBS)

@@ -62,7 +62,7 @@ int main(int argc, char*argv[])
     GC gc, gc2, gc3;
     Colormap screen_colormap;
     XEvent event;
-    Font fixed_font, type_font;
+    Font type_font;
 
     /* a very few colours */
     XColor red, green, blue, yellow, cyan, magenta;
@@ -91,9 +91,6 @@ int main(int argc, char*argv[])
      * in terms of its perceived brightness.
      */
 
-    Status retcode0;  /* not really needed for trivial stuff */
-    int retcode1, status;     /* curious what some funcs return */
-
     /* setup mouse x and y */
     int mouse_x = -1, mouse_y = -1;
     int invert_mouse_x,  invert_mouse_y;
@@ -115,14 +112,13 @@ int main(int argc, char*argv[])
     /* some primordial vars */
     int disp_width, disp_height, width, height;
     int conn_num, screen_num, depth;
-    int j, k, p, q, offset_x, offset_y;
-    int lx, ly, ux, uy, px, py;
+    int j, p, q, offset_x, offset_y;
+    int lx, ly, ux, uy;
     int gc2_x, gc2_y;
     int eff_width, eff_height, vbox_w, vbox_h;
     double obs_x_width, obs_y_height;
     double magnify, real_translate, imag_translate;
     double x_prime, y_prime;
-    double pixel_width, pixel_height;
 
     /* use the vbox lower left coords as reference */
     int vbox_ll_x, vbox_ll_y;
@@ -144,7 +140,6 @@ int main(int argc, char*argv[])
     uint32_t mand_height, mand_bail;
 
     int mand_x_pix, mand_y_pix;
-    double mand_mag;
 
     /* These are the initial and normalized mouse fp64 values
      * from within the viewport. */
@@ -207,9 +202,6 @@ int main(int argc, char*argv[])
     obs_x_width = 4.0 / magnify;
     obs_y_height = 4.0 / magnify;
 
-    pixel_width = obs_x_width / width;
-    pixel_height = obs_y_height / height;
-
     /* ensure we start with clear vbox flags */
     for ( p=0; p<16; p++ )
         for ( q=0; q<16; q++ )
@@ -237,8 +229,6 @@ int main(int argc, char*argv[])
 
     depth = XDefaultDepth(dsp,screen_num);
     printf("     : default depth is %i\n", depth);
-
-    fixed_font = XLoadFont(dsp, "fixed");
 
     /* really we need to get a list of the available fonts and then
      * use one that should work in the correct size
