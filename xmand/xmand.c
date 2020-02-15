@@ -110,6 +110,7 @@ int main(int argc, char*argv[])
     uint64_t t_delta;
 
     struct timespec t0, t1, now_time;
+    struct timespec vbox_t0, vbox_t1;
     struct timespec soln_t0, soln_t1;
 
     /* some primordial vars */
@@ -171,23 +172,8 @@ int main(int argc, char*argv[])
     }
     sysinfo();
 
-    /* test region 1
-     *    real_translate = -7.368164062500e-01;
-     *    imag_translate = -1.818847656250e-01;
-     *
-     * test region 2
-     *    real_translate = -1.769241333008;
-     *    imag_translate = -5.691528320312e-02;
-     *
-     * test region 3
-     *    magnify = pow( 2.0, 16.0);
-     *    real_translate = -7.622470855713e-01;
-     *    imag_translate = -8.939456939698e-02;
-     *    real_translate = -1.609520912171e-01;
-     *    imag_translate = -1.038573741913; */
-
-    /* TODO : scale and translate data should come from the command
-     *          line as well as from mouse actions. */
+    /* TODO : scale and translate data should come from
+     *        mouse actions. */
 
     errno = 0;
     if ( ( argc < 5 ) && ( argc > 1 ) ) {
@@ -198,7 +184,7 @@ int main(int argc, char*argv[])
         fprintf(stderr,"     :          double_imaginary\n");
         fprintf(stderr,"     : quitting.\n");
         return ( EXIT_FAILURE );
-    } else if ( argc == 5 ) {
+    } else if ( argc >= 5 ) {
         /* TODO 
          * check if the first char in argv[1] is a letter 'p' and then
          * assume the remaining digits represent a power of 2 */
@@ -211,12 +197,13 @@ int main(int argc, char*argv[])
         }
         if ( ( candidate_int < 256 ) || ( candidate_int > 65536 ) ){
             fprintf(stderr,"WARN : mandlebrot bail out is unreasonable\n");
-            fprintf(stderr,"     : we shall assume 1024 and proceed.\n");
-            mand_bail = (uint32_t)1024;
+            fprintf(stderr,"     : we shall assume 4096 and proceed.\n");
+            mand_bail = (uint32_t)4096;
         } else {
             mand_bail = (uint32_t)candidate_int;
         }
 
+        /* TODO fix this to use SCNu64 macro with uint64_t type */
         if ( sscanf( argv[2], "%lld", &candidate_magnify ) == 0 ) {
             fprintf(stderr,"INFO : magnify not understood as long long int\n");
 
@@ -253,15 +240,16 @@ int main(int argc, char*argv[])
             printf("\n");
         }
         if ( fpe_raised & FE_INEXACT ) {
-            printf("     : Perfectly safe to ignore FE_INEXACT\n");
+            printf("real : Perfectly safe to ignore FE_INEXACT\n");
         }
         if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
             fprintf(stderr,"FAIL : double real coordinate not understood\n");
             perror("     ");
             return ( EXIT_FAILURE );
         }
-        if ( !isnormal(candidate_double) ) {
+        if ( !isnormal(candidate_double) && ( candidate_double != 0.0 ) ) {
             fprintf(stderr,"FAIL : double real coordinate is not normal\n");
+            fprintf(stderr,"     : looks like %-+18.12e\n", candidate_double);
             return ( EXIT_FAILURE );
         }
         feclearexcept(FE_ALL_EXCEPT);
@@ -288,15 +276,16 @@ int main(int argc, char*argv[])
             printf("\n");
         }
         if ( fpe_raised & FE_INEXACT ) {
-            printf("     : Perfectly safe to ignore FE_INEXACT\n");
+            printf("imag : Perfectly safe to ignore FE_INEXACT\n");
         }
         if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
             fprintf(stderr,"FAIL : double imaginary coordinate not understood\n");
             perror("     ");
             return ( EXIT_FAILURE );
         }
-        if ( !isnormal(candidate_double) ) {
+        if ( !isnormal(candidate_double) && ( candidate_double != 0.0 ) ) {
             fprintf(stderr,"FAIL : double imaginary coordinate is not normal\n");
+            fprintf(stderr,"     : looks like %-+18.12e\n", candidate_double);
             return ( EXIT_FAILURE );
         }
         feclearexcept(FE_ALL_EXCEPT);
@@ -313,9 +302,9 @@ int main(int argc, char*argv[])
         fprintf(stderr,"WARN : No arguments received thus we have\n");
         fprintf(stderr,"     : some hard coded values ... enjoy.\n");
         mand_bail = 4096;
-        magnify = pow( 2.0, 24 );
-        real_translate = -7.425406774396e-01;
-        imag_translate = -1.044869220463e-01;
+        magnify = 1.0;
+        real_translate = 0.0;
+        imag_translate = 0.0;
     }
 
     printf("\nmand_bail = %i\n", mand_bail);
@@ -325,7 +314,7 @@ int main(int argc, char*argv[])
     printf("  magnify = %-+18.12e\n\n", magnify );
 
     /* some values for the new color computation */
-    gamma = 1.5;
+    gamma = 1.75;
     hue = 1.0;
     rotation = 5.0;
     shift = 1.0;
@@ -768,12 +757,18 @@ int main(int argc, char*argv[])
 
                 x_prime = x_prime + real_translate;
                 y_prime = y_prime + imag_translate;
+                fprintf(stderr,"c = ( %-+18.12e , %-+18.12e )\n", x_prime, y_prime );
 
                 XSetForeground(dsp, gc3, red.pixel);
-                sprintf(buf,"c = ( %-10.8e , %-10.8e )  ", x_prime, y_prime );
-                /* fprintf(stderr,"\n%s\n",buf); */
-                fprintf(stderr,"c = ( %-+18.12e , %-+18.12e )\n", x_prime, y_prime );
+                sprintf(buf,"   select = ( %-+16.10e , %-+16.10e )", x_prime, y_prime );
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
+                XSetForeground(dsp, gc3, green.pixel);
+                sprintf(buf,"mand_bail = %-6i        ", mand_bail);
+                XDrawImageString( dsp, win3, gc3, 10, 100, buf, (int)strlen(buf));
+                sprintf(buf,"  magnify = %18.12e", magnify);
+                XDrawImageString( dsp, win3, gc3, 10, 120, buf, (int)strlen(buf));
+                sprintf(buf,"   centre = ( %-+16.10e , %-+16.10e )", real_translate, imag_translate);
+                XDrawImageString( dsp, win3, gc3, 10, 140, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
                 /* time the computation */
@@ -815,6 +810,8 @@ int main(int argc, char*argv[])
 
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
+
+                        /* TODO actually compute the sub-pixel data someday */
                         XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 1, gc2_y );
                         XDrawPoint( dsp, win2, gc2, gc2_x + 2, gc2_y );
@@ -832,11 +829,10 @@ int main(int argc, char*argv[])
                 clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
 
                 t_delta = timediff( soln_t0, soln_t1 );
-                sprintf(buf,"[soln] = %16lld nsec", t_delta);
+                sprintf(buf,"[soln] = %16lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
                 fprintf(stderr,"%s\n",buf);
                 XSetForeground(dsp, gc3, green.pixel);
-                XDrawImageString( dsp, win3, gc3, 10, 290,
-                                  buf, (int)strlen(buf));
+                XDrawImageString( dsp, win3, gc3, 10, 290, buf, (int)strlen(buf));
 
             }
 
@@ -885,10 +881,15 @@ int main(int argc, char*argv[])
                 y_prime = y_prime + imag_translate;
 
                 XSetForeground(dsp, gc3, red.pixel);
-                sprintf(buf,"c = ( %-10.8e , %-10.8e )  ", x_prime, y_prime );
-                /* fprintf(stderr,"\n%s\n",buf); */
-                fprintf(stderr,"c = ( %-+18.12e , %-+18.12e )\n", x_prime, y_prime );
+                sprintf(buf,"   select = ( %-+16.10e , %-+16.10e )", x_prime, y_prime );
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
+                XSetForeground(dsp, gc3, green.pixel);
+                sprintf(buf,"mand_bail = %-6i        ", mand_bail);
+                XDrawImageString( dsp, win3, gc3, 10, 100, buf, (int)strlen(buf));
+                sprintf(buf,"  magnify = %18.12e", magnify);
+                XDrawImageString( dsp, win3, gc3, 10, 120, buf, (int)strlen(buf));
+                sprintf(buf,"   centre = ( %-+16.10e , %-+16.10e )", real_translate, imag_translate);
+                XDrawImageString( dsp, win3, gc3, 10, 140, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
@@ -905,7 +906,8 @@ int main(int argc, char*argv[])
                 }
                 for ( vbox_y = 0; vbox_y < 16; vbox_y++ ) {
                     for ( vbox_x = 0; vbox_x < 16; vbox_x++ ) {
-                        if ( 1 ) { /* replace this with vbox_flag[vbox_x][vbox_y] == 0 */
+                        if ( 1 ) { /* vbox_flag[vbox_x][vbox_y] == 0 */
+                            clock_gettime( CLOCK_MONOTONIC, &vbox_t0 );
                             for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
                                 vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
                                 for ( mand_x_pix = 0; mand_x_pix < vbox_w; mand_x_pix++ ) {
@@ -977,6 +979,11 @@ int main(int argc, char*argv[])
                                 }
                             }
                             vbox_flag[vbox_x][vbox_y] = 1;
+                            clock_gettime( CLOCK_MONOTONIC, &vbox_t1 );
+                            t_delta = timediff( vbox_t0, vbox_t1);
+                            sprintf(buf,"[vbox] = %16lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
+                            XSetForeground(dsp, gc3, yellow.pixel);
+                            XDrawImageString( dsp, win3, gc3, 10, 310, buf, (int)strlen(buf));
                         }
                     }
                 }
