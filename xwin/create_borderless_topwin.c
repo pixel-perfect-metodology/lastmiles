@@ -9,8 +9,9 @@
 
 Window
 create_borderless_topwin(Display *dsp,
-                         int width, int height,
-                         int offset_x, int offset_y, int bg_color)
+                         unsigned int width, unsigned int height,
+                         int offset_x, int offset_y,
+                         unsigned long bg_color)
 {
     Window wn;
     XSetWindowAttributes attribs;

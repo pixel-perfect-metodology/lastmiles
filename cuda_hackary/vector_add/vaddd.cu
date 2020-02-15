@@ -1,7 +1,4 @@
 /**
- * Copyright 1993-2015 NVIDIA Corporation.
- * All rights reserved.
- *
  * hacked at by Dennis Clarke for some twitch fun stuff
  * okay hacked a LOT.
  *

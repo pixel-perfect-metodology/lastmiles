@@ -20,6 +20,10 @@
 #include <string.h>
 #include <sched.h>
 #include <time.h>
+#include <math.h>
+#include <fenv.h>
+#pragma STDC FENV_ACCESS ON
+
 #include <locale.h>
 #include <unistd.h>
 #include <math.h>
@@ -28,8 +32,9 @@
 #include <pthread.h>
 
 Window create_borderless_topwin(Display *dsp,
-                         int width, int height,
-                         int x, int y, int bg_color);
+                         unsigned int width, unsigned int height,
+                         int x, int y,
+                         unsigned long bg_color);
 
 GC create_gc(Display *dsp, Window win);
 
@@ -44,15 +49,12 @@ uint32_t mandle_col( uint8_t height );
 uint32_t mbrot( double c_r, double c_i, uint32_t bail_out );
 
 /* Patrick says cramp that value damn it! */
-double cramp(double x) {
-    return x > 1.0 ? 1.0 : x < 0.0 ? 0.0 : x;
-}
+double cramp(double x);
 
 /* local defs where 1044 pixels is more or less full screen
  * and 660 pixels square fits into a neat 720p res OBS setup */
 #define WIN_WIDTH 1044
 #define WIN_HEIGHT 1044
-#define OFFSET 10
 
 int main(int argc, char*argv[])
 {
@@ -97,7 +99,8 @@ int main(int argc, char*argv[])
 
     /* these next five are just mouse button counters where the
      * roll_up and roll_dn are mouse wheel events */
-    int button, left_count, mid_count, right_count, roll_up, roll_dn;
+    int button = 0;
+    int left_count, mid_count, right_count, roll_up, roll_dn;
     left_count = 0;
     mid_count = 0;
     right_count = 0;
@@ -110,7 +113,8 @@ int main(int argc, char*argv[])
     struct timespec soln_t0, soln_t1;
 
     /* some primordial vars */
-    int disp_width, disp_height, width, height;
+    int disp_width, disp_height;
+    unsigned int width, height;
     int conn_num, screen_num, depth;
     int j, p, q, offset_x, offset_y;
     int lx, ly, ux, uy;
@@ -137,6 +141,10 @@ int main(int argc, char*argv[])
     uint32_t mandel_val[16][16][64][64];
     memset( &mandel_val, 0x00, (size_t)(64*64*16*16)* sizeof(uint32_t));
 
+    int candidate_int = 0;
+    long long unsigned int candidate_magnify = 0;
+    double candidate_double = 0.0;
+    int fpe_raised = 0;
     uint32_t mand_height, mand_bail;
 
     int mand_x_pix, mand_y_pix;
@@ -181,10 +189,134 @@ int main(int argc, char*argv[])
     /* TODO : scale and translate data should come from the command
      *          line as well as from mouse actions. */
 
-    mand_bail = 4096;
-    magnify = pow( 2.0, 24 );
-    real_translate = -7.425406774396e-01;
-    imag_translate = -1.044869220463e-01;
+    errno = 0;
+    if ( ( argc < 5 ) && ( argc > 1 ) ) {
+        fprintf(stderr,"FAIL : insufficient arguments provided\n");
+        fprintf(stderr,"     : usage %s bail_out_integer \\\n",argv[0]);
+        fprintf(stderr,"     :          magnify_integer \\\n");
+        fprintf(stderr,"     :          double_real \\\n");
+        fprintf(stderr,"     :          double_imaginary\n");
+        fprintf(stderr,"     : quitting.\n");
+        return ( EXIT_FAILURE );
+    } else if ( argc == 5 ) {
+        /* TODO 
+         * check if the first char in argv[1] is a letter 'p' and then
+         * assume the remaining digits represent a power of 2 */
+
+        candidate_int = (int)strtol(argv[1], (char **)NULL, 10);
+        if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+            fprintf(stderr,"FAIL : bail_out_integer not understood\n");
+            perror("     ");
+            return ( EXIT_FAILURE );
+        }
+        if ( ( candidate_int < 256 ) || ( candidate_int > 65536 ) ){
+            fprintf(stderr,"WARN : mandlebrot bail out is unreasonable\n");
+            fprintf(stderr,"     : we shall assume 1024 and proceed.\n");
+            mand_bail = (uint32_t)1024;
+        } else {
+            mand_bail = (uint32_t)candidate_int;
+        }
+
+        if ( sscanf( argv[2], "%lld", &candidate_magnify ) == 0 ) {
+            fprintf(stderr,"INFO : magnify not understood as long long int\n");
+
+            candidate_int = (int)strtol(argv[2], (char **)NULL, 10);
+            if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+                fprintf(stderr,"FAIL : magnify_integer not understood\n");
+                perror("     ");
+                return ( EXIT_FAILURE );
+            }
+            if ( ( candidate_int < 1 ) || ( candidate_int > ( 1<<30 ) ) ){
+                fprintf(stderr,"WARN : magnify_integer is unreasonable\n");
+                fprintf(stderr,"     : we shall assume 1 and proceed.\n");
+                magnify = 1.0;
+            } else {
+                magnify = (double)candidate_int;
+            }
+        } else {
+            fprintf(stderr,"INFO : magnify accepted as long long int\n");
+            magnify = (double)candidate_magnify;
+        }
+
+        errno = 0;
+        feclearexcept(FE_ALL_EXCEPT);
+        candidate_double = strtod(argv[3], (char **)NULL);
+        fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+        if (fpe_raised!=0){
+            printf("INFO : FP Exception raised is");
+            if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+            if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+            if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+            if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+            if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+            if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+            printf("\n");
+        }
+        if ( fpe_raised & FE_INEXACT ) {
+            printf("     : Perfectly safe to ignore FE_INEXACT\n");
+        }
+        if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+            fprintf(stderr,"FAIL : double real coordinate not understood\n");
+            perror("     ");
+            return ( EXIT_FAILURE );
+        }
+        if ( !isnormal(candidate_double) ) {
+            fprintf(stderr,"FAIL : double real coordinate is not normal\n");
+            return ( EXIT_FAILURE );
+        }
+        feclearexcept(FE_ALL_EXCEPT);
+        if ( ( candidate_double < -2.0 ) || ( candidate_double > 2.0 ) ){
+            fprintf(stderr,"WARN : double real coordinate is out of range\n");
+            fprintf(stderr,"     : value seen = %-+18.12e\n", candidate_double );
+            fprintf(stderr,"     : we shall assume zero.\n");
+            real_translate = 0.0;
+        } else {
+            real_translate = candidate_double;
+        }
+
+        errno = 0;
+        feclearexcept(FE_ALL_EXCEPT);
+        candidate_double = strtod(argv[4], (char **)NULL);
+        fpe_raised = fetestexcept(FE_ALL_EXCEPT);
+        if (fpe_raised!=0){
+            printf("INFO : FP Exception raised is");
+            if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
+            if ( fpe_raised & FE_DIVBYZERO ) printf(" FE_DIVBYZERO");
+            if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
+            if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
+            if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
+            printf("\n");
+        }
+        if ( fpe_raised & FE_INEXACT ) {
+            printf("     : Perfectly safe to ignore FE_INEXACT\n");
+        }
+        if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+            fprintf(stderr,"FAIL : double imaginary coordinate not understood\n");
+            perror("     ");
+            return ( EXIT_FAILURE );
+        }
+        if ( !isnormal(candidate_double) ) {
+            fprintf(stderr,"FAIL : double imaginary coordinate is not normal\n");
+            return ( EXIT_FAILURE );
+        }
+        feclearexcept(FE_ALL_EXCEPT);
+        if ( ( candidate_double < -2.0 ) || ( candidate_double > 2.0 ) ){
+            fprintf(stderr,"WARN : double imaginary coordinate is out of range\n");
+            fprintf(stderr,"     : value seen = %-+18.12e\n", candidate_double );
+            fprintf(stderr,"     : we shall assume zero.\n");
+            imag_translate = 0.0;
+        } else {
+            imag_translate = candidate_double;
+        }
+
+    } else {
+        fprintf(stderr,"WARN : No arguments received thus we have\n");
+        fprintf(stderr,"     : some hard coded values ... enjoy.\n");
+        mand_bail = 4096;
+        magnify = pow( 2.0, 24 );
+        real_translate = -7.425406774396e-01;
+        imag_translate = -1.044869220463e-01;
+    }
 
     printf("\nmand_bail = %i\n", mand_bail);
     printf("translate = ( %-+18.12e , %-+18.12e )\n",
@@ -241,7 +373,9 @@ int main(int argc, char*argv[])
     printf("     : display seems to be %i wide and %i high.\n",
                                    disp_width, disp_height);
 
-    if ( ( disp_width < width ) || ( disp_height < height ) ) {
+    if ( ( disp_width < (int)width )
+         ||
+         ( disp_height < (int)height ) ) {
         fprintf(stderr, "ERROR: screen is too small\n\n");
         exit(EXIT_FAILURE);
     }
@@ -253,9 +387,10 @@ int main(int argc, char*argv[])
     printf("     : offset x=%i y=%i\n", offset_x, offset_y);
 
     /* Our primary plotting windows is pale grey on the screen */
+    unsigned long gc_bg = 0x0f0f0f;
     win = create_borderless_topwin(dsp, width, height,
                                         offset_x, offset_y,
-                                        0x0f0f0f);
+                                        gc_bg);
     gc = create_gc(dsp, win);
 
     /* create a smaller darker window to the right */
@@ -364,9 +499,9 @@ int main(int argc, char*argv[])
     /* main plot window yellow pixel at each corner 5 pixels indent */
     XSetForeground(dsp, gc, yellow.pixel);
     XDrawPoint(dsp, win, gc, 5, 5);
-    XDrawPoint(dsp, win, gc, 5, height - 5);
-    XDrawPoint(dsp, win, gc, width - 5, 5);
-    XDrawPoint(dsp, win, gc, width - 5, height - 5);
+    XDrawPoint(dsp, win, gc, 5, (int)height - 5);
+    XDrawPoint(dsp, win, gc, (int)width - 5, 5);
+    XDrawPoint(dsp, win, gc, (int)width - 5, (int)height - 5);
 
     /* draw a blue box inside the second window */
     XSetForeground(dsp, gc2, blue.pixel);
@@ -410,8 +545,8 @@ int main(int argc, char*argv[])
     uy = offset_y;
 
     /* lower right point */
-    lx = width - offset_x;
-    ly = height - offset_y;
+    lx = (int)width - offset_x;
+    ly = (int)height - offset_y;
 
     /* therefore we have effective box width and height */
     eff_width = lx - ux;
@@ -456,7 +591,7 @@ int main(int argc, char*argv[])
 
     for ( j=offset_x + vbox_w; j<lx; j+=vbox_w ){
         XDrawLine(dsp, win, gc, j, 8, j, 12);
-        XDrawLine(dsp, win, gc, j, height - 8, j, height - 12);
+        XDrawLine(dsp, win, gc, j, (int)height - 8, j, (int)height - 12);
     }
     XFlush(dsp);
 
@@ -464,7 +599,7 @@ int main(int argc, char*argv[])
      * drawing area */
     for ( j = offset_y + vbox_h; j < ly; j += vbox_h ){
         XDrawLine(dsp, win, gc, 8, j, 12, j);
-        XDrawLine(dsp, win, gc, width - 8, j, width - 12, j);
+        XDrawLine(dsp, win, gc, (int)width - 8, j, (int)width - 12, j);
     }
     XFlush(dsp);
 
@@ -473,12 +608,12 @@ int main(int argc, char*argv[])
 
     /* draw the vertical lines */
     for ( j= offset_x + vbox_w; j<lx; j+=vbox_w ){
-        XDrawLine(dsp, win, gc, j, 13, j, height-13);
+        XDrawLine(dsp, win, gc, j, 13, j, (int)height - 13);
     }
 
     /* draw the horizontal lines */
     for ( j = offset_y + vbox_h; j<ly; j+=vbox_h ){
-        XDrawLine(dsp, win, gc, 13, j, width-13, j);
+        XDrawLine(dsp, win, gc, 13, j, (int)width - 13, j);
     }
 
     /* gc3 green text as default */
@@ -486,10 +621,10 @@ int main(int argc, char*argv[])
 
     /* royal blue border around the main viewport */
     XSetForeground(dsp, gc, royal_blue.pixel);
-    XDrawLine(dsp, win, gc, 10, 10, width - 10, 10);
-    XDrawLine(dsp, win, gc, width - 10, 10, width - 10, height - 10);
-    XDrawLine(dsp, win, gc, width - 10, height - 10, 10, height - 10);
-    XDrawLine(dsp, win, gc, 10, height - 10, 10, 10);
+    XDrawLine(dsp, win, gc, 10, 10, (int)width - 10, 10);
+    XDrawLine(dsp, win, gc, (int)width - 10, 10, (int)width - 10, (int)height - 10);
+    XDrawLine(dsp, win, gc, (int)width - 10, (int)height - 10, 10, (int)height - 10);
+    XDrawLine(dsp, win, gc, 10, (int)height - 10, 10, 10);
 
     XFlush(dsp);
 
@@ -510,7 +645,7 @@ int main(int argc, char*argv[])
      * know how long the clock_gettime takes. Mostly. */
 
     sprintf(buf,"[0000] tdelta = %16lld nsec", t_delta);
-    XDrawImageString( dsp, win3, gc3, 10, 20, buf, strlen(buf));
+    XDrawImageString( dsp, win3, gc3, 10, 20, buf, (int)strlen(buf));
 
     /* plot some points on the grid that we created */
     XSetForeground(dsp, gc, yellow.pixel);
@@ -593,17 +728,17 @@ int main(int argc, char*argv[])
                 sprintf(buf,"inv  [ %4i , %4i ]  ", invert_mouse_x, invert_mouse_y );
 
                 XSetForeground(dsp, gc2, green.pixel);
-                XDrawImageString( dsp, win2, gc2, 10, 230, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 230, buf, (int)strlen(buf));
 
                 sprintf(buf,"fp64( %-10.8e , %-10.8e )", win_x, win_y );
-                XDrawImageString( dsp, win2, gc2, 10, 250, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 250, buf, (int)strlen(buf));
 
                 /* a more useful value is the vbox[] coordinates for
                  * each of the 16x16 grid we previously laid out */
                 vbox_x = ( mouse_x - offset_x ) / vbox_w;
                 vbox_y = ( eff_height - mouse_y + offset_y ) / vbox_h;
                 sprintf(buf,"vbox  [ %03i , %03i ]", vbox_x, vbox_y );
-                XDrawImageString( dsp, win2, gc2, 10, 270, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 270, buf, (int)strlen(buf));
                 fprintf(stderr,"%s\n", buf);
 
                 /* Offset the floating point values such that the
@@ -613,7 +748,7 @@ int main(int argc, char*argv[])
 
                 XSetForeground(dsp, gc2, cornflowerblue.pixel);
                 sprintf(buf,"fp64( %-+10.8e , %-+10.8e )  ", win_x, win_y );
-                XDrawImageString( dsp, win2, gc2, 10, 290, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 290, buf, (int)strlen(buf));
 
                 /* At this moment we have normalized values for a
                  * location within the observation viewport. We can
@@ -638,7 +773,7 @@ int main(int argc, char*argv[])
                 sprintf(buf,"c = ( %-10.8e , %-10.8e )  ", x_prime, y_prime );
                 /* fprintf(stderr,"\n%s\n",buf); */
                 fprintf(stderr,"c = ( %-+18.12e , %-+18.12e )\n", x_prime, y_prime );
-                XDrawImageString( dsp, win3, gc3, 10, 80, buf, strlen(buf));
+                XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
                 /* time the computation */
@@ -701,7 +836,7 @@ int main(int argc, char*argv[])
                 fprintf(stderr,"%s\n",buf);
                 XSetForeground(dsp, gc3, green.pixel);
                 XDrawImageString( dsp, win3, gc3, 10, 290,
-                                  buf, strlen(buf));
+                                  buf, (int)strlen(buf));
 
             }
 
@@ -721,16 +856,16 @@ int main(int argc, char*argv[])
                 sprintf(buf,"inv  [ %4i , %4i ]  ", invert_mouse_x, invert_mouse_y );
 
                 XSetForeground(dsp, gc2, green.pixel);
-                XDrawImageString( dsp, win2, gc2, 10, 230, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 230, buf, (int)strlen(buf));
 
                 sprintf(buf,"fp64( %-10.8e , %-10.8e )", win_x, win_y );
-                XDrawImageString( dsp, win2, gc2, 10, 250, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 250, buf, (int)strlen(buf));
 
                 /* vbox[] coordinates for the 16x16 grid */
                 vbox_x = ( mouse_x - offset_x ) / vbox_w;
                 vbox_y = ( eff_height - mouse_y + offset_y ) / vbox_h;
                 sprintf(buf,"vbox  [ %03i , %03i ]", vbox_x, vbox_y );
-                XDrawImageString( dsp, win2, gc2, 10, 270, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 270, buf, (int)strlen(buf));
                 fprintf(stderr,"%s\n", buf);
 
                 /* Offset the floating point values such that the
@@ -740,7 +875,7 @@ int main(int argc, char*argv[])
 
                 XSetForeground(dsp, gc2, cornflowerblue.pixel);
                 sprintf(buf,"fp64( %-+10.8e , %-+10.8e )  ", win_x, win_y );
-                XDrawImageString( dsp, win2, gc2, 10, 290, buf, strlen(buf));
+                XDrawImageString( dsp, win2, gc2, 10, 290, buf, (int)strlen(buf));
 
                 x_prime = obs_x_width * win_x / 2.0;
                 y_prime = obs_y_height * win_y / 2.0;
@@ -753,7 +888,7 @@ int main(int argc, char*argv[])
                 sprintf(buf,"c = ( %-10.8e , %-10.8e )  ", x_prime, y_prime );
                 /* fprintf(stderr,"\n%s\n",buf); */
                 fprintf(stderr,"c = ( %-+18.12e , %-+18.12e )\n", x_prime, y_prime );
-                XDrawImageString( dsp, win3, gc3, 10, 80, buf, strlen(buf));
+                XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
@@ -854,7 +989,7 @@ int main(int argc, char*argv[])
             fprintf(stderr,"%s\n\n",buf);
             XSetForeground(dsp, gc2, red.pixel);
             XDrawImageString( dsp, win2, gc2, 10, 310,
-                                       buf, strlen(buf));
+                                       buf, (int)strlen(buf));
 
         } else if ( button == Button3 ) {
 
@@ -866,7 +1001,7 @@ int main(int argc, char*argv[])
                                             right_count, t_delta);
 
             XDrawImageString( dsp, win3, gc3, 10, 20,
-                               buf, strlen(buf));
+                               buf, (int)strlen(buf));
 
             t0.tv_sec = t1.tv_sec;
             t0.tv_nsec = t1.tv_nsec;
@@ -905,5 +1040,9 @@ int main(int argc, char*argv[])
 
     free(buf);
     return EXIT_SUCCESS;
+}
+
+double cramp(double x) {
+    return x > 1.0 ? 1.0 : x < 0.0 ? 0.0 : x;
 }
 

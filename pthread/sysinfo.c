@@ -20,15 +20,18 @@
 #include <locale.h>
 #include <sys/resource.h>
 #include <sys/utsname.h>
+#include <math.h>
+#include <fenv.h>
 #include <unistd.h>
 
-uint64_t system_memory();
+uint64_t system_memory(void);
 
 int sysinfo(void) {
 
     struct utsname uname_data;
     uint64_t sysmem = system_memory();
     uint64_t pagesize = (uint64_t)sysconf(_SC_PAGESIZE);
+    int fp_round_mode;
 
     setlocale( LC_MESSAGES, "C" );
     if ( uname( &uname_data ) < 0 ) {
@@ -54,7 +57,28 @@ int sysinfo(void) {
          *      printf ( "                    = %" PRIu64 " GB\n",
          *              sysmem/( 1024 * 1048576 ) );
          *  }
-        */
+         */
+        /* get the current floating point rounding mode */
+        fp_round_mode = fegetround();
+        printf("     fp rounding mode is ");
+        switch(fp_round_mode){
+            case FE_TONEAREST:
+                printf("FE_TONEAREST\n");
+                break;
+            case FE_TOWARDZERO:
+                printf("FE_TOWARDZERO\n");
+                break;
+            case FE_UPWARD:
+                printf("FE_UPWARD\n");
+                break;
+            case FE_DOWNWARD:
+                printf("FE_DOWNWARD\n");
+                break;
+            default:
+                printf("bloody unknown!\n");
+                break;
+        }
+
         printf ( "-------------------------------" );
         printf ( "------------------------------" );
     }
