@@ -122,6 +122,8 @@ int main(int argc, char*argv[])
     int gc2_x, gc2_y;
     int eff_width, eff_height, vbox_w, vbox_h;
     double obs_x_width, obs_y_height;
+    double sub_pixel_real, sub_pixel_imag;
+    double pixel_real_width, pixel_imag_height; 
     double magnify, real_translate, imag_translate;
     double x_prime, y_prime;
 
@@ -171,9 +173,6 @@ int main(int argc, char*argv[])
         srand48( (long) now_time.tv_nsec );
     }
     sysinfo();
-
-    /* TODO : scale and translate data should come from
-     *        mouse actions. */
 
     errno = 0;
     if ( ( argc < 5 ) && ( argc > 1 ) ) {
@@ -314,12 +313,15 @@ int main(int argc, char*argv[])
     printf("  magnify = %-+18.12e\n\n", magnify );
 
     /* some values for the new color computation */
-    gamma = 1.75;
+    gamma = 1.5;
     hue = 1.0;
     rotation = 5.0;
     shift = 1.0;
     t_param_exponent = 1.5;
 
+    /* TODO perhaps use the terms real and imaginary for the
+     * data axi and not just x and y. However x and y are nice
+     * and short */
     obs_x_width = 4.0 / magnify;
     obs_y_height = 4.0 / magnify;
 
@@ -769,6 +771,15 @@ int main(int argc, char*argv[])
                 XDrawImageString( dsp, win3, gc3, 10, 120, buf, (int)strlen(buf));
                 sprintf(buf,"   centre = ( %-+16.10e , %-+16.10e )", real_translate, imag_translate);
                 XDrawImageString( dsp, win3, gc3, 10, 140, buf, (int)strlen(buf));
+
+                /* what is the real and imaginary axi pixel width which
+                 * gets used by the physical screen ? */
+                pixel_real_width = obs_x_width / (double)eff_width;
+                sprintf(buf,"pixel_real_w = %-+16.10e",pixel_real_width);
+                XDrawImageString( dsp, win3, gc3, 10, 180, buf, (int)strlen(buf));
+                pixel_imag_height = obs_y_height / (double)eff_height;
+                sprintf(buf,"pixel_imag_h = %-+16.10e",pixel_imag_height);
+                XDrawImageString( dsp, win3, gc3, 10, 200, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
                 /* time the computation */
@@ -808,20 +819,32 @@ int main(int argc, char*argv[])
                                    vbox_ll_x + offset_x,
                                    ( eff_height - vbox_ll_y + offset_y ) );
 
+                        /* A few manual offsets of ( 16, 13 ) pixels to centre the
+                         * plot data into a subwindow of gc2 */
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
 
-                        /* TODO actually compute the sub-pixel data someday */
-                        XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y );
-                        XDrawPoint( dsp, win2, gc2, gc2_x + 1, gc2_y );
-                        XDrawPoint( dsp, win2, gc2, gc2_x + 2, gc2_y );
-                        XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y + 1 );
-                        XDrawPoint( dsp, win2, gc2, gc2_x + 1, gc2_y + 1 );
-                        XDrawPoint( dsp, win2, gc2, gc2_x + 2, gc2_y + 1 );
-                        XDrawPoint( dsp, win2, gc2, gc2_x, gc2_y + 2 );
-                        XDrawPoint( dsp, win2, gc2, gc2_x + 1, gc2_y + 2 );
-                        XDrawPoint( dsp, win2, gc2, gc2_x + 2, gc2_y + 2 );
+                        /* walk around the samples clock wise and begin with
+                         * offset the real coord by one third of pixel width */
+                        for ( p = 0; p < 3; p++ ) {
+                            for ( q = 0; q < 3; q++ ) {
+                                if ( 1 ) {  /* we can sort this out later */
+                                    sub_pixel_real = x_prime + ( p - 1 ) * pixel_real_width / 3.0;
+                                    sub_pixel_imag = y_prime + ( q - 1 ) * pixel_imag_height / -3.0;
 
+                                    mand_height = mbrot( sub_pixel_real, sub_pixel_imag, mand_bail );
+
+                                    if ( mand_height == mand_bail ) {
+                                        XSetForeground(dsp, gc2, (unsigned long)0 );
+                                    } else {
+                                        mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
+                                        XSetForeground(dsp, gc2, mandlebrot.pixel);
+                                    }
+
+                                    XDrawPoint( dsp, win2, gc2, gc2_x + p, gc2_y + q );
+                                }
+                            }
+                        }
                     }
                 }
                 vbox_flag[vbox_x][vbox_y] = 1;
