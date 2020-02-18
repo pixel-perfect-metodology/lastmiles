@@ -23,9 +23,9 @@
 #include <cuda_profiler_api.h>
 #include <omp.h>
 
-#define NUM_ELEMENTS 16777216
+#define NUM_ELEMENTS 67108864
 #define THREADS_PER_BLOCK 1024
-#define BAIL_OUT 4096
+#define BAIL_OUT 65536
 
 int sysinfo(void);
 uint64_t system_memory();
@@ -92,7 +92,8 @@ int main(int argc, char *argv[])
         fprintf(stderr,"ERROR : could not attain CLOCK_REALTIME\n");
         return(EXIT_FAILURE);
     } else {
-        srand48((long int)t0.tv_nsec);
+        /* srand48((long int)t0.tv_nsec); */
+        srand48(((long int)123456789));
     }
 
     /* determine the number of CUDA capable GPUs */
