@@ -23,7 +23,7 @@
 #include <cuda_profiler_api.h>
 #include <omp.h>
 
-#define NUM_ELEMENTS 1048576
+#define NUM_ELEMENTS 16777216
 #define THREADS_PER_BLOCK 1024
 #define BAIL_OUT 4096
 
@@ -249,37 +249,6 @@ int main(int argc, char *argv[])
     tdelta_nsec = timediff( t0, t1);
     printf("     : copy device result done %" PRIu64 " nsecs\n", tdelta_nsec);
 
-    /* for all of the data what was the height values in host_mval */
-    clock_gettime( CLOCK_REALTIME, &t0 );
-    int error_count = 0;
-    uint32_t delta_error_sum = 0;
-    for (int i = 0; i < num_elements; ++i)
-    {
-        check_val = cpu_mbrot( host_r[i], host_i[i], (uint32_t)BAIL_OUT );
-
-        if ( host_mval[i] != check_val ) {
-            printf("%-9i    :     ( %-+18.12e , %-+18.12e ) == %-6i",
-                                i, host_r[i], host_i[i], host_mval[i] );
-            printf("    ERROR %-6i    DELTA = ", check_val);
-            if ( host_mval[i] < check_val ){
-                delta_error_sum += check_val - host_mval[i];
-                printf("%i\n", check_val - host_mval[i]);
-            } else {
-                delta_error_sum += host_mval[i] - check_val;
-                printf("%i\n", host_mval[i] - check_val);
-            }
-            error_count += 1;
-        }
-    }
-    printf("     : Total error count = %i\n", error_count);
-    if ( error_count > 0 ) {
-        printf("     : Total delta error = %i\n", delta_error_sum);
-        printf("     : Mean error = %10.6f\n", (float)(delta_error_sum) / error_count);
-    }
-    clock_gettime( CLOCK_REALTIME, &t1 );
-    tdelta_nsec = timediff( t0, t1);
-    printf("     : data check done %" PRIu64 " nsecs\n", tdelta_nsec);
-
     /* Free device memory */
     err = cudaFree(device_r);
     if (err != cudaSuccess) {
@@ -301,6 +270,39 @@ int main(int argc, char *argv[])
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
     }
+
+    /* for all of the data what was the height values in host_mval */
+    clock_gettime( CLOCK_REALTIME, &t0 );
+    int error_count = 0;
+    uint32_t delta_error_sum = 0;
+    for (int i = 0; i < num_elements; ++i)
+    {
+        check_val = cpu_mbrot( host_r[i], host_i[i], (uint32_t)BAIL_OUT );
+
+        if ( host_mval[i] != check_val ) {
+
+            printf("%-9i    :     ( %-+18.12e , %-+18.12e ) == %-6i",
+                                i, host_r[i], host_i[i], host_mval[i] );
+            printf("    ERROR %-6i    DELTA = ", check_val);
+
+            if ( host_mval[i] < check_val ){
+                delta_error_sum += check_val - host_mval[i];
+                printf("%i\n", check_val - host_mval[i]);
+            } else {
+                delta_error_sum += host_mval[i] - check_val;
+                printf("%i\n", host_mval[i] - check_val);
+            }
+            error_count += 1;
+        }
+    }
+    printf("     : Total error count = %i\n", error_count);
+    if ( error_count > 0 ) {
+        printf("     : Total delta error = %i\n", delta_error_sum);
+        printf("     : Mean error = %10.6f\n", (float)(delta_error_sum) / error_count);
+    }
+    clock_gettime( CLOCK_REALTIME, &t1 );
+    tdelta_nsec = timediff( t0, t1);
+    printf("     : data check done %" PRIu64 " nsecs\n", tdelta_nsec);
 
     /* Free host memory */
     free(host_r);
