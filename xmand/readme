@@ -1,3 +1,11 @@
+
+
+A pretty example : 
+
+./xmand 4096 250000 +2.833992242813e-01 +9.314656257627e-03
+
+============================================================
+
 Horrifically slow example on ye VIA EDen Esther machine :
 
     magnify = pow( 2.0, 16.0);
