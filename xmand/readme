@@ -4,6 +4,11 @@ A pretty example :
 
 ./xmand 4096 250000 +2.833992242813e-01 +9.314656257627e-03
 
+Pentium II debian Linux server says : 
+
+[mand] =    57259796465 nsec   5.725980e+01 sec
+
+
 ============================================================
 
 Horrifically slow example on ye VIA EDen Esther machine :
