@@ -22,7 +22,9 @@
 #include <cuda_profiler_api.h>
 #include <omp.h>
 
-#include "dat.h"
+#define NUM_ELEMENTS 80000000
+#define THREADS_PER_BLOCK 256
+#define EPSILON 1e-12
 
 int sysinfo(void);
 uint64_t system_memory();

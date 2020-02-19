@@ -132,3 +132,71 @@ FAIL : error no kernel image is available for execution on the device
 
 
 
+A test on a Lenovo Laptop W541 model with a Quadro chip inside it : 
+
+C_styx$ nvcc -ccbin g++ -I../include -m64 -gencode arch=compute_30,code=sm_30 -c -o vaddd.o vaddd.cu
+C_styx$ nvcc -ccbin g++ -m64 -gencode arch=compute_30,code=sm_30 -o vaddd vaddd.o -lgomp
+C_styx$ nvprof ./vaddd
+-------------------------------------------------------------
+        system name = Linux
+          node name = styx
+            release = 4.19.0-8-amd64
+            version = #1 SMP Debian 4.19.98-1 (2020-01-26)
+            machine = x86_64
+          page size = 4096
+       avail memory = 16402386944
+                    = 16017956 kB
+                    = 15642 MB
+-------------------------------------------------------------
+==1191== NVPROF is profiling process 1191, command: ./vaddd
+INFO : number of host CPUs:     8
+INFO : number of CUDA devices:  1
+     :    0: Quadro K1100M
+INFO : Vector addition of 80000000 double FP64 elements
+     : Memory size of each array is 640000000 bytes
+     : random data loaded 2560669233 nsecs   2.560669 secs
+     : cudaMalloc(A) 92232777 nsecs  0.09223278 secs
+     : cudaMalloc(B) 1562559 nsecs  0.001562559 secs
+     : cudaMalloc(C) 1516225 nsecs  0.001516225 secs
+INFO : Copy of vector A from host to device done.
+     : cudaMemcpy() 181259496 nsecs  0.1812595 secs
+INFO : Copy of vector B from host to device done.
+     : cudaMemcpy() 198579680 nsecs  0.1985797 secs
+INFO : CUDA kernel launch with 312500 blocks of 256 threads
+INFO : vector_add done.
+     : vector_add 111830 nsecs  0.00011183 secs
+INFO : Copy result A from device to host done.
+     : cudaMemcpy() 549964970 nsecs   0.549965 secs
+INFO : A + B correct within error epsilon =  1.000000000e-12
+     : epsilon 508040032 nsecs    0.50804 secs
+INFO : host memory free and we are done
+==1191== Profiling application: ./vaddd
+==1191== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   53.39%  495.62ms         1  495.62ms  495.62ms  495.62ms  [CUDA memcpy DtoH]
+                   40.85%  379.23ms         2  189.61ms  180.97ms  198.26ms  [CUDA memcpy HtoD]
+                    5.77%  53.529ms         1  53.529ms  53.529ms  53.529ms  vector_add(double const *, double const *, double*, int)
+      API calls:   90.21%  929.68ms         3  309.89ms  181.21ms  549.94ms  cudaMemcpy
+                    9.24%  95.216ms         3  31.739ms  1.4795ms  92.195ms  cudaMalloc
+                    0.36%  3.7149ms         3  1.2383ms  1.0956ms  1.4865ms  cudaFree
+                    0.07%  772.49us         1  772.49us  772.49us  772.49us  cudaGetDeviceProperties
+                    0.07%  757.13us        96  7.8860us     185ns  358.41us  cuDeviceGetAttribute
+                    0.02%  205.12us         1  205.12us  205.12us  205.12us  cuDeviceTotalMem
+                    0.01%  122.30us         1  122.30us  122.30us  122.30us  cuDeviceGetName
+                    0.01%  71.094us         1  71.094us  71.094us  71.094us  cudaLaunchKernel
+                    0.00%  5.7500us         1  5.7500us  5.7500us  5.7500us  cuDeviceGetPCIBusId
+                    0.00%  2.0850us         3     695ns     312ns  1.1970us  cuDeviceGetCount
+                    0.00%  1.5770us         1  1.5770us  1.5770us  1.5770us  cudaGetDeviceCount
+                    0.00%  1.1380us         2     569ns     270ns     868ns  cuDeviceGet
+                    0.00%     530ns         1     530ns     530ns     530ns  cudaGetLastError
+C_styx$ 
+C_styx$ echo '36k 1.0 53.529 1000 / 80000000 / p /pq' | dc 
+.000000000669112500000000000000000000
+1494516990.790039044256384389770031198042182742
+C_styx$ 
+
+        so 1.5 GFlop in a laptop 
+
+
+
+
