@@ -23,9 +23,9 @@
 #include <cuda_profiler_api.h>
 #include <omp.h>
 
-#define NUM_ELEMENTS 67108864
+#define NUM_ELEMENTS 16777216
 #define THREADS_PER_BLOCK 1024
-#define BAIL_OUT 65536
+#define BAIL_OUT 4096
 
 int sysinfo(void);
 uint64_t system_memory();
@@ -188,12 +188,14 @@ int main(int argc, char *argv[])
     /* Copy the host input arrays in host memory
      * to the device memory */
     clock_gettime( CLOCK_REALTIME, &t0 );
-    if (cudaMemcpy(device_r, host_r, size_coord, cudaMemcpyHostToDevice) != cudaSuccess)
-    {
+    if ( cudaMemcpy(device_r,host_r,size_coord,cudaMemcpyHostToDevice)
+            != cudaSuccess) {
+
         err = cudaGetLastError();
-        fprintf(stderr, "FAIL : CUDA failed to copy real data from host to device\n");
+        fprintf(stderr, "FAIL : CUDA failed memcopy host to device\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
+
     }
     printf("INFO : Copy of real data from host to device done.\n");
     clock_gettime( CLOCK_REALTIME, &t1 );
@@ -202,12 +204,14 @@ int main(int argc, char *argv[])
 
 
     clock_gettime( CLOCK_REALTIME, &t0 );
-    if (cudaMemcpy(device_i, host_i, size_coord, cudaMemcpyHostToDevice) != cudaSuccess)
-    {
+    if ( cudaMemcpy(device_i,host_i,size_coord,cudaMemcpyHostToDevice)
+            != cudaSuccess) {
+
         err = cudaGetLastError();
-        fprintf(stderr, "FAIL : CUDA failed to copy imaginary data from host to device\n");
+        fprintf(stderr, "FAIL : CUDA failed memcopy host to device\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
+
     }
     printf("INFO : Copy of imaginary data from host to device done.\n");
     clock_gettime( CLOCK_REALTIME, &t1 );
@@ -217,15 +221,19 @@ int main(int argc, char *argv[])
 
     /* fire off the cuda "kernel" code blocks */
     int threadsPerBlock = THREADS_PER_BLOCK;
-    int blocksPerGrid =( num_elements + threadsPerBlock - 1 ) / threadsPerBlock;
-    printf("INFO : CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid, threadsPerBlock);
+    int blocksPerGrid = ( num_elements + threadsPerBlock - 1 )
+                        / threadsPerBlock;
+
+    printf("INFO : CUDA kernel launch with %d blocks of %d threads\n",
+                                       blocksPerGrid, threadsPerBlock);
 
     clock_gettime( CLOCK_REALTIME, &t0 );
+
+    /* the NVidia CUDA code format is a bit special */
     gpu_mbrot<<<blocksPerGrid, threadsPerBlock>>>( device_r, device_i, device_mval, num_elements );
 
     err = cudaGetLastError();
-    if (err != cudaSuccess)
-    {
+    if (err != cudaSuccess) {
         fprintf(stderr, "FAIL : CUDA failed\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
@@ -233,41 +241,45 @@ int main(int argc, char *argv[])
     printf("INFO : done.\n");
     clock_gettime( CLOCK_REALTIME, &t1 );
     tdelta_nsec = timediff( t0, t1);
-    printf("     : time delta %" PRIu64 " nsecs\n", tdelta_nsec);
-
+    printf("     : gpu_mbrot time delta %" PRIu64 " nsecs\n", tdelta_nsec);
 
     /* Copy the device result memory to the host result memory */
     clock_gettime( CLOCK_REALTIME, &t0 );
-    err = cudaMemcpy(host_mval, device_mval, size_height, cudaMemcpyDeviceToHost);
 
-    if (err != cudaSuccess) {
-        fprintf(stderr, "FAIL : CUDA failed to copy result device to host\n");
+    if ( cudaMemcpy(host_mval, device_mval,
+                    size_height,
+                    cudaMemcpyDeviceToHost) != cudaSuccess) {
+
+        fprintf(stderr, "FAIL : CUDA fail copy result to host\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
+
     }
+
     printf("INFO : Copy result from device to host done.\n");
     clock_gettime( CLOCK_REALTIME, &t1 );
     tdelta_nsec = timediff( t0, t1);
-    printf("     : copy device result done %" PRIu64 " nsecs\n", tdelta_nsec);
+    printf("     : copy device result done %" PRIu64 " nsecs\n",
+                                                          tdelta_nsec);
 
     /* Free device memory */
     err = cudaFree(device_r);
     if (err != cudaSuccess) {
-        fprintf(stderr, "FAIL : Failed to free memory on device for real\n");
+        fprintf(stderr, "FAIL : free memory on device for real\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
     }
 
     err = cudaFree(device_i);
     if (err != cudaSuccess) {
-        fprintf(stderr, "FAIL : Failed to free memory on device for imaginary\n");
+        fprintf(stderr, "FAIL : free memory on device for imaginary\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
     }
 
     err = cudaFree(device_mval);
     if (err != cudaSuccess) {
-        fprintf(stderr, "FAIL : Failed to free memory on device for mbrot value\n");
+        fprintf(stderr, "FAIL : free memory on device for mbrot value\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
         exit(EXIT_FAILURE);
     }
@@ -278,12 +290,13 @@ int main(int argc, char *argv[])
     uint32_t delta_error_sum = 0;
     for (int i = 0; i < num_elements; ++i)
     {
+
         check_val = cpu_mbrot( host_r[i], host_i[i], (uint32_t)BAIL_OUT );
 
         if ( host_mval[i] != check_val ) {
 
             printf("%-9i    :     ( %-+18.12e , %-+18.12e ) == %-6i",
-                                i, host_r[i], host_i[i], host_mval[i] );
+                               i, host_r[i], host_i[i], host_mval[i] );
             printf("    ERROR %-6i    DELTA = ", check_val);
 
             if ( host_mval[i] < check_val ){
@@ -299,7 +312,8 @@ int main(int argc, char *argv[])
     printf("     : Total error count = %i\n", error_count);
     if ( error_count > 0 ) {
         printf("     : Total delta error = %i\n", delta_error_sum);
-        printf("     : Mean error = %10.6f\n", (float)(delta_error_sum) / error_count);
+        printf("     : Mean error = %10.6f\n",
+                           (float)(delta_error_sum) / error_count);
     }
     clock_gettime( CLOCK_REALTIME, &t1 );
     tdelta_nsec = timediff( t0, t1);

@@ -95,7 +95,8 @@ int main(int argc, char*argv[])
 
     /* setup mouse x and y */
     int mouse_x = -1, mouse_y = -1;
-    int invert_mouse_x,  invert_mouse_y;
+    int invert_mouse_x, invert_mouse_y;
+    int mouse_x_raw, mouse_y_raw;
 
     /* these next five are just mouse button counters where the
      * roll_up and roll_dn are mouse wheel events */
@@ -385,7 +386,7 @@ int main(int argc, char*argv[])
     gc = create_gc(dsp, win);
 
     /* create a smaller darker window to the right */
-    unsigned long gc2_bg = 0x101000;
+    unsigned long gc2_bg = 0x080000;
     win2 = create_borderless_topwin(dsp, 400, 330, 1070, 740, gc2_bg );
     gc2 = create_gc(dsp, win2);
     XSetBackground(dsp, gc2, gc2_bg);
@@ -693,6 +694,11 @@ int main(int argc, char*argv[])
             break;
         }
 
+        mouse_x_raw = mouse_x;
+        mouse_y_raw = mouse_y;
+        XSetForeground(dsp, gc2, red.pixel);
+        sprintf(buf,"raw  [ %-4i , %-4i ]", mouse_x_raw, mouse_y_raw);
+        XDrawImageString( dsp, win2, gc2, 215, 210, buf, (int)strlen(buf));
         /* adjustment of one or two pixels */
         mouse_x = mouse_x - 1;
         mouse_y = mouse_y - 2;
@@ -808,11 +814,9 @@ int main(int argc, char*argv[])
 
                         if ( mand_height == mand_bail ) {
                             XSetForeground(dsp, gc, (unsigned long)0 );
-                            XSetForeground(dsp, gc2, (unsigned long)0 );
                         } else {
                             mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
                             XSetForeground(dsp, gc, mandlebrot.pixel);
-                            XSetForeground(dsp, gc2, mandlebrot.pixel);
                         }
 
                         XDrawPoint(dsp, win, gc,
@@ -828,21 +832,21 @@ int main(int argc, char*argv[])
                          * offset the real coord by one third of pixel width */
                         for ( p = 0; p < 3; p++ ) {
                             for ( q = 0; q < 3; q++ ) {
-                                if ( 1 ) {  /* we can sort this out later */
-                                    sub_pixel_real = x_prime + ( p - 1 ) * pixel_real_width / 3.0;
-                                    sub_pixel_imag = y_prime + ( q - 1 ) * pixel_imag_height / -3.0;
 
-                                    mand_height = mbrot( sub_pixel_real, sub_pixel_imag, mand_bail );
+                                sub_pixel_real = x_prime + ( p - 1 ) * pixel_real_width / 3.0;
+                                sub_pixel_imag = y_prime + ( q - 1 ) * pixel_imag_height / -3.0;
 
-                                    if ( mand_height == mand_bail ) {
-                                        XSetForeground(dsp, gc2, (unsigned long)0 );
-                                    } else {
-                                        mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
-                                        XSetForeground(dsp, gc2, mandlebrot.pixel);
-                                    }
+                                mand_height = mbrot( sub_pixel_real, sub_pixel_imag, mand_bail );
 
-                                    XDrawPoint( dsp, win2, gc2, gc2_x + p, gc2_y + q );
+                                if ( mand_height == mand_bail ) {
+                                    XSetForeground(dsp, gc2, (unsigned long)0 );
+                                } else {
+                                    mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
+                                    XSetForeground(dsp, gc2, mandlebrot.pixel);
                                 }
+
+                                XDrawPoint( dsp, win2, gc2, gc2_x + p, gc2_y + q );
+
                             }
                         }
                     }
