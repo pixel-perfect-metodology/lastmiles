@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <errno.h>
 #include <inttypes.h>
 
 uint32_t linear_inter( uint8_t  in_val,
@@ -37,54 +38,63 @@ int main(int argc, char **argv)
      *
      * 240 - 255 : magenta       -> white
      *             0xff00ff         0xffffff
-     *
-     *    if ( height < 32 ) {
-     *        cpixel = linear_inter( height, (uint32_t)0x0b104b,
-     *                                       (uint32_t)0x6973ee,
-     *                                       (uint8_t)0, (uint8_t)31);
-     *    } else if ( ( height > 31 ) && ( height < 64 ) ) {
-     *        cpixel = linear_inter( height, (uint32_t)0x6973ee,
-     *                                       (uint32_t)0xf73f3f,
-     *                                       (uint8_t)32, (uint8_t)63);
-     *    } else if ( ( height > 63 ) && ( height < 128 ) ) {
-     *        cpixel = linear_inter( height, (uint32_t)0xf73f3f,
-     *                                       (uint32_t)0xb7307b,
-     *                                       (uint8_t)64, (uint8_t)127);
-     *    } else if ( ( height > 127 ) && ( height < 160 ) ) {
-     *        cpixel = linear_inter( height, (uint32_t)0xb7307b,
-     *                                       (uint32_t)0xecff3a,
-     *                                       (uint8_t)128, (uint8_t)159);
-     *    } else if ( ( height > 159 ) && ( height < 192 ) ) {
-     *        cpixel = linear_inter( height, (uint32_t)0xecff3a,
-     *                                       (uint32_t)0x721a1a,
-     *                                       (uint8_t)160, (uint8_t)191);
-     *    } else if ( ( height > 191 ) && ( height < 224 ) ) {
-     *        cpixel = linear_inter( height, (uint32_t)0x721a1a,
-     *                                       (uint32_t)0x00ff00,
-     *                                       (uint8_t)192, (uint8_t)223);
-     *    } else if ( ( height > 223 ) && ( height < 240 ) ) {
-     *        cpixel = linear_inter( height, (uint32_t)0x00ff00,
-     *                                       (uint32_t)0xff00ff,
-     *                                       (uint8_t)224, (uint8_t)239);
-     *    } else {
-     *        cpixel = ( ( (uint32_t)( 255 - height ) ) << 16 )
-     *               + ( ( (uint32_t)( 255 - height ) ) << 8 )
-     *               +   ( (uint32_t)( 255 - height ) );
-     *    }
      */
 
-    uint8_t foo = 0;
+    errno = 0;
+    uint8_t tester = 0;
+    uint32_t cpixel = 0;
 
+    if ( argc < 2 ) return ( EXIT_FAILURE );
 
+    int candidate_int = (int)strtol(argv[1], (char **)NULL, 10);
+    if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+        fprintf(stderr,"FAIL : bail_out_integer not understood\n");
+        perror("     ");
+        return ( EXIT_FAILURE );
+    }
+    if ( ( candidate_int < 0 ) || ( candidate_int > 255 ) ){
+        fprintf(stderr,"WARN : be positive 8 bit my dude\n");
+        return ( EXIT_FAILURE );
+    }
 
-    printf ( "linear_inter(%i, (uint32_t)0x0b104b,", foo);
-    printf ( " (uint32_t)0x6973ee,\n");
-    printf ( "                 (uint8_t)0, (uint8_t)31) )\n");
-    printf ( "\n returns ");
-    printf ( "  0x%" PRIx32 "\n", linear_inter( foo, (uint32_t)0x0b104b,
-                                                     (uint32_t)0x6973ee,
-                                                     (uint8_t)0,
-                                                     (uint8_t)31) );
+    tester = candidate_int;
+
+    if ( tester < 32 ) {
+        cpixel = linear_inter( tester, (uint32_t)0x0b104b,
+                                       (uint32_t)0x6973ee,
+                                       (uint8_t)0, (uint8_t)31);
+    } else if ( ( tester > 31 ) && ( tester < 64 ) ) {
+        cpixel = linear_inter( tester, (uint32_t)0x6973ee,
+                                       (uint32_t)0xf73f3f,
+                                       (uint8_t)32, (uint8_t)63);
+    } else if ( ( tester > 63 ) && ( tester < 128 ) ) {
+        cpixel = linear_inter( tester, (uint32_t)0xf73f3f,
+                                       (uint32_t)0xb7307b,
+                                       (uint8_t)64, (uint8_t)127);
+    } else if ( ( tester > 127 ) && ( tester < 160 ) ) {
+        cpixel = linear_inter( tester, (uint32_t)0xb7307b,
+                                       (uint32_t)0xecff3a,
+                                       (uint8_t)128, (uint8_t)159);
+    } else if ( ( tester > 159 ) && ( tester < 192 ) ) {
+        cpixel = linear_inter( tester, (uint32_t)0xecff3a,
+                                       (uint32_t)0x721a1a,
+                                       (uint8_t)160, (uint8_t)191);
+    } else if ( ( tester > 191 ) && ( tester < 224 ) ) {
+        cpixel = linear_inter( tester, (uint32_t)0x721a1a,
+                                       (uint32_t)0x00ff00,
+                                       (uint8_t)192, (uint8_t)223);
+    } else if ( ( tester > 223 ) && ( tester < 240 ) ) {
+        cpixel = linear_inter( tester, (uint32_t)0x00ff00,
+                                       (uint32_t)0xff00ff,
+                                       (uint8_t)224, (uint8_t)239);
+    } else {
+        /* should never happen once this all works */
+        cpixel = ( ( (uint32_t)( 255 - tester ) ) << 16 )
+               + ( ( (uint32_t)( 255 - tester ) ) << 8 )
+               +   ( (uint32_t)( 255 - tester ) );
+    }
+
+    printf ( "  0x%" PRIx32 "\n", cpixel );
 
     return ( EXIT_SUCCESS );
 
