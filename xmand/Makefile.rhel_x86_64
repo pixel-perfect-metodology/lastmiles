@@ -4,9 +4,9 @@ CC=/opt/bw/gcc9/bin/gcc
 CFLAGS= -I$(IDIR) -std=iso9899:1999 -m64 -O0 -g -fno-builtin \
 	-pedantic -pedantic-errors \
 	-march=k8 -mtune=k8 -mieee-fp -mhard-float -mpc80 \
-	-fno-fast-math -malign-double \
+	-fno-fast-math -malign-double -mno-mmx \
 	-m128bit-long-double -mlong-double-80 \
-	-mstackrealign -mpreferred-stack-boundary=4 -mno-mmx \
+	-mstackrealign -mpreferred-stack-boundary=4
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600
