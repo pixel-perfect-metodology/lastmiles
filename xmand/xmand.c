@@ -148,6 +148,11 @@ int main(int argc, char*argv[])
     uint32_t mandel_val[16][16][64][64];
     memset( &mandel_val, 0x00, (size_t)(64*64*16*16)* sizeof(uint32_t));
 
+    /* pre-fill the lsd trippy color map */
+    for ( k=0; k<256; k++ ) {
+        lsd_trippy[k] = mandle_col((uint8_t)k);
+    }
+
     int candidate_int = 0;
     long long unsigned int candidate_magnify = 0;
     double candidate_double = 0.0;
@@ -818,7 +823,7 @@ int main(int argc, char*argv[])
                         if ( mand_height == mand_bail ) {
                             XSetForeground(dsp, gc, (unsigned long)0 );
                         } else {
-                            mandlebrot.pixel = mandle_col( (uint8_t)(mand_height & 0xff) );
+                            mandlebrot.pixel = lsd_trippy[ (uint8_t)(mand_height & 0xff) ];
                             XSetForeground(dsp, gc, mandlebrot.pixel);
                         }
 
@@ -844,7 +849,7 @@ int main(int argc, char*argv[])
                                 if ( mand_height == mand_bail ) {
                                     XSetForeground(dsp, gc2, (unsigned long)0 );
                                 } else {
-                                    mandlebrot.pixel = mandle_col( (uint8_t)(mand_height & 0xff) );
+                                    mandlebrot.pixel = lsd_trippy[ (uint8_t)(mand_height & 0xff) ];
                                     XSetForeground(dsp, gc2, mandlebrot.pixel);
                                 }
 
@@ -1001,7 +1006,7 @@ int main(int argc, char*argv[])
                                         if ( mand_height == mand_bail ) {
                                             XSetForeground(dsp, gc, (unsigned long)0 );
                                         } else {
-                                            mandlebrot.pixel = mandle_col( (uint8_t)(mand_height & 0xff) );
+                                            mandlebrot.pixel = lsd_trippy[ (uint8_t)(mand_height & 0xff) ];
                                             XSetForeground(dsp, gc, mandlebrot.pixel);
                                         }
                                     }

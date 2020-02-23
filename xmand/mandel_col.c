@@ -22,7 +22,7 @@ unsigned long linear_inter( uint8_t  in_val,
 
 unsigned long mandle_col ( uint8_t height )
 {
-    unsigned long cpixel;
+    unsigned long cpixel = 0;
     /* the idea on the table is to compute a reasonable
      * 32 bit value for RGBA data based on a range of
      * possible mandlebrot evaluations :
