@@ -45,6 +45,7 @@ uint64_t timediff( struct timespec st, struct timespec en );
 int sysinfo(void);
 
 unsigned long mandle_col( uint8_t height );
+unsigned long ndr( uint8_t height );
 
 uint32_t mbrot( double c_r, double c_i, uint32_t bail_out );
 
@@ -150,7 +151,7 @@ int main(int argc, char*argv[])
 
     /* pre-fill the lsd trippy color map */
     for ( k=0; k<256; k++ ) {
-        lsd_trippy[k] = mandle_col((uint8_t)k);
+        lsd_trippy[k] = ndr((uint8_t)k);
     }
 
     int candidate_int = 0;

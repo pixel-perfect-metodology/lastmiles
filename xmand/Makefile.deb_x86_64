@@ -13,7 +13,7 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 
 LIBS = -lX11 -lrt -lm
 
-SRCS = ./mandel_col.c \
+SRCS = ./mandel_col.c ./not_double_r_col.c \
 	./linear_inter.c \
 	./mbrot.c \
 	../xwin/x_error_handler.c \
@@ -23,7 +23,7 @@ SRCS = ./mandel_col.c \
 	../pthread/sysmem.c ../pthread/sysinfo.c
 
 
-OBJS = ./mandel_col.o \
+OBJS = ./mandel_col.o ./not_double_r_col.o \
 	./linear_inter.o \
 	./mbrot.o \
 	../xwin/x_error_handler.o \
