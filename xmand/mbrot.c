@@ -26,19 +26,13 @@ uint32_t mbrot( double c_r, double c_i, uint32_t bail_out )
     double tmp_r, tmp_i;
     double mag = 0.0;
 
-    while ( ( height < bail_out ) && ( mag < 4.0 ) ) {
+    while ( ( height < bail_out ) && ( mag <= 4.0 ) ) {
         tmp_r = ( zr * zr ) - ( zi * zi );
         tmp_i = ( zr * zi ) + ( zr * zi );
         zr = tmp_r + c_r;
         zi = tmp_i + c_i;
 
-        /* mag = sqrt( zr * zr + zi * zi ); 
-         *
-         * lets speed this up a little and lose the sqrt
-         *
-         * mag = zr * zr + zi * zi;
-         */
-
+        /* mag = sqrt( zr * zr + zi * zi ); */
         mag = zr * zr + zi * zi;
 
         height += 1;

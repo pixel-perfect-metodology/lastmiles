@@ -41,15 +41,15 @@ int sysinfo(void) {
     } else {
         printf ( "-------------------------------" );
         printf ( "------------------------------\n" );
-        printf ( "        system name = %s\n", uname_data.sysname );
-        printf ( "          node name = %s\n", uname_data.nodename );
-        printf ( "            release = %s\n", uname_data.release );
-        printf ( "            version = %s\n", uname_data.version );
-        printf ( "            machine = %s\n", uname_data.machine );
-        printf ( "          page size = %" PRIu64 "\n", pagesize );
-        printf ( "       avail memory = %" PRIu64 "\n", sysmem );
-        printf ( "                    = %" PRIu64 " kB\n", sysmem/1024 );
-        printf ( "                    = %" PRIu64 " MB\n", sysmem/1048576 );
+        printf ( "           system name = %s\n", uname_data.sysname );
+        printf ( "             node name = %s\n", uname_data.nodename );
+        printf ( "               release = %s\n", uname_data.release );
+        printf ( "               version = %s\n", uname_data.version );
+        printf ( "               machine = %s\n", uname_data.machine );
+        printf ( "             page size = %" PRIu64 "\n", pagesize );
+        printf ( "          avail memory = %" PRIu64 "\n", sysmem );
+        printf ( "                       = %" PRIu64 " kB\n", sysmem/1024 );
+        printf ( "                       = %" PRIu64 " MB\n", sysmem/1048576 );
         /*
          *  this doesn't really work for memory size near GB boundaries
          *
@@ -78,6 +78,7 @@ int sysinfo(void) {
                 printf("bloody unknown!\n");
                 break;
         }
+        printf ( " sizeof(unsigned long) = %i\n", sizeof(unsigned long) );
 
         printf ( "-------------------------------" );
         printf ( "------------------------------" );

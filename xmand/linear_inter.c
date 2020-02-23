@@ -18,9 +18,9 @@
 #include <unistd.h>
 #include <inttypes.h>
 
-uint32_t linear_inter( uint8_t  in_val,
-                       uint32_t low_col, uint32_t high_col,
-                       uint8_t  low_val, uint8_t upper_val)
+unsigned long linear_inter( uint8_t  in_val,
+                            uint32_t low_col, uint32_t high_col,
+                            uint8_t  low_val, uint8_t upper_val)
 {
     /* in_val is some number that should fall between
      *        the low_val and upper_val. If not then
@@ -51,7 +51,7 @@ uint32_t linear_inter( uint8_t  in_val,
     int lower_red, upper_red;
     int lower_green, upper_green;
     int lower_blue, upper_blue;
-    uint32_t cpixel;
+    unsigned long cpixel;
 
     if (    ( high_col & (uint32_t)0xff0000 )
          <= (  low_col & (uint32_t)0xff0000 ) ) {
@@ -128,9 +128,9 @@ uint32_t linear_inter( uint8_t  in_val,
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     }
 
-    cpixel = ( (uint32_t)red << 16 )
-           | ( (uint32_t)green << 8 )
-           |   (uint32_t)blue;
+    cpixel = (unsigned long)( (uint32_t)red << 16 ) 
+                            | ( (uint32_t)green << 8 ) 
+                            | (uint32_t)blue;
 
     return ( cpixel );
 

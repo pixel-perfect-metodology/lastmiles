@@ -44,7 +44,7 @@ uint64_t timediff( struct timespec st, struct timespec en );
 
 int sysinfo(void);
 
-uint32_t mandle_col( uint8_t height );
+unsigned long mandle_col( uint8_t height );
 
 uint32_t mbrot( double c_r, double c_i, uint32_t bail_out );
 
@@ -70,6 +70,9 @@ int main(int argc, char*argv[])
     XColor red, green, blue, yellow, cyan, magenta;
     XColor cornflowerblue, royal_blue, very_dark_grey;
     XColor mandlebrot;
+
+    /* pre-loaded 8-bit color map */
+    unsigned long lsd_trippy[256];
 
     /* We have a whole new method of dealing with color for
      * the mandlebrot and thus we need some intermediate vars */
@@ -118,7 +121,7 @@ int main(int argc, char*argv[])
     int disp_width, disp_height;
     unsigned int width, height;
     int conn_num, screen_num, depth;
-    int j, p, q, offset_x, offset_y;
+    int j, k, p, q, offset_x, offset_y;
     int lx, ly, ux, uy;
     int gc2_x, gc2_y;
     int eff_width, eff_height, vbox_w, vbox_h;
@@ -815,7 +818,7 @@ int main(int argc, char*argv[])
                         if ( mand_height == mand_bail ) {
                             XSetForeground(dsp, gc, (unsigned long)0 );
                         } else {
-                            mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
+                            mandlebrot.pixel = mandle_col( (uint8_t)(mand_height & 0xff) );
                             XSetForeground(dsp, gc, mandlebrot.pixel);
                         }
 
@@ -841,7 +844,7 @@ int main(int argc, char*argv[])
                                 if ( mand_height == mand_bail ) {
                                     XSetForeground(dsp, gc2, (unsigned long)0 );
                                 } else {
-                                    mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
+                                    mandlebrot.pixel = mandle_col( (uint8_t)(mand_height & 0xff) );
                                     XSetForeground(dsp, gc2, mandlebrot.pixel);
                                 }
 
@@ -998,7 +1001,7 @@ int main(int argc, char*argv[])
                                         if ( mand_height == mand_bail ) {
                                             XSetForeground(dsp, gc, (unsigned long)0 );
                                         } else {
-                                            mandlebrot.pixel = (unsigned long)mandle_col( (uint8_t)(mand_height & 0xff) );
+                                            mandlebrot.pixel = mandle_col( (uint8_t)(mand_height & 0xff) );
                                             XSetForeground(dsp, gc, mandlebrot.pixel);
                                         }
                                     }

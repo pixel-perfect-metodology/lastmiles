@@ -16,29 +16,29 @@
 #include <stdint.h>
 #include <unistd.h>
 
-uint32_t linear_inter( uint8_t  in_val,
-                       uint32_t low_col, uint32_t high_col,
-                       uint8_t  low_val, uint8_t upper_val);
+unsigned long linear_inter( uint8_t  in_val,
+                            uint32_t low_col, uint32_t high_col,
+                            uint8_t  low_val, uint8_t upper_val);
 
-uint32_t mandle_col ( uint8_t height )
+unsigned long mandle_col ( uint8_t height )
 {
-    uint32_t cpixel;
+    unsigned long cpixel;
     /* the idea on the table is to compute a reasonable
      * 32 bit value for RGBA data based on a range of
      * possible mandlebrot evaluations :
      *
      *  range val
-     *   0 - 31  : dark blue     ->  light blue
-     *             0x0b104b          0x6973ee
+     *   0 - 31  : dark blue     -> light blue
+     *             0x0b104b         0x6973ee
      *
-     *  32 - 63  : light blue    ->  light red
-     *             0x6973ee          0xf73f3f
+     *  32 - 63  : light blue    -> light red
+     *             0x6973ee         0xf73f3f
      *
-     *  64 - 127 : light red     ->  dark cyan
-     *             0xf73f3f          0xb7307b
+     *  64 - 127 : light red     -> dark cyan
+     *             0xf73f3f         0xb7307b
      *
-     * 128 - 159 : dark cyan     ->  bright yellow
-     *             0xb7307b          0xecff3a
+     * 128 - 159 : dark cyan     -> bright yellow
+     *             0xb7307b         0xecff3a
      *
      * 160 - 191 : bright yellow -> dark red
      *             0xecff3a         0x721a1a
