@@ -25,10 +25,6 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 
 LIBS = -lX11 -lrt -lm
 
-CMPLEX_DIR=../complex_vector
-IDIR=/usr/local/include
-LDIR=/usr/local/lib
-
 SRCS = ./mandel_col.c \
 	./linear_inter.c \
 	./mbrot.c \
@@ -49,10 +45,10 @@ OBJS = ./mandel_col.o \
 	../pthread/sysmem.o ../pthread/sysinfo.o
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I$(CMPLEX_DIR) -I$(IDIR)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
 xmand: xmand.o $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -L$(LDIR) $(LIBS)
+	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) $(LIBS)
 
 clean:
 	rm -f $(OBJS) xmand.o xmand
