@@ -81,11 +81,10 @@ uint32_t mandle_col ( uint8_t height )
         cpixel = linear_inter( height, (uint32_t)0x00ff00,
                                        (uint32_t)0xff00ff,
                                        (uint8_t)224, (uint8_t)239);
-    } else {
-        /* should never happen once this all works */
-        cpixel = ( ( (uint32_t)( 255 - height ) ) << 16 )
-               + ( ( (uint32_t)( 255 - height ) ) << 8 )
-               +   ( (uint32_t)( 255 - height ) );
+    } else if ( height > 239 ) {
+        cpixel = linear_inter( height, (uint32_t)0xff00ff,
+                                       (uint32_t)0xffffff,
+                                       (uint8_t)240, (uint8_t)255);
     }
 
     return ( cpixel );

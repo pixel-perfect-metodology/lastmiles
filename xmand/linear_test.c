@@ -67,6 +67,8 @@ uint32_t linear_inter( uint8_t  in_val,
         lower_red = (uint8_t)( (  low_col & (uint32_t)0xff0000 ) >> 16 );
 
     }
+    printf ( "upper_red   = %02" PRIx8 "  %3i\n", upper_red, upper_red );
+    printf ( "lower_red   = %02" PRIx8 "  %3i\n", lower_red, lower_red );
 
     if (    ( high_col & (uint32_t)0x00ff00 )
          <= (  low_col & (uint32_t)0x00ff00 ) ) {
@@ -82,6 +84,8 @@ uint32_t linear_inter( uint8_t  in_val,
         lower_green = (uint8_t)( (  low_col & (uint32_t)0x00ff00 ) >> 8 );
 
     }
+    printf ( "upper_green = %02" PRIx8 "  %3i\n", upper_green, upper_green );
+    printf ( "lower_green = %02" PRIx8 "  %3i\n", lower_green, lower_green );
 
     if (    ( high_col & (uint32_t)0x0000ff )
          <= (  low_col & (uint32_t)0x0000ff ) ) {
@@ -97,6 +101,8 @@ uint32_t linear_inter( uint8_t  in_val,
         lower_blue = (uint8_t)(  low_col & (uint32_t)0x0000ff );
 
     }
+    printf ( "upper_blue  = %02" PRIx8 "  %3i\n", upper_blue, upper_blue );
+    printf ( "lower_blue  = %02" PRIx8 "  %3i\n", lower_blue, lower_blue );
 
     if ( red_direction ) {
         red = (uint8_t)( lower_red
@@ -107,6 +113,7 @@ uint32_t linear_inter( uint8_t  in_val,
                 - ( upper_red - lower_red )
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     }
+    printf ( "\n        red = %02" PRIx8 "  %3i\n", red, red );
 
     if ( green_direction ) {
         green = (uint8_t)( lower_green
@@ -117,6 +124,7 @@ uint32_t linear_inter( uint8_t  in_val,
                 - ( upper_green - lower_green )
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     }
+    printf ( "      green = %02" PRIx8 "  %3i\n", green, green );
 
     if ( blue_direction ) {
         blue = (uint8_t)( lower_blue
@@ -127,6 +135,7 @@ uint32_t linear_inter( uint8_t  in_val,
                 - ( upper_blue - lower_blue )
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     }
+    printf ( "       blue = %02" PRIx8 "  %3i\n", blue, blue );
 
     cpixel = ( (uint32_t)red << 16 )
            | ( (uint32_t)green << 8 )

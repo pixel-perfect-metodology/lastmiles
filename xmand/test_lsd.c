@@ -47,17 +47,24 @@ int main(int argc, char **argv)
     if ( argc < 2 ) return ( EXIT_FAILURE );
 
     int candidate_int = (int)strtol(argv[1], (char **)NULL, 10);
-    if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
-        fprintf(stderr,"FAIL : bail_out_integer not understood\n");
+    if ( errno ) {
+        fprintf(stderr,"FAIL : what did you enter?\n");
+        if ( errno == ERANGE ) {
+            fprintf(stderr,"FAIL : integer out of range?\n");
+        }
+        if ( errno == EINVAL ) {
+            fprintf(stderr,"FAIL : integer invalid?\n");
+        }
         perror("     ");
         return ( EXIT_FAILURE );
     }
+
     if ( ( candidate_int < 0 ) || ( candidate_int > 255 ) ){
         fprintf(stderr,"WARN : be positive 8 bit my dude\n");
         return ( EXIT_FAILURE );
     }
 
-    tester = candidate_int;
+    tester = (uint8_t)candidate_int;
 
     if ( tester < 32 ) {
         cpixel = linear_inter( tester, (uint32_t)0x0b104b,
@@ -87,14 +94,13 @@ int main(int argc, char **argv)
         cpixel = linear_inter( tester, (uint32_t)0x00ff00,
                                        (uint32_t)0xff00ff,
                                        (uint8_t)224, (uint8_t)239);
-    } else {
-        /* should never happen once this all works */
-        cpixel = ( ( (uint32_t)( 255 - tester ) ) << 16 )
-               + ( ( (uint32_t)( 255 - tester ) ) << 8 )
-               +   ( (uint32_t)( 255 - tester ) );
+    } else if ( tester > 239 ) {
+        cpixel = linear_inter( tester, (uint32_t)0xff00ff,
+                                       (uint32_t)0xffffff,
+                                       (uint8_t)240, (uint8_t)255);
     }
 
-    printf ( "  0x%" PRIx32 "\n", cpixel );
+    printf ( "  0x%06" PRIx32 "\n", cpixel );
 
     return ( EXIT_SUCCESS );
 
