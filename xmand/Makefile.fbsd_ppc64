@@ -15,6 +15,7 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 LIBS = -lX11 -lrt -lm
 
 LDIR=/usr/local/lib
+IDIR=/usr/local/include
 
 SRCS = ./mandel_col.c \
 	./linear_inter.c \
@@ -36,10 +37,11 @@ OBJS = ./mandel_col.o \
 	../pthread/sysmem.o ../pthread/sysinfo.o
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I$(IDIR)
 
 xmand: xmand.o $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -L$(LDIR) $(LIBS)
 
 clean:
 	rm -f $(OBJS) xmand.o xmand
+
