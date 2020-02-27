@@ -1,10 +1,10 @@
 
 CC=/usr/bin/cc
 
-CFLAGS= -I$(IDIR) -std=iso9899:1999 -fno-builtin -march=armv7-a \
+CFLAGS= -I$(IDIR) -std=iso9899:1999 -march=armv7-a \
 	-mtune=cortex-a17 -mfpu=vfpv4-d16 -mstructure-size-boundary=32 \
 	-marm -mtls-dialect=gnu2 -pedantic -Wl,-rpath=/opt/bw/lib \
-	-mno-sched-prolog -mlittle-endian -O0 -g
+	-mno-sched-prolog -mlittle-endian -O2
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600
