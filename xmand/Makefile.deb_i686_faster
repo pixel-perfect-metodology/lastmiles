@@ -8,7 +8,7 @@ CFLAGS= -I$(IDIR) -std=iso9899:1999 -m32 -O2 -pedantic \
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600
 
-LIBS = -lX11 -lrt -lm
+LIBS = -lX11 -lrt -lm -lpthread
 
 SRCS = ./mandel_col.c \
 	./linear_inter.c \
