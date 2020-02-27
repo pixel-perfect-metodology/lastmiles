@@ -760,7 +760,7 @@ int main(int argc, char*argv[])
 
         if ( button == Button1 ){
 
-            /* printf("leftclick"); */
+            /* leftclick */
 
             if (    ( mouse_x >=  offset_x ) && ( mouse_y >= offset_y )
                  && ( mouse_x < ( eff_width + offset_x ) )
