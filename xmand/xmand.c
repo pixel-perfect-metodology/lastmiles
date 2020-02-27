@@ -847,54 +847,54 @@ int main(int argc, char*argv[])
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
                 if ( vbox_flag[vbox_x][vbox_y] == 0 ) {
-                for ( pt = 0; pt < pthread_limit; pt++ ) {
-                    parm[pt]->r_translate = real_translate;
-                    parm[pt]->i_translate = imag_translate;
-                    parm[pt]->obs_x_width = obs_x_width;
-                    parm[pt]->obs_y_height = obs_y_height;
-                    parm[pt]->vbox_x = vbox_x;
-                    parm[pt]->vbox_y = vbox_y;
-                    parm[pt]->eff_width = eff_width;
-                    parm[pt]->eff_height = eff_height;
-                    parm[pt]->vbox_w = vbox_w;
-                    parm[pt]->vbox_h = vbox_h;
-                    parm[pt]->bail_out = mand_bail;
-                    parm[pt]->v = &mandel_val;
-                    parm[pt]->ret_val = 0;
-
-                    pthread_create( &tid[pt], NULL, mbrot_vbox_pthread, (void *)parm[pt] );
-                    /*
-                     * The pthread_create() function can return any of the following errors:
-                     *
-                     * [ENOMEM]  The system lacked the necessary resources to create
-                     *           another thread.
-                     *
-                     * [EAGAIN]  The system-imposed limit on the total number of
-                     *           threads in a process [PTHREAD_THREADS_MAX] would be
-                     *           exceeded.
-                     *
-                     * [EAGAIN]  The RACCT_NTHR limit would be exceeded; see racct(2).
-                     *
-                     * [EPERM]   The caller does not have permission to set the
-                     *           scheduling parameters or scheduling policy.
-                     *
-                     * [EINVAL]  A value specified by attr is invalid.
-                     *
-                     * [EDEADLK] The CPU set specified by attr would prevent the thread
-                     *           from running on any CPU.
-                     *
-                     * [EFAULT]  The stack base specified by attr is invalid, or the
-                     *           kernel was unable to put required initial data on the
-                     *           stack.
-                     */
-                }
-                /* join them back in home .. thank you and yes this is a blocking
-                 * situation. Nothing happens while we await the thread. */
-                for ( pt = 0; pt < pthread_limit; pt++ ) {
-                    pthread_join( tid[pt], NULL );
-                    printf("PTHRD: join %i done\n", pt);
-                }
-                vbox_flag[vbox_x][vbox_y] = 1;
+                    for ( pt = 0; pt < pthread_limit; pt++ ) {
+                        parm[pt]->r_translate = real_translate;
+                        parm[pt]->i_translate = imag_translate;
+                        parm[pt]->obs_x_width = obs_x_width;
+                        parm[pt]->obs_y_height = obs_y_height;
+                        parm[pt]->vbox_x = vbox_x;
+                        parm[pt]->vbox_y = vbox_y;
+                        parm[pt]->eff_width = eff_width;
+                        parm[pt]->eff_height = eff_height;
+                        parm[pt]->vbox_w = vbox_w;
+                        parm[pt]->vbox_h = vbox_h;
+                        parm[pt]->bail_out = mand_bail;
+                        parm[pt]->v = &mandel_val;
+                        parm[pt]->ret_val = 0;
+    
+                        pthread_create( &tid[pt], NULL, mbrot_vbox_pthread, (void *)parm[pt] );
+                        /*
+                         * The pthread_create() function can return any of the following errors:
+                         *
+                         * [ENOMEM]  The system lacked the necessary resources to create
+                         *           another thread.
+                         *
+                         * [EAGAIN]  The system-imposed limit on the total number of
+                         *           threads in a process [PTHREAD_THREADS_MAX] would be
+                         *           exceeded.
+                         *
+                         * [EAGAIN]  The RACCT_NTHR limit would be exceeded; see racct(2).
+                         *
+                         * [EPERM]   The caller does not have permission to set the
+                         *           scheduling parameters or scheduling policy.
+                         *
+                         * [EINVAL]  A value specified by attr is invalid.
+                         *
+                         * [EDEADLK] The CPU set specified by attr would prevent the thread
+                         *           from running on any CPU.
+                         *
+                         * [EFAULT]  The stack base specified by attr is invalid, or the
+                         *           kernel was unable to put required initial data on the
+                         *           stack.
+                         */
+                    }
+                    /* join them back in home .. thank you and yes this is a blocking
+                     * situation. Nothing happens while we await the thread. */
+                    for ( pt = 0; pt < pthread_limit; pt++ ) {
+                        pthread_join( tid[pt], NULL );
+                        printf("PTHRD: join %i done\n", pt);
+                    }
+                    vbox_flag[vbox_x][vbox_y] = 1;
                 }
 
                 for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
@@ -932,9 +932,6 @@ int main(int argc, char*argv[])
                         /* walk around the samples clock wise and begin with
                          * offset the real coord by one third of pixel width */
 
-                        /* TODO fark around with threads and forget this
-                         *
-                         *
                         for ( p = 0; p < 3; p++ ) {
                             for ( q = 0; q < 3; q++ ) {
 
@@ -954,7 +951,6 @@ int main(int argc, char*argv[])
 
                             }
                         }
-                        */
                     }
                 }
 
