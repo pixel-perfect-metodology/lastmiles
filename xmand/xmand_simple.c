@@ -48,37 +48,16 @@ unsigned long mandle_col( uint8_t height );
 
 uint32_t mbrot( double c_r, double c_i, uint32_t bail_out );
 
+/* Patrick says cramp that value damn it! */
+double cramp(double x);
+
 /* local defs where 1044 pixels is more or less full screen
  * and 660 pixels square fits into a neat 720p res OBS setup */
 #define WIN_WIDTH 1044
 #define WIN_HEIGHT 1044
 
-/* lets live with the crazy notion that we may have a bonkers
- * AMD ThreadRipper in our lives someday and just say sure we
- * can dispatch 256 threads at once. Someday. In dreams. */
-#define NUM_THREADS 256
-
-/*
- * struct to pass params to dispatched thread
- * in generaly arrange the data from large to
- * small in terms of memory footprint.
- */
-typedef struct {
-    double r_translate, i_translate, magnify;
-    double obs_x_width, obs_y_height;
-    uint32_t (*v)[16][16][64][64];
-    uint64_t ret_val;
-    int vbox_x, vbox_y;
-    int eff_width, eff_height;
-    int vbox_w, vbox_h;
-    uint32_t bail_out;
-} thread_parm_t;
-
-void *mbrot_vbox_pthread(void *recv_parm);
-
 int main(int argc, char*argv[])
 {
-    pthread_t tid[NUM_THREADS]; /* array of thread IDs */
     /* our display and window and graphics context */
     Display *dsp;
     Window win, win2, win3;
@@ -138,16 +117,11 @@ int main(int argc, char*argv[])
     struct timespec vbox_t0, vbox_t1;
     struct timespec soln_t0, soln_t1;
 
-    /* lets assume the user will specify some number of
-     * threads to dispatch at once. For now we will hard 
-     * code a silly limit */
-    int pthread_limit = 1;
-
     /* some primordial vars */
     int disp_width, disp_height;
     unsigned int width, height;
     int conn_num, screen_num, depth;
-    int j, k, p, q, pt, offset_x, offset_y;
+    int j, k, p, q, offset_x, offset_y;
     int lx, ly, ux, uy;
     int gc2_x, gc2_y;
     int eff_width, eff_height, vbox_w, vbox_h;
@@ -168,7 +142,9 @@ int main(int argc, char*argv[])
     /* Also we finally have use for the little box grid that we
      * lay out and thus we will need the box coordinates */
     int vbox_x, vbox_y;
-
+    /* well sooner or later we had to deal with this and 
+     * dropping it all on the stack is horrific but gets
+     * the job done */
     uint32_t mandel_val[16][16][64][64];
     memset( &mandel_val, 0x00, (size_t)(64*64*16*16)* sizeof(uint32_t));
 
@@ -674,29 +650,6 @@ int main(int argc, char*argv[])
     /* plot some points on the grid that we created */
     XSetForeground(dsp, gc, yellow.pixel);
     XDrawPoint(dsp, win, gc, 5, 5);
-
-
-    /* someday we are going to provide zoom controls and colour edit
-     * controls and need to bounce way back up here and setup a
-     * whole new plot globally. For now we are going to get our threads
-     * setup. */
-    thread_parm_t *parm[NUM_THREADS];
-    errno = 0;
-    for ( pt = 0; pt < pthread_limit; pt++ ){
-        parm[pt] = calloc( (size_t) 1, (size_t) sizeof(thread_parm_t) );
-        if ( parm[pt] == NULL ) {
-            if ( errno == ENOMEM ) {
-                fprintf(stderr,"FAIL : calloc says ENOMEM\n");
-                fprintf(stderr,"     : so best buy some more.\n");
-                perror("     ");
-                return ( EXIT_FAILURE );
-            }
-            fprintf(stderr,"FAIL : calloc fails at %s:%d\n", __FILE__, __LINE__ );
-            perror("FAIL ");
-            return ( EXIT_FAILURE );
-        }
-    }
-
     /* TODO at some point check for why we are fetching the x and y
      * values over and over and over inside the switch-case */
     while(1){
@@ -843,59 +796,8 @@ int main(int argc, char*argv[])
                 XDrawImageString( dsp, win3, gc3, 10, 200, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
-                /* time the computation before we dispatch a thread */
+                /* time the computation */
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
-
-                if ( vbox_flag[vbox_x][vbox_y] == 0 ) {
-                for ( pt = 0; pt < pthread_limit; pt++ ) {
-                    parm[pt]->r_translate = real_translate;
-                    parm[pt]->i_translate = imag_translate;
-                    parm[pt]->obs_x_width = obs_x_width;
-                    parm[pt]->obs_y_height = obs_y_height;
-                    parm[pt]->vbox_x = vbox_x;
-                    parm[pt]->vbox_y = vbox_y;
-                    parm[pt]->eff_width = eff_width;
-                    parm[pt]->eff_height = eff_height;
-                    parm[pt]->vbox_w = vbox_w;
-                    parm[pt]->vbox_h = vbox_h;
-                    parm[pt]->bail_out = mand_bail;
-                    parm[pt]->v = &mandel_val;
-                    parm[pt]->ret_val = 0;
-
-                    pthread_create( &tid[pt], NULL, mbrot_vbox_pthread, (void *)parm[pt] );
-                    /*
-                     * The pthread_create() function can return any of the following errors:
-                     *
-                     * [ENOMEM]  The system lacked the necessary resources to create
-                     *           another thread.
-                     *
-                     * [EAGAIN]  The system-imposed limit on the total number of
-                     *           threads in a process [PTHREAD_THREADS_MAX] would be
-                     *           exceeded.
-                     *
-                     * [EAGAIN]  The RACCT_NTHR limit would be exceeded; see racct(2).
-                     *
-                     * [EPERM]   The caller does not have permission to set the
-                     *           scheduling parameters or scheduling policy.
-                     *
-                     * [EINVAL]  A value specified by attr is invalid.
-                     *
-                     * [EDEADLK] The CPU set specified by attr would prevent the thread
-                     *           from running on any CPU.
-                     *
-                     * [EFAULT]  The stack base specified by attr is invalid, or the
-                     *           kernel was unable to put required initial data on the
-                     *           stack.
-                     */
-                }
-                /* join them back in home .. thank you and yes this is a blocking
-                 * situation. Nothing happens while we await the thread. */
-                for ( pt = 0; pt < pthread_limit; pt++ ) {
-                    pthread_join( tid[pt], NULL );
-                    printf("PTHRD: join %i done\n", pt);
-                }
-                vbox_flag[vbox_x][vbox_y] = 1;
-                }
 
                 for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
                     vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
@@ -911,7 +813,12 @@ int main(int argc, char*argv[])
                         x_prime = x_prime + real_translate;
                         y_prime = y_prime + imag_translate;
 
-                        mand_height = mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix];
+                        if ( vbox_flag[vbox_x][vbox_y] == 1 ) {
+                            mand_height = mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix];
+                        } else {
+                            mand_height = mbrot( x_prime, y_prime, mand_bail );
+                            mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix] = mand_height;
+                        }
 
                         if ( mand_height == mand_bail ) {
                             XSetForeground(dsp, gc, (unsigned long)0 );
@@ -931,10 +838,6 @@ int main(int argc, char*argv[])
 
                         /* walk around the samples clock wise and begin with
                          * offset the real coord by one third of pixel width */
-
-                        /* TODO fark around with threads and forget this
-                         *
-                         *
                         for ( p = 0; p < 3; p++ ) {
                             for ( q = 0; q < 3; q++ ) {
 
@@ -954,9 +857,9 @@ int main(int argc, char*argv[])
 
                             }
                         }
-                        */
                     }
                 }
+                vbox_flag[vbox_x][vbox_y] = 1;
 
                 clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
 
@@ -1090,15 +993,9 @@ int main(int argc, char*argv[])
                                         blue_level  = gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor)
                                                         * (1.97294 * cos( 2.0 * M_PI * (shift/3.0 + rotation * t_param ))))/2.0;
                 
-                                        red_bits     = (uint8_t) ( 255.0 * ( red_level > 1.0 ? 1.0 : 
-                                                                           ( red_level < 0.0 ? 0.0 : red_level ) ) );
-
-                                        green_bits   = (uint8_t) ( 255.0 * ( green_level > 1.0 ? 1.0 : 
-                                                                           ( green_level < 0.0 ? 0.0 : green_level ) ) );
-
-                                        blue_bits    = (uint8_t) ( 255.0 * ( blue_level > 1.0 ? 1.0 : 
-                                                                           ( blue_level < 0.0 ? 0.0 : blue_level ) ) );
-
+                                        red_bits   = (uint8_t) ( 255.0 * cramp(red_level) );
+                                        green_bits = (uint8_t) ( 255.0 * cramp(green_level) );
+                                        blue_bits  = (uint8_t) ( 255.0 * cramp(blue_level) );
                 
                                         mandlebrot.pixel = (unsigned long)( ( red_bits<<16 ) + ( green_bits<<8 ) + blue_bits );
 
@@ -1184,81 +1081,11 @@ int main(int argc, char*argv[])
 
     printf("\n");
 
-    /* it may seem insane to set the pointer to NULL after the
-     * free() but why not have belt and suspenders safety? */
     free(buf);
-    buf = NULL;
-    for ( pt = 0; pt < pthread_limit; pt++ ){
-        free( parm[pt] );
-        parm[pt] = NULL;
-    }
     return EXIT_SUCCESS;
 }
 
-/* This will be a dispatched POSIX pthread that shall receive
- * a point to a struct of type thread_parm_t.  Then we shall
- * pull out the values needed from that struct and simply
- * compute the mandelbrot height for each coordinate in a 
- * given vbox region on the screen */
-void *mbrot_vbox_pthread(void *recv_parm)
-{
-    thread_parm_t *p = (thread_parm_t *)recv_parm;
-    double win_x, win_y, x_prime, y_prime;
-    int mand_x_pix, mand_y_pix, vbox_ll_x, vbox_ll_y;
-
-   /* point c belongs to the Mandelbrot set if and only if
-    * the magnitude of the f(c) <= 2.0 */
-    uint32_t height;
-    double zr, zi, tmp_r, tmp_i, mag;
-
-    /* the most ugly damn thing I have seen in years *
-     * int ****arr=*(*int[64][64][16][16]);
-     *    however that would be sexual perversion beyond
-     *    the twitch terms of service */
-
-    for ( mand_y_pix = 0; mand_y_pix < p->vbox_h; mand_y_pix++ ) {
-
-        /* lower left corner of the vbox on screen */
-        vbox_ll_y = p->vbox_y * p->vbox_h + mand_y_pix;
-
-        for ( mand_x_pix = 0; mand_x_pix < p->vbox_w; mand_x_pix++ ) {
-
-            /* we compute from the lower left corner of the on screen
-             * vbox going left to right and upwards along the positive
-             * imaginary axis. */
-            vbox_ll_x = p->vbox_x * p->vbox_w + mand_x_pix;
-
-            win_x = ( ( ( 1.0 * vbox_ll_x ) / p->eff_width ) * 2.0 - 1.0 ) + 0.0;
-            win_y = ( -1.0 * ( ( ( 1.0 * ( p->eff_height - vbox_ll_y ) ) / p->eff_height ) * 2.0 - 1.0 ) ) + 0.0;
-
-            x_prime = p->obs_x_width * win_x / 2.0;
-            y_prime = p->obs_y_height * win_y / 2.0;
-
-            x_prime = x_prime + p->r_translate;
-            y_prime = y_prime + p->i_translate;
-
-            height = 0;
-            zr = 0.0;
-            zi = 0.0;
-            mag = 0.0;
-
-            while ( ( height < p->bail_out ) && ( mag <= 4.0 ) ) {
-                tmp_r = ( zr * zr ) - ( zi * zi );
-                tmp_i = ( zr * zi ) + ( zr * zi );
-                zr = tmp_r + x_prime;
-                zi = tmp_i + y_prime;
-                mag = zr * zr + zi * zi;
-                height += 1;
-            }
-
-            (*(p->v))[p->vbox_x][p->vbox_y][mand_x_pix][mand_y_pix] = height;
-
-        }
-    }
-
-    p->ret_val = 0;
-
-    return ( NULL );
-
+double cramp(double x) {
+    return x > 1.0 ? 1.0 : x < 0.0 ? 0.0 : x;
 }
 
