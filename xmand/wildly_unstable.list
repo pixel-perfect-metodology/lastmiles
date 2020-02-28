@@ -17,3 +17,111 @@ samples :
      65536 16384000000 -1.985414382868e-01 -1.100137043154
      16384    64000000 -1.985413823276e-01 -1.100137129892
 
+
+Some sample times : 
+
+C_lenovo$ cat /proc/cpuinfo 
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 20
+model           : 2
+model name      : AMD E-450 APU with Radeon(tm) HD Graphics
+stepping        : 0
+microcode       : 0x5000101
+
+$ ./xmand 65536 16384000000 -1.985414382868e-01 -1.100137043154
+-------------------------------------------------------------
+           system name = Linux
+             node name = lenovo
+               release = 5.6.0-rc3-genunix
+               version = #1 SMP Mon Feb 24 03:48:11 EST 2020
+               machine = x86_64
+             page size = 4096
+          avail memory = 5819256832
+                       = 5682868 kB
+                       = 5549 MB
+     fp rounding mode is FE_TONEAREST
+ sizeof(unsigned long) = 8
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+mand_bail = 65536
+translate = ( -1.985414382868e-01 , -1.100137043154e+00 )
+  magnify = +1.638400000000e+10
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 1920 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 008 , 008 ]
+c = ( -1.985414382796e-01 , -1.100137043148e+00 )
+PTHRD: join 0 done
+[soln] =     1212697072 nsec   1.212697e+00 sec
+click at 552 495 
+vbox  [ 000 , 000 ]
+[mand] =    36351704805 nsec   3.635170e+01 sec
+
+So that is 36.35 secs on a ten or twelve year old lenovo laptop with no
+optimization at all.
+
+Try again with a faster set of CFLAGS : 
+
+C_lenovo$ ./xmand 65536 16384000000 -1.985414382868e-01 -1.100137043154
+-------------------------------------------------------------
+           system name = Linux
+             node name = lenovo
+               release = 5.6.0-rc3-genunix
+               version = #1 SMP Mon Feb 24 03:48:11 EST 2020
+               machine = x86_64
+             page size = 4096
+          avail memory = 5819256832
+                       = 5682868 kB
+                       = 5549 MB
+     fp rounding mode is FE_TONEAREST
+ sizeof(unsigned long) = 8
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+mand_bail = 65536
+translate = ( -1.985414382868e-01 , -1.100137043154e+00 )
+  magnify = +1.638400000000e+10
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 1920 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 008 , 008 ]
+c = ( -1.985414382799e-01 , -1.100137043146e+00 )
+PTHRD: join 0 done
+[soln] =      883861869 nsec   8.838619e-01 sec
+click at 551 487 
+vbox  [ 004 , 002 ]
+[mand] =    24605502719 nsec   2.460550e+01 sec
+
+So 24.6 secs. A decent improvement.
+
+
+
+============================================================================
+
+
