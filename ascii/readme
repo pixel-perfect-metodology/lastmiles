@@ -1,4 +1,32 @@
 
+
+arm7$ 
+arm7$ uname -a 
+Linux arm7 4.4.132+ #1 SMP Wed May 15 19:37:54 CST 2019 armv7l GNU/Linux
+arm7$ ./argv_dump_arm7l the quick brown fox jumped over "strager says too much" often
+-------------------------------------------------------------
+        system name = Linux
+          node name = arm7
+            release = 4.4.132+
+            version = #1 SMP Wed May 15 19:37:54 CST 2019
+            machine = armv7l
+-------------------------------------------------------------
+argc = 9
+&argc = 0xbee3b7cc
+argv = 0xbee3bac4
+17 chars for argv[ 0] = "./argv_dump_arm7l"
+ 3 chars for argv[ 1] = "the"
+ 5 chars for argv[ 2] = "quick"
+ 5 chars for argv[ 3] = "brown"
+ 3 chars for argv[ 4] = "fox"
+ 6 chars for argv[ 5] = "jumped"
+ 4 chars for argv[ 6] = "over"
+21 chars for argv[ 7] = "strager says too much"
+ 5 chars for argv[ 8] = "often"
+2e 2f 61 72 67 76 5f 64 75 6d 70 5f 61 72 6d 37 6c 00 74 68 65 00 71 75 69 63 6b 00 62 72 6f 77 6e 00 66 6f 78 00 6a 75 6d 70 65 64 00 6f 76 65 72 00 73 74 72 61 67 65 72 20 73 61 79 73 20 74 6f 6f 20 6d 75 63 68 00 6f 66 74 65 6e 00 arm7$ 
+arm7$ 
+
+
 bin_printf.c   the idea here was to just printout a binary data
                dump of whatever is passed via the pointer. We do
                make the assumption that the data is arranged in
