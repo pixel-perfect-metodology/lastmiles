@@ -1,4 +1,17 @@
 
+/*********************************************************************
+ * The Open Group Base Specifications Issue 6
+ * IEEE Std 1003.1, 2004 Edition
+ *
+ *    An XSI-conforming application should ensure that the feature
+ *    test macro _XOPEN_SOURCE is defined with the value 600 before
+ *    inclusion of any header. This is needed to enable the
+ *    functionality described in The _POSIX_C_SOURCE Feature Test
+ *    Macro and in addition to enable the XSI extension.
+ *
+ *********************************************************************/
+#define _XOPEN_SOURCE 600
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -69,49 +82,16 @@ int main( int argc, char *argv[])
 
     offset_x = 10;  /* across to the right from the left border */
     offset_y = 10;  /* down from the top border */
-    width = 1240;
-    height = 700;
+    width = 640;
+    height = 480;
 
-    /* however we should allow for options */
-    if ( argc > 4 ) {
-        /* lets assume that the order is offset x and y and 
-         * then width and height on the command line. */
-        offset_x = atoi( argv[1] );
-        offset_y = atoi( argv[2] );
-        width = atoi( argv[3] );
-        height = atoi( argv[4] );
-
-        /* Check for common sense */
-        if (  ( offset_x < 0 ) || ( offset_y < 0 )
-              || ( width < 0 ) || ( height < 0 ) ){
-
-            fprintf (stderr, "FAIL : Please do not ask for negative coordinates.\n");
-            return ( EXIT_FAILURE );
-
-        }
-
-        /* check we are in reasonable location on the screen */
-        if ( 
-                ( ( offset_x + width ) > disp_width )
-                ||
-                ( ( offset_y + height ) > disp_height ) ) {
-
-            fprintf (stderr, "FAIL : Coordinates falls off the screen.\n");
-            return ( EXIT_FAILURE );
-
-        }
-
-    }
-
-    /* the background color is a RGB value of 0x202020h hexadecimal
-     * and that is a perfect mixture of red and green and blue to give
-     * up a grey window. */
+    /* the background color is a RGB value of 0xff2020h hexadecimal
+     * to give some reddish monster */
 
     Window win = create_borderless_topwin(display,
                                          offset_x, offset_y,
                                          width, height,
-                                         0x102010 );
-
+                                         0xff2020 );
 
     /* Create a Graphics Context object handle for
      * this window we just created.
@@ -121,7 +101,6 @@ int main( int argc, char *argv[])
      * how stuff gets drawn ( or not ) on the screen.
      * This includes line style type stuff. */
     GC gc = create_gc(display, win);
-
 
     /* Lets now define a few basic trivial colors to be used on the
      * window we just created.
