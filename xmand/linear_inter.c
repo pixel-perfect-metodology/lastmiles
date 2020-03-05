@@ -44,7 +44,7 @@ unsigned long linear_inter( uint8_t  in_val,
      *                       +   uint8_t  blue_val
      **/
 
-    uint8_t red, green, blue;
+    uint16_t red, green, blue;
     int red_direction = 1;
     int green_direction = 1;
     int blue_direction = 1;
@@ -56,74 +56,74 @@ unsigned long linear_inter( uint8_t  in_val,
     if (    ( high_col & (uint32_t)0xff0000 )
          <= (  low_col & (uint32_t)0xff0000 ) ) {
 
-        lower_red = (uint8_t)( ( high_col & (uint32_t)0xff0000 ) >> 16 );
-        upper_red = (uint8_t)( (  low_col & (uint32_t)0xff0000 ) >> 16 );
+        lower_red = (uint16_t)( ( high_col & (uint32_t)0xff0000 ) >> 16 );
+        upper_red = (uint16_t)( (  low_col & (uint32_t)0xff0000 ) >> 16 );
         /* the red color decreases as the input index increases */
         red_direction = 0;
 
     } else {
 
-        upper_red = (uint8_t)( ( high_col & (uint32_t)0xff0000 ) >> 16 );
-        lower_red = (uint8_t)( (  low_col & (uint32_t)0xff0000 ) >> 16 );
+        upper_red = (uint16_t)( ( high_col & (uint32_t)0xff0000 ) >> 16 );
+        lower_red = (uint16_t)( (  low_col & (uint32_t)0xff0000 ) >> 16 );
 
     }
 
     if (    ( high_col & (uint32_t)0x00ff00 )
          <= (  low_col & (uint32_t)0x00ff00 ) ) {
 
-        lower_green = (uint8_t)( ( high_col & (uint32_t)0x00ff00 ) >> 8 );
-        upper_green = (uint8_t)( (  low_col & (uint32_t)0x00ff00 ) >> 8 );
+        lower_green = (uint16_t)( ( high_col & (uint32_t)0x00ff00 ) >> 8 );
+        upper_green = (uint16_t)( (  low_col & (uint32_t)0x00ff00 ) >> 8 );
         /* the green color decreases as the input index increases */
         green_direction = 0;
 
     } else {
 
-        upper_green = (uint8_t)( ( high_col & (uint32_t)0x00ff00 ) >> 8 );
-        lower_green = (uint8_t)( (  low_col & (uint32_t)0x00ff00 ) >> 8 );
+        upper_green = (uint16_t)( ( high_col & (uint32_t)0x00ff00 ) >> 8 );
+        lower_green = (uint16_t)( (  low_col & (uint32_t)0x00ff00 ) >> 8 );
 
     }
 
     if (    ( high_col & (uint32_t)0x0000ff )
          <= (  low_col & (uint32_t)0x0000ff ) ) {
 
-        lower_blue = (uint8_t)( high_col & (uint32_t)0x0000ff );
-        upper_blue = (uint8_t)(  low_col & (uint32_t)0x0000ff );
+        lower_blue = (uint16_t)( high_col & (uint32_t)0x0000ff );
+        upper_blue = (uint16_t)(  low_col & (uint32_t)0x0000ff );
         /* the blue color decreases as the input index increases */
         blue_direction = 0;
 
     } else {
 
-        upper_blue = (uint8_t)( high_col & (uint32_t)0x0000ff );
-        lower_blue = (uint8_t)(  low_col & (uint32_t)0x0000ff );
+        upper_blue = (uint16_t)( high_col & (uint32_t)0x0000ff );
+        lower_blue = (uint16_t)(  low_col & (uint32_t)0x0000ff );
 
     }
 
     if ( red_direction ) {
-        red = (uint8_t)( lower_red
+        red = (uint16_t)( lower_red
                  + ( upper_red - lower_red )
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     } else {
-        red = (uint8_t)( upper_red
+        red = (uint16_t)( upper_red
                 - ( upper_red - lower_red )
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     }
 
     if ( green_direction ) {
-        green = (uint8_t)( lower_green
+        green = (uint16_t)( lower_green
                  + ( upper_green - lower_green )
                     * ( in_val - low_val ) / ( upper_val - low_val ) );
     } else {
-        green = (uint8_t)( upper_green
+        green = (uint16_t)( upper_green
                 - ( upper_green - lower_green )
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     }
 
     if ( blue_direction ) {
-        blue = (uint8_t)( lower_blue
+        blue = (uint16_t)( lower_blue
                  + ( upper_blue - lower_blue )
                     * ( in_val - low_val ) / ( upper_val - low_val ) );
     } else {
-        blue = (uint8_t)( upper_blue
+        blue = (uint16_t)( upper_blue
                 - ( upper_blue - lower_blue )
                    * ( in_val - low_val ) / ( upper_val - low_val ) );
     }

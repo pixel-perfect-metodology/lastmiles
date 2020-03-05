@@ -30,6 +30,16 @@
 /* we shall need the complex math functions */
 #include "v.h"
 
+/* pure hack to get past LLVM/Clang pissing on me */
+
+int line_plane_icept( vec_type *icept_pt,
+                      vec_type *plun,
+                      vec_type *plvn,
+                      vec_type *kst,
+                      vec_type *lp0, vec_type *lpr,
+                      vec_type *pl0, vec_type *pn,
+                      vec_type *plu, vec_type *plv);
+
 Window create_borderless_topwin(Display *dsp,
                          int width, int height,
                          int x, int y, int bg_color);
@@ -163,6 +173,16 @@ int main(int argc, char*argv[])
 
     /* be able to compute the dot product of -Ri and N */
     cplex_type dot_negRi_N;
+
+    /* we are going to try a line plane interception and need a 
+     * few data elements */
+    vec_type line_point, line_direction, plane_point,
+             plane_normal, plane_u, plane_v;
+
+    vec_type plane_u_norm, plane_v_norm, lp_intercept_param;
+    vec_type lp_intercept_point;
+
+    int lp_status;
 
     /* for the sake of looking at the Cramer denominator det */
     cplex_type cramer_denom_det;
@@ -592,6 +612,17 @@ int main(int argc, char*argv[])
     /* plot some points on the grid that we created */
     XSetForeground(dsp, gc, yellow.pixel);
     XDrawPoint(dsp, win, gc, 5, 5);
+
+
+    /* before we have tears over our loved Deloris O'Reirdon from The Cranberries 
+     *
+     * ../complex_vector/check_dot.c 
+     * */
+     cplex_vec_set( &plane_point, 0.0, 0.0, 10.0, 0.0, 0.0, 0.0);
+     cplex_vec_set( &plane_normal, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0);
+     cplex_vec_set( &plane_u, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 );
+     cplex_vec_set( &plane_v, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0 );
+
     /* TODO at some point check for why we are fetching the x and y
      * values over and over and over inside the switch-case */
     while(1){
@@ -771,21 +802,16 @@ int main(int argc, char*argv[])
                     /* note that this function returns a zero value
                      * if all goes well and we get an intercept point
                      * in R3 space. */
-                    intercept_point_flag = -1;
-
                     intercept_point_flag = surface_icept_pt(
                                   &hit_point, intercept_cnt, &k_val[0],
                                               &obs_point, &obs_normal);
-
-                    fprintf(stderr,"\nintercept_point_flag = %i\n",
-                                                intercept_point_flag );
 
                     if ( intercept_point_flag == 0 ) {
                         /* we have an intercept point H */
                         XDrawPoint(dsp, win, gc, mouse_x, mouse_y);
 
                         sprintf(buf,
-                                "i = ( %-+10.6e, %-+10.6e, %-+10.6e )",
+                                "H = ( %-+10.6e, %-+10.6e, %-+10.6e )",
                                                    hit_point.x.r,
                                                    hit_point.y.r,
                                                    hit_point.z.r );
@@ -796,7 +822,7 @@ int main(int argc, char*argv[])
                         XDrawImageString( dsp, win3, gc3, 10, 150,
                                           buf, strlen(buf));
 
-                        /* compute the gradient normal vector */
+                        /* surface gradient normal vector */
                         gradient( &grad, &sign_data, &object_location,
                                          &semi_major_axi, &hit_point );
 
@@ -898,12 +924,16 @@ int main(int argc, char*argv[])
                             XDrawImageString( dsp, win3, gc3, 10, 270,
                                                              buf, strlen(buf) );
 
+                            /* TODO : regardless of the assumption that R_r vector is in
+                             * fact the same as the -R_i we may need to deal with an line
+                             * plane interception. */
+
                         } else {
 
                             /* Cramer's Method possible */
                             cplex_vec_normalize( &T_norm, &T );
 
-                            sprintf(buf,"^");
+                            sprintf(buf,"^"); /* hat trick */
                             XDrawImageString( dsp, win3, gc3, 9, 222, buf, (size_t)1);
                             sprintf(buf,"T = < %-+10.6e, %-+10.6e, %-+10.6e >",
                                        T_norm.x.r, T_norm.y.r, T_norm.z.r );
@@ -953,13 +983,37 @@ int main(int argc, char*argv[])
                                              tmp[7].y.r, tmp[7].y.i );
                                 fprintf(stderr,"       ( %-+20.14e, %-+20.14e ) >\n\n",
                                              tmp[7].z.r, tmp[7].z.i);
-            
+
+                                /* TODO we need to hack in a line plane intercept 
+                                 * situation. Let us hack in a sample plane at the
+                                 * y=10 location and give it a normal vector as -j
+                                 * which is < 0, -1, 0 >.  This opens the problem 
+                                 * of what "face" of a plane we are dealing with. */
+
+                                cplex_vec_set( &line_point, hit_point.x.r, 0.0, hit_point.y.r, 0.0, hit_point.z.r, 0.0);
+                                cplex_vec_set( &line_direction, tmp[7].x.r, 0.0, tmp[7].y.r, 0.0, tmp[7].z.r, 0.0);
+                            
+                                lp_status = line_plane_icept( &lp_intercept_point,
+                                                              &plane_u_norm, &plane_v_norm,
+                                                              &lp_intercept_param,
+                                                              &line_point, &line_direction,
+                                                              &plane_point, &plane_normal,
+                                                              (vec_type*)(NULL), &plane_v);
+                            
+                                printf("     : line_plane_icept() returns %i\n\n", lp_status);
+                            
+                                if ( lp_status != 0 ) {
+                                    printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                                             lp_intercept_point.x.r,
+                                                             lp_intercept_point.y.r,
+                                                             lp_intercept_point.z.r);
+
+                                    /*TODO lets find the coordinates within the plane */
+
+                                }
                             }
-
                         }
-
                     }
-
                 } else {
 
                     /* we have no intercept and no surface normal
