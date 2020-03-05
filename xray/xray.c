@@ -1003,10 +1003,20 @@ int main(int argc, char*argv[])
                                 printf("     : line_plane_icept() returns %i\n\n", lp_status);
                             
                                 if ( lp_status != 0 ) {
-                                    printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
+                                    printf("     : line plane intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                                              lp_intercept_point.x.r,
                                                              lp_intercept_point.y.r,
                                                              lp_intercept_point.z.r);
+
+                                    printf("     : plane_u norm = <  %g  ,  %g  ,  %g  >\n",
+                                                              plane_u_norm.x.r, 
+                                                              plane_u_norm.y.r, 
+                                                              plane_u_norm.z.r ); 
+
+                                    printf("     : plane_v norm = <  %g  ,  %g  ,  %g  >\n",
+                                                              plane_v_norm.x.r, 
+                                                              plane_v_norm.y.r, 
+                                                              plane_v_norm.z.r ); 
 
                                     /*TODO lets find the coordinates within the plane */
 

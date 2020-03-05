@@ -125,3 +125,47 @@ So 24.6 secs. A decent improvement.
 ============================================================================
 
 
+titan$ ./xmand 65536 2000000 -1.153428720703e+00  -3.076084228515e-01
+-------------------------------------------------------------
+           system name = Linux
+             node name = titan
+               release = 5.6.0-rc3-genunix
+               version = #1 SMP Mon Feb 24 07:20:39 GMT 2020
+               machine = i686
+             page size = 4096
+          avail memory = 780664832
+                       = 762368 kB
+                       = 744 MB
+     fp rounding mode is FE_TONEAREST
+ sizeof(unsigned long) = 4
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+mand_bail = 65536
+translate = ( -1.153428720703e+00 , -3.076084228515e-01 )
+  magnify = +2.000000000000e+06
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 5760 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 008 , 008 ]
+c = ( -1.153428617187e+00 , -3.076083369140e-01 )
+PTHRD: join 0 done
+[soln] =    24183419632 nsec   2.418342e+01 sec
+click at 575 478 
+vbox  [ 007 , 006 ]
+[mand] =    23811022598 nsec   2.381102e+01 sec
+
+
+

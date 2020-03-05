@@ -33,13 +33,12 @@ int gradient( vec_type *res,
 
     cplex_type c_tmp[12];
 
-    /* what data did we receive ?
+    /* what data did we receive ? */
 
     fprintf(stderr, "grad :  sign = %g, %g, %g\n", sign->x.r, sign->y.r, sign->z.r);
     fprintf(stderr, "grad :   loc = %g, %g, %g\n", loc->x.r, loc->y.r, loc->z.r);
     fprintf(stderr, "grad :   axi = %g, %g, %g\n", axi->x.r, axi->y.r, axi->z.r);
     fprintf(stderr, "grad : icept = %g, %g, %g\n", intercept->x.r, intercept->y.r, intercept->z.r);
-    */
 
     /* deal with just the x axis component first */
     c_tmp[0].r = intercept->x.r;
@@ -47,10 +46,13 @@ int gradient( vec_type *res,
     /* we need to square the semi-major axi */
     c_tmp[1].r = axi->x.r;
     c_tmp[1].i = axi->x.i;
+
+    /* square the semi-major axis a and put result into c_tmp[2] */
     cplex_sq( c_tmp+2, c_tmp+1 );
-    /* do the trivial division */
+
+    /* division of x / ( a^2 )  into c_tmp[3] */
     cplex_div( c_tmp+3, c_tmp, c_tmp+2 );
-    /* mult by 2 here */
+    /* multiply that result by 2 */
     c_tmp[3].r *= 2.0;
     c_tmp[3].i *= 2.0;
 
@@ -62,7 +64,7 @@ int gradient( vec_type *res,
     cplex_sq( c_tmp+6, c_tmp+5 );
     /* division */
     cplex_div( c_tmp+7, c_tmp+4, c_tmp+6 );
-    /* mult by 2 */
+    /* mult by 2 and we have y/(b^2) in c_tmp[7] */
     c_tmp[7].r *= 2.0;
     c_tmp[7].i *= 2.0;
 
@@ -83,8 +85,6 @@ int gradient( vec_type *res,
     cplex_vec_set( res, c_tmp[3].r, c_tmp[3].i,
                         c_tmp[7].r, c_tmp[7].i,
                         c_tmp[11].r, c_tmp[11].i);
-
-    /* 01 Jan 2020 we should not do the normalization here */
 
     return ( EXIT_SUCCESS );
 
