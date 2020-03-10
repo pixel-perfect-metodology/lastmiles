@@ -210,15 +210,16 @@ int main(int argc, char*argv[])
     sysinfo();
 
     errno = 0;
-    if ( ( argc < 5 ) && ( argc > 1 ) ) {
+    if ( ( argc < 6 ) && ( argc > 1 ) ) {
         fprintf(stderr,"FAIL : insufficient arguments provided\n");
         fprintf(stderr,"     : usage %s bail_out_integer \\\n",argv[0]);
         fprintf(stderr,"     :          magnify_integer \\\n");
         fprintf(stderr,"     :          double_real \\\n");
-        fprintf(stderr,"     :          double_imaginary\n");
+        fprintf(stderr,"     :          double_imaginary\\\n");
+        fprintf(stderr,"     :          pthread_count\n");
         fprintf(stderr,"     : quitting.\n");
         return ( EXIT_FAILURE );
-    } else if ( argc >= 5 ) {
+    } else if ( argc >= 6 ) {
         /* TODO 
          * check if the first char in argv[1] is a letter 'p' and then
          * assume the remaining digits represent a power of 2 */
