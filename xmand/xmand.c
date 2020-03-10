@@ -109,7 +109,7 @@ int main(int argc, char*argv[])
     int colour_method_flag = 1;  /* Dennis Clarke LSD trippy */
     int invert_me_dammit = 0;
 
-    /* please see https://arxiv.org/abs/1108.5083 
+    /* please see https://arxiv.org/abs/1108.5083
      * A colour scheme for the display of astronomical intensity images
      * D. A. Green 25 Aug 2011 (v1), revised 30 Aug 2011
      *
@@ -141,7 +141,7 @@ int main(int argc, char*argv[])
     struct timespec soln_t0, soln_t1;
 
     /* lets assume the user will specify some number of
-     * threads to dispatch at once. For now we will hard 
+     * threads to dispatch at once. For now we will hard
      * code a silly limit */
     int pthread_limit = 1;
 
@@ -155,7 +155,7 @@ int main(int argc, char*argv[])
     int eff_width, eff_height, vbox_w, vbox_h;
     double obs_x_width, obs_y_height;
     double sub_pixel_real, sub_pixel_imag;
-    double pixel_real_width, pixel_imag_height; 
+    double pixel_real_width, pixel_imag_height;
     double magnify, real_translate, imag_translate;
     double x_prime, y_prime;
 
@@ -220,7 +220,7 @@ int main(int argc, char*argv[])
         fprintf(stderr,"     : quitting.\n");
         return ( EXIT_FAILURE );
     } else if ( argc >= 6 ) {
-        /* TODO 
+        /* TODO
          * check if the first char in argv[1] is a letter 'p' and then
          * assume the remaining digits represent a power of 2 */
 
@@ -339,12 +339,40 @@ int main(int argc, char*argv[])
             perror("     ");
             return ( EXIT_FAILURE );
         }
-        if ( ( candidate_int < 1 ) || ( candidate_int > 255 ) ){
+        if ( ( candidate_int < 1 ) || ( candidate_int > 64 ) ){
             fprintf(stderr,"WARN : pthread_limit is unreasonable\n");
             fprintf(stderr,"     : we shall assume 1 and proceed.\n");
             pthread_limit = 1;
         } else {
-            pthread_limit = candidate_int;
+
+            if ( candidate_int > 1 ) {
+
+                /* snazzy little bit shifting and counting follows
+                 * where this is not at all efficient but is sort of
+                 * fun */
+    
+                k = 0; /* number of '1' bits in candidate_int */
+                j = candidate_int;
+                p = 0; /* bit position being tested */
+                while (j) {
+                    if ( j & 1 ) { /* test the LSB position */
+                        k += 1;    /* count the '1' bit */
+                    }
+                    j = j >> 1;    /* shift left */
+                    p += 1;        /* keep track of the bit position */
+                }
+                if ( k > 1 ) {
+                    fprintf(stderr,"WARN : pthread_limit is not a perfect\n");
+                    fprintf(stderr,"     : power of two. We shall assume\n");
+                    pthread_limit = 1 << ( p - 1 );
+                    fprintf(stderr,"     : %i POSIX thread(s).\n", pthread_limit);
+                } else {
+                    pthread_limit = candidate_int;
+                }
+
+            } else {
+                pthread_limit = 1;
+            }
         }
 
     } else {
@@ -525,7 +553,7 @@ int main(int argc, char*argv[])
 
     /* this is a hack color data value that we will abuse later
      * inside the main mandlebrot computation loop. Colors to
-     * be determined via a smooth function brought to use by 
+     * be determined via a smooth function brought to use by
      * Patrick Scheibe. */
     mandlebrot.flags= DoRed | DoGreen | DoBlue;
     /* some dummy values */
@@ -845,7 +873,7 @@ int main(int argc, char*argv[])
                 sprintf(buf,"   select = ( %-+16.10e , %-+16.10e )", x_prime, y_prime );
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, green.pixel);
-                sprintf(buf,"mand_bail = %-6i        ", mand_bail);
+                sprintf(buf,"mand_bail = %-8i with a pthread_limit = %-3i", mand_bail, pthread_limit);
                 XDrawImageString( dsp, win3, gc3, 10, 100, buf, (int)strlen(buf));
                 sprintf(buf,"  magnify = %18.12e", magnify);
                 XDrawImageString( dsp, win3, gc3, 10, 120, buf, (int)strlen(buf));
@@ -882,7 +910,7 @@ int main(int argc, char*argv[])
                         parm[pt]->bail_out = mand_bail;
                         parm[pt]->v = &mandel_val;
                         parm[pt]->ret_val = 0;
-    
+
                         pthread_create( &tid[pt], NULL, mbrot_vbox_pthread, (void *)parm[pt] );
                         /*
                          * The pthread_create() function can return any of the following errors:
@@ -1100,30 +1128,30 @@ int main(int argc, char*argv[])
                                         } else {
                                             t_param = pow( 1.0 - ( (double)mand_height / (double)mand_bail ), t_param_exponent);
                                         }
-    
+
                                         gamma_factor = pow( t_param, gamma );
-                
+
                                         red_level  =  gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor )
                                                         * ( -0.14861 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
                                                         + 1.78277 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0;
-                
+
                                         green_level = gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor )
                                                         * ( -0.29227 * cos( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ) )
                                                         - 0.90649 * sin( 2.0 * M_PI * ( shift/3.0 + rotation * t_param ))))/2.0;
-                
+
                                         blue_level  = gamma_factor + ( hue * gamma_factor * ( 1.0 - gamma_factor)
                                                         * (1.97294 * cos( 2.0 * M_PI * (shift/3.0 + rotation * t_param ))))/2.0;
-                
-                                        red_bits     = (uint8_t) ( 255.0 * ( red_level > 1.0 ? 1.0 : 
+
+                                        red_bits     = (uint8_t) ( 255.0 * ( red_level > 1.0 ? 1.0 :
                                                                            ( red_level < 0.0 ? 0.0 : red_level ) ) );
 
-                                        green_bits   = (uint8_t) ( 255.0 * ( green_level > 1.0 ? 1.0 : 
+                                        green_bits   = (uint8_t) ( 255.0 * ( green_level > 1.0 ? 1.0 :
                                                                            ( green_level < 0.0 ? 0.0 : green_level ) ) );
 
-                                        blue_bits    = (uint8_t) ( 255.0 * ( blue_level > 1.0 ? 1.0 : 
+                                        blue_bits    = (uint8_t) ( 255.0 * ( blue_level > 1.0 ? 1.0 :
                                                                            ( blue_level < 0.0 ? 0.0 : blue_level ) ) );
 
-                
+
                                         mandlebrot.pixel = (unsigned long)( ( red_bits<<16 ) + ( green_bits<<8 ) + blue_bits );
 
                                         XSetForeground(dsp, gc, mandlebrot.pixel);
@@ -1222,7 +1250,7 @@ int main(int argc, char*argv[])
 /* This will be a dispatched POSIX pthread that shall receive
  * a point to a struct of type thread_parm_t.  Then we shall
  * pull out the values needed from that struct and simply
- * compute the mandelbrot height for each coordinate in a 
+ * compute the mandelbrot height for each coordinate in a
  * given vbox region on the screen */
 void *mbrot_vbox_pthread(void *recv_parm)
 {
