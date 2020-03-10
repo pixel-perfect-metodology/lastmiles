@@ -72,6 +72,8 @@ typedef struct {
     int eff_width, eff_height;
     int vbox_w, vbox_h;
     uint32_t bail_out;
+    int t_num;
+    int t_total;
 } thread_parm_t;
 
 void *mbrot_vbox_pthread(void *recv_parm);
@@ -330,6 +332,20 @@ int main(int argc, char*argv[])
             imag_translate = candidate_double;
         }
 
+        candidate_int = (int)strtol(argv[5], (char **)NULL, 10);
+        if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+            fprintf(stderr,"FAIL : pthread_limit not understood\n");
+            perror("     ");
+            return ( EXIT_FAILURE );
+        }
+        if ( ( candidate_int < 1 ) || ( candidate_int > 255 ) ){
+            fprintf(stderr,"WARN : pthread_limit is unreasonable\n");
+            fprintf(stderr,"     : we shall assume 1 and proceed.\n");
+            pthread_limit = 1;
+        } else {
+            pthread_limit = candidate_int;
+        }
+
     } else {
         fprintf(stderr,"WARN : No arguments received thus we have\n");
         fprintf(stderr,"     : some hard coded values ... enjoy.\n");
@@ -339,11 +355,12 @@ int main(int argc, char*argv[])
         imag_translate = 0.0;
     }
 
-    printf("\nmand_bail = %i\n", mand_bail);
-    printf("translate = ( %-+18.12e , %-+18.12e )\n",
+    printf("\n    mand_bail = %i\n", mand_bail);
+    printf("pthread_limit = %i\n", pthread_limit);
+    printf("    translate = ( %-+18.12e , %-+18.12e )\n",
                                       real_translate, imag_translate );
 
-    printf("  magnify = %-+18.12e\n\n", magnify );
+    printf("      magnify = %-+18.12e\n\n", magnify );
 
     /* some values for the new color computation */
     gamma = 1.5;
@@ -682,6 +699,7 @@ int main(int argc, char*argv[])
      * setup. */
     thread_parm_t *parm[NUM_THREADS];
     errno = 0;
+
     for ( pt = 0; pt < pthread_limit; pt++ ){
         parm[pt] = calloc( (size_t) 1, (size_t) sizeof(thread_parm_t) );
         if ( parm[pt] == NULL ) {
@@ -848,6 +866,8 @@ int main(int argc, char*argv[])
 
                 if ( vbox_flag[vbox_x][vbox_y] == 0 ) {
                     for ( pt = 0; pt < pthread_limit; pt++ ) {
+                        parm[pt]->t_num = pt;
+                        parm[pt]->t_total = pthread_limit;
                         parm[pt]->r_translate = real_translate;
                         parm[pt]->i_translate = imag_translate;
                         parm[pt]->obs_x_width = obs_x_width;
@@ -896,6 +916,13 @@ int main(int argc, char*argv[])
                     }
                     vbox_flag[vbox_x][vbox_y] = 1;
                 }
+                clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
+
+                t_delta = timediff( soln_t0, soln_t1 );
+                sprintf(buf,"[join] = %14lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
+                fprintf(stderr,"%s\n",buf);
+                XSetForeground(dsp, gc3, magenta.pixel);
+                XDrawImageString( dsp, win3, gc3, 10, 270, buf, (int)strlen(buf));
 
                 for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
                     vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
@@ -954,10 +981,10 @@ int main(int argc, char*argv[])
                     }
                 }
 
-                clock_gettime( CLOCK_MONOTONIC, &soln_t1 );
+                clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
-                t_delta = timediff( soln_t0, soln_t1 );
-                sprintf(buf,"[soln] = %14lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
+                t_delta = timediff( soln_t1, soln_t0 );
+                sprintf(buf,"[plot] = %14lld nsec   %08.6e sec", t_delta, ((double)t_delta)/1.0e9);
                 fprintf(stderr,"%s\n",buf);
                 XSetForeground(dsp, gc3, green.pixel);
                 XDrawImageString( dsp, win3, gc3, 10, 290, buf, (int)strlen(buf));
@@ -1201,20 +1228,24 @@ void *mbrot_vbox_pthread(void *recv_parm)
     thread_parm_t *p = (thread_parm_t *)recv_parm;
     double win_x, win_y, x_prime, y_prime;
     int mand_x_pix, mand_y_pix, vbox_ll_x, vbox_ll_y;
+    int mand_y_pix_start, mand_y_pix_stop;
 
    /* point c belongs to the Mandelbrot set if and only if
     * the magnitude of the f(c) <= 2.0 */
     uint32_t height;
     double zr, zi, tmp_r, tmp_i, mag;
 
-    /* the most ugly damn thing I have seen in years *
-     * int ****arr=*(*int[64][64][16][16]);
-     *    however that would be sexual perversion beyond
-     *    the twitch terms of service */
+    /* lets come up with an imaginary axis start_i and stop_i
+     * based on this thread t_num */
+    mand_y_pix_start = ( p->vbox_h / p->t_total ) * p->t_num;
+    /* actually the stop line is one less than this next thing */
+    mand_y_pix_stop = mand_y_pix_start + ( p->vbox_h / p->t_total );
 
-    for ( mand_y_pix = 0; mand_y_pix < p->vbox_h; mand_y_pix++ ) {
+    fprintf (stderr,"[ t%02i ] : %-2i -> %-2i\n", p->t_num, mand_y_pix_start, mand_y_pix_stop - 1);
 
-        /* lower left corner of the vbox on screen */
+    for ( mand_y_pix = mand_y_pix_start; mand_y_pix < mand_y_pix_stop; mand_y_pix++ ) {
+
+        /* lower left corner of this threads little rectangle */
         vbox_ll_y = p->vbox_y * p->vbox_h + mand_y_pix;
 
         for ( mand_x_pix = 0; mand_x_pix < p->vbox_w; mand_x_pix++ ) {
