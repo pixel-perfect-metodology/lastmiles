@@ -169,3 +169,46 @@ vbox  [ 007 , 006 ]
 
 
 
+======== seahorse valley test location =====================
+
+
+vesta$ ./xmand 16384 16384 -7.499656677246e-01  -1.210403442383e-02 8
+-------------------------------------------------------------
+           system name = FreeBSD
+             node name = vesta
+               release = 12.1-RELEASE-p2
+               version = FreeBSD 12.1-RELEASE-p2 GENERIC
+               machine = amd64
+             page size = 4096
+          avail memory = 10328125440
+                       = 10086060 kB
+                       = 9849 MB
+     fp rounding mode is FE_TONEAREST
+ sizeof(unsigned long) = 8
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+    mand_bail = 16384
+pthread_limit = 8
+    translate = ( -7.499656677246e-01 , -1.210403442383e-02 )
+      magnify = +1.638400000000e+04
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 3840 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 008 , 008 ]
+[mand] =    86226681638 nsec   8.622668e+01 sec
+
+
+==================================================================

@@ -988,12 +988,12 @@ int main(int argc, char*argv[])
                          * in the future ... for now we comment this out ...
                          *
                          *
-                         *
+                         */
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
 
-                         * walk around the samples clock wise and begin with
-                         * offset the real coord by one third of pixel width * 
+                        /* walk around the samples clock wise and begin with
+                         * offset the real coord by one third of pixel width */
 
                         for ( p = 0; p < 3; p++ ) {
                             for ( q = 0; q < 3; q++ ) {
@@ -1014,7 +1014,7 @@ int main(int argc, char*argv[])
 
                             }
                         }
-                        */
+
                     }
                 }
 
