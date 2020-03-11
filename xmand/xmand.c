@@ -230,7 +230,7 @@ int main(int argc, char*argv[])
             perror("     ");
             return ( EXIT_FAILURE );
         }
-        if ( ( candidate_int < 256 ) || ( candidate_int > 65536 ) ){
+        if ( ( candidate_int < 256 ) || ( candidate_int > 262144 ) ){
             fprintf(stderr,"WARN : mandlebrot bail out is unreasonable\n");
             fprintf(stderr,"     : we shall assume 4096 and proceed.\n");
             mand_bail = (uint32_t)4096;
@@ -893,7 +893,7 @@ int main(int argc, char*argv[])
                 /* time the computation before we dispatch a thread */
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
-                if ( 1 ) { /* vbox_flag[vbox_x][vbox_y] == 0 */
+                if ( 1 || ( vbox_flag[vbox_x][vbox_y] == 0 ) ) {
                     for ( pt = 0; pt < pthread_limit; pt++ ) {
                         parm[pt]->t_num = pt;
                         parm[pt]->t_total = pthread_limit;
@@ -982,11 +982,18 @@ int main(int argc, char*argv[])
 
                         /* A few manual offsets of ( 16, 13 ) pixels to centre the
                          * plot data into a subwindow of gc2 */
+
+
+                        /* TODO be sure to actually handle this data better
+                         * in the future ... for now we comment this out ...
+                         *
+                         *
+                         *
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
 
-                        /* walk around the samples clock wise and begin with
-                         * offset the real coord by one third of pixel width */
+                         * walk around the samples clock wise and begin with
+                         * offset the real coord by one third of pixel width * 
 
                         for ( p = 0; p < 3; p++ ) {
                             for ( q = 0; q < 3; q++ ) {
@@ -1007,6 +1014,7 @@ int main(int argc, char*argv[])
 
                             }
                         }
+                        */
                     }
                 }
 
