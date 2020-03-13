@@ -1,3 +1,6 @@
+/* 202003131100
+ * until further notic we put this on a back burner and start
+ * over with a pthread work queue model ... elsewhere */
 
 /*********************************************************************
  * The Open Group Base Specifications Issue 6
