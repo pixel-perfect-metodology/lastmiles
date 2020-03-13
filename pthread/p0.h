@@ -1,6 +1,6 @@
 
-#define NUM_THREADS 16
-#define BIG_ARRAY_DIM0 256
+#define NUM_THREADS 32
+#define BIG_ARRAY_DIM0 512
 #define BIG_ARRAY_DIM1 65536
 
 /*
