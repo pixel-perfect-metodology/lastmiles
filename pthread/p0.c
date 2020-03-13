@@ -26,7 +26,7 @@ pthread_t tid[NUM_THREADS]; /* array of thread IDs */
 int main(int argc, char **argv)
 {
 
-    int    i, j, k;
+    int    i, j;
     struct timespec now_time;
     thread_parm_t *parm[NUM_THREADS];
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
         }
 
-        parm[i]->tnum = i;
+        parm[i]->t_num = (uint32_t)i;
         parm[i]->sleep_time = 1 + (int)( drand48() * 10.0 );
 
         pthread_create( &tid[i], NULL, big_array_fill, (void *)parm[i] );
@@ -112,13 +112,13 @@ void *big_array_fill(void *recv_parm)
 {
     thread_parm_t *p = (thread_parm_t *)recv_parm;
 
-    printf("TRD  : %d filling the big_array.\n", p->tnum);
+    printf("TRD  : %d filling the big_array.\n", p->t_num);
     for ( p->loop0 = 0; p->loop0 < BIG_ARRAY_DIM0; p->loop0++ ) {
         for ( p->loop1 = 0; p->loop1 < BIG_ARRAY_DIM1; p->loop1++ ) {
-            p->big_array[p->loop0][p->loop1] = (uint64_t)(p->loop0 * p->loop1 + p->tnum + 1);
+            p->big_array[p->loop0][p->loop1] = (uint64_t)(p->loop0 * p->loop1 + p->t_num + 1);
         }
     }
-    printf("TRD  : %d big_array full.\n", p->tnum);
+    printf("TRD  : %d big_array full.\n", p->t_num);
 
     /* return some random data */
     p->ret_val = drand48();
