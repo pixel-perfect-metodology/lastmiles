@@ -1,5 +1,5 @@
 
-#define BIG_ARRAY_DIM0 32
+#define BIG_ARRAY_DIM0 64
 #define BIG_ARRAY_DIM1 65536
 
 /*
