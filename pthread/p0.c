@@ -77,13 +77,20 @@ int main(int argc, char **argv)
                 fprintf(stderr,"BAIL : pthread_join(%i) done.\n", j);
 
                 fprintf(stderr,"     : thread %i returned %-14.12g data.\n",
-                                                      j, parm[i]->ret_val );
+                                                      j, parm[j]->ret_val );
 
                 free(parm[j]);
                 /* belt and suspenders safety we set the pointer to NULL */
                 parm[j] = NULL;
             }
             fprintf(stderr,"BAIL : cleanup done.\n", j);
+
+            /* We have an opportunity here where we could dispatch
+             * out the remaining threads in chunks of no more
+             * than ( i - 1 ) at a time. If we get a calloc problem
+             * then we just bail out. */
+
+
             ru();
 
             return ( EXIT_FAILURE );
