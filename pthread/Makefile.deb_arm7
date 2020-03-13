@@ -11,7 +11,7 @@ CFLAGS= -I$(IDIR) -std=iso9899:1999 -pedantic -pedantic-errors \
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 		-D_X_OPEN_SOURCE=600 -D_REENTRANT
 
-LIBS = -lpthread -lrt
+LIBS = -lpthread -lrt -lm
 
 OBJ = p0.o  ru.o  sysinfo.o  sysmem.o
 

@@ -44,6 +44,8 @@ int main(int argc, char **argv)
     }
 
     printf("\n-------------- begin dispatch -----------------------\n");
+
+    errno = 0;
     for ( i = 0; i < NUM_THREADS; i++) {
         parm[i] = calloc( (size_t) 1 , (size_t) sizeof(thread_parm_t) );
 
@@ -61,14 +63,24 @@ int main(int argc, char **argv)
              * clean up before bailing out. In fact we may have 
              * already dispatched out threads. */
 
-            if (i == 0 ) return ( EXIT_FAILURE );
+            if (i == 0 ) {
+                /* the system gave us no resources at all */
+                fprintf(stderr,"FAIL : we are unable to even begin\n");
+                return ( EXIT_FAILURE );
+            }
 
             for ( j = 0; j < i; j++ ) {
                 /* lets ask those threads to just be nice and 
                  * we call them in with a join */
                 pthread_join(tid[j], NULL);
+
                 fprintf(stderr,"BAIL : pthread_join(%i) done.\n", j);
+
+                fprintf(stderr,"     : thread %i returned %-14.12g data.\n",
+                                                      j, parm[i]->ret_val );
+
                 free(parm[j]);
+                /* belt and suspenders safety we set the pointer to NULL */
                 parm[j] = NULL;
             }
             fprintf(stderr,"BAIL : cleanup done.\n", j);
