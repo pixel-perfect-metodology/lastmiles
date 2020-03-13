@@ -21,14 +21,18 @@ int ru(void);
 
 void *big_array_fill(void *); /* thread routine */
 
-pthread_t tid[NUM_THREADS]; /* array of thread IDs */
+/* array of thread IDs */
+pthread_t tid[256];
 
 int main(int argc, char **argv)
 {
 
     int    i, j;
+    int    candidate_int, num_pthreads;
     struct timespec now_time;
-    thread_parm_t *parm[NUM_THREADS];
+
+    /* some reasonable upper limit */
+    thread_parm_t *parm[256];
 
     setlocale( LC_ALL, "C" );
     sysinfo();
@@ -43,10 +47,32 @@ int main(int argc, char **argv)
         srand48( (long) now_time.tv_nsec );
     }
 
+    errno = 0;
+    if ( argc != 2 ) {
+        fprintf(stderr,"FAIL : insufficient arguments provided\n");
+        fprintf(stderr,"     : usage %s num_pthreads\n",argv[0]);
+        return ( EXIT_FAILURE );
+    } else {
+        candidate_int = (int)strtol(argv[1], (char **)NULL, 10);
+        if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+            fprintf(stderr,"FAIL : num_pthreads not understood\n");
+            perror("     ");
+            return ( EXIT_FAILURE );
+        }
+        if ( ( candidate_int < 2 ) || ( candidate_int > 256 ) ){
+            fprintf(stderr,"WARN : num_pthreads is unreasonable\n");
+            fprintf(stderr,"     : we shall assume 4 pthreads and proceed.\n");
+            num_pthreads = 4;
+        } else {
+            num_pthreads = candidate_int;
+            fprintf(stderr,"INFO : num_pthreads is %i\n", num_pthreads);
+        }
+    }
+
     printf("\n-------------- begin dispatch -----------------------\n");
 
     errno = 0;
-    for ( i = 0; i < NUM_THREADS; i++) {
+    for ( i = 0; i < num_pthreads; i++) {
         parm[i] = calloc( (size_t) 1 , (size_t) sizeof(thread_parm_t) );
 
         if ( parm[i] == NULL ) {
@@ -90,7 +116,6 @@ int main(int argc, char **argv)
              * than ( i - 1 ) at a time. If we get a calloc problem
              * then we just bail out. */
 
-
             ru();
 
             return ( EXIT_FAILURE );
@@ -106,7 +131,7 @@ int main(int argc, char **argv)
     }
     printf("\n-------------- end dispatch -------------------------\n");
 
-    for ( i = 0; i < NUM_THREADS; i++) {
+    for ( i = 0; i < num_pthreads; i++) {
         pthread_join(tid[i], NULL);
 
         printf("main() pthread_join %2i returned %-14.12g data.\n",
@@ -116,7 +141,7 @@ int main(int argc, char **argv)
     printf("\n-------------- end join -----------------------------\n");
     printf("All %i threads have terminated\n", i);
 
-    for ( i = 0; i < NUM_THREADS; i++) {
+    for ( i = 0; i < num_pthreads; i++) {
         free(parm[i]);
         parm[i] = NULL;
     }
