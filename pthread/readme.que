@@ -1,0 +1,86 @@
+
+
+Consider the possibility of a collection of tasks or jobs that
+go into a bucket. We need some way to drop the job information
+into the bucket and some way to get access to the job information
+and also to clear the job information out of the buck. In the
+beginning we have an empty bucket and we should end with an empty
+bucket. 
+
+What the hell is the bucket ? ?
+
+What could be in the bucket ? 
+
+What is a task or job? 
+
+Can we hack through this .... sure ... 
+
+    +-------------+      +-------------+      +-------------+
+    | job n       | ---> | job n+1     | ---> | job n+2     | --X
+    +-------------+      +-------------+      +-------------+
+
+The above is a list of jobs in which we have some start point
+at job n ( could be job 0 or job 56 ) and this is an ordered
+list wherein the lowest number job "points" to the next job
+in the list. 
+
+Eventually the list ends and that last job points no where.
+
+
+The over all job list is inside a bucket we call a "queue" and
+the beginning of this is the queue itself and then the elements
+inside the queue.
+
+Lets consider a data structure thing that shall be out queue and
+we can call it "que_type" which means a "queue data type" : 
+
+    typedef struct que_type {
+
+       /* we need a thing here which is 
+        * the top or head of the list   */
+
+        struct linked_list_thing* head;
+
+
+       /* the end of the whole list will 
+        * also exist as the tail */
+
+        struct linked_list_thing* tail;
+
+       /* we need a way to control access to
+        * this list from many places and protect
+        * from bad shit happening */
+
+        pthread_mutex_t mutex;
+
+    } que_type;
+
+
+The above thing is actually the queue or bucket list. 
+However we need a thing to put in the queue : 
+
+    typedef struct linked_list_thing {
+        /* we need a way to stuff a data payload or 
+         * parameter information load in this thing */
+        void *payload;
+
+        /* is there a next thing in the list ? */
+        struct linked_list_thing* next;
+
+    } linked_list_thing;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

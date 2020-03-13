@@ -95,6 +95,8 @@ int main(int argc, char **argv)
                 return ( EXIT_FAILURE );
             }
 
+            fprintf(stderr,"INFO : thread limit seems to be %i\n", i - 1 );
+
             for ( j = 0; j < i; j++ ) {
                 /* lets ask those threads to just be nice and 
                  * we call them in with a join */
