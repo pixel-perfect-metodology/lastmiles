@@ -1,73 +1,190 @@
 
+Consider the possibility of a collection of tasks or jobs that go into a
+bucket. We need some way to drop the job information into the bucket and
+some way to get access to the job information and also to clear the job
+information out of the bucket. In the beginning we have an empty bucket
+and we should end with an empty bucket once all tasks are complete.
 
-Consider the possibility of a collection of tasks or jobs that
-go into a bucket. We need some way to drop the job information
-into the bucket and some way to get access to the job information
-and also to clear the job information out of the buck. In the
-beginning we have an empty bucket and we should end with an empty
-bucket. 
-
-What the hell is the bucket ? ?
-
-What could be in the bucket ? 
-
-What is a task or job? 
-
-Can we hack through this .... sure ... 
+We shall call this job bucket a "queue".
 
     +-------------+      +-------------+      +-------------+
-    | job n       | ---> | job n+1     | ---> | job n+2     | --X
+    | job n       | ---> | job n+1     | ---> | job n+2     | --->X
     +-------------+      +-------------+      +-------------+
 
-The above is a list of jobs in which we have some start point
-at job n ( could be job 0 or job 56 ) and this is an ordered
-list wherein the lowest number job "points" to the next job
-in the list. 
+The above is a list of jobs in which we have some start point at job n
+which could be n=0 or n=56. We could have the "first" job in the queue
+as some number larger than zero if once upon a time there existed some
+previous jobs that had already been handled. Regardless what we have for
+the first value "n" in this list it is ordered in that one task somehow
+points to the next task in the overall queue list members. I would like
+to point out that the list is ordered but the values of "n" need not be
+ordered. This may be confusing but what I mean to say is that the number
+n could point to some other task that has a number lessor or greater.
 
-Eventually the list ends and that last job points no where.
+If we pick tasks out of the list and handle them in some way then we may
+eventually end up with just the last task.  That last task will point to
+nowhere at all as there are no more tasks.  It gets even better in that
+we can even have a queue of nothing where there are no tasks at all.
+
+The over all job list is inside a bucket we call a "queue" and the
+beginning of this is the queue itself.  Which begin empty. Then we have
+the elements or task things inside the queue. These have to be separate
+little things. Those separate little things should link to each other in
+some sort of order.  I say "should" and not really a "must" but being
+organized does make things more easy to deal with.
+
+Lets consider a data structure thing that shall be our queue and we can
+call it "q_type" which means a "queue data type" thing. It shall have a
+few pointers inside it to queue items we shall call q_item types : 
 
 
-The over all job list is inside a bucket we call a "queue" and
-the beginning of this is the queue itself and then the elements
-inside the queue.
+    typedef struct q_type {
 
-Lets consider a data structure thing that shall be out queue and
-we can call it "que_type" which means a "queue data type" : 
+       /* We need a thing here which is 
+        * the top or "head" of the list. */
 
-    typedef struct que_type {
+        struct q_item *head;
 
-       /* we need a thing here which is 
-        * the top or head of the list   */
+       /* The end of the whole list will 
+        * also exist as the "tail". */
 
-        struct linked_list_thing* head;
+        struct q_item *tail;
 
-
-       /* the end of the whole list will 
-        * also exist as the tail */
-
-        struct linked_list_thing* tail;
-
-       /* we need a way to control access to
+       /* We need a way to control access to
         * this list from many places and protect
-        * from bad shit happening */
+        * us from multiple accesses happening at
+        * the same time. Essentially protect us
+        * from data corruption or inconsistent
+        * queue elements.
 
-        pthread_mutex_t mutex;
+        pthread_mutex_t q_mutex;
 
-    } que_type;
+    } q_type;
 
 
-The above thing is actually the queue or bucket list. 
-However we need a thing to put in the queue : 
+The above thing is actually the queue or bucket list. However we need a
+thing to put in the queue. A task. A job.  A thing that somehow contains
+the data we need that describes an element in the queue to be an actual
+task to do : 
 
-    typedef struct linked_list_thing {
+
+    typedef struct q_item {
+
         /* we need a way to stuff a data payload or 
          * parameter information load in this thing */
+
         void *payload;
 
-        /* is there a next thing in the list ? */
-        struct linked_list_thing* next;
+        /* is there a next item in the list ? */
 
-    } linked_list_thing;
+        struct q_item *next;
+
+    } q_item;
+
+
+We need some way for the queue thing to exist in memory somewhere. Since
+everything in the C programming language boils down to accessing and 
+manipulating stuff in memory somehow then we need a way for the queue to
+exist in memory. Any variable we use will either be in some automatic
+memory location which is also in a thing called a "memory stack" or it
+may be a memory location that we have to ask for in a place called a big
+"memory heap".  Just know that we have to have the queue in memory to do
+anything with it.
+
+I think it is best to have a way to setup the queue in memory as well as
+a way to tear it down and remove it from memory.  For now we just want
+to setup the queue thing in memory somewhere : 
+
+
+    magic_function_thing () {
+
+        make a requeust for a queue thing in memory somewhere please 
+
+        inside the queue be sure the "head" and "tail" exist
+
+        make sure "head" points nowhere as we do not have anything in the queue
+
+        make sure "tail" also points nowhere for the same reason
+
+        be sure the magic mutex thing exists and is setup somehow
+
+        then return the shiney new queue to whomever called this magic function
+
+    }
+
+
+This new function will have to return a q_type data thing and thus the
+function will have a datatype return value :
+
+    q_type *q_create() {
+
+        /* make a requeust for a queue thing in memory and
+         * for extra special fun we want that memory to be
+         * "clear".  That means all zeros in it. For this we
+         * need one number element of a "struct q_type" thing. */
+
+        struct q_type *q = calloc( (size_t) 1, (size_t) sizeof(struct q_type));
+
+        /* make sure "head" and "tail" exist and 
+         * since the queue is empty we want them both to 
+         * be NULL pointers that point to nowhere. 
+         *
+         * Special note : we already asked above that the
+         * memory be all set to zero and so this really is
+         * not needed.  We do it anyways for clarity reasons.
+         */
+         q->head = NULL;
+         q->tail = NULL;
+
+         /* be sure the magic mutex thing exists and is setup
+          * as an initialized POSIX thread mutual exclusion lock
+          * based on the macro PTHREAD_MUTEX_INITIALIZER */
+         q->q_mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+
+        /* return the shiney new empty queue */
+        return q;
+
+    }
+
+
+We now have a way to create a queue thing in memory and we even get back
+a totally clear queue thing. What is the very first thing we will want
+to do with a new shiney queue?  How about stuff something inside it?
+
+At this time we should think about what type of a queue are we dealing
+with?  For the sake of being real simple I am thinking of a FIFO queue
+where stuff gets put into it and also taken out of in order. We do not
+just randomly toss stuff into the queue nor do we randomly take stuff
+out. Whatever goes in first is always going to be the "top" of a list
+of things and then new stuff may be stuffed in after. The First stuff
+In is also the First stuff Out.  This is FIFO queue type order.
+
+We need a magic function again that somehow stuffs a thing into the 
+queue : 
+
+    magic_stuff_it_in_queue ( gimme a queue, gimme task information ) {
+
+        first we need to protect the queue from other processes or
+           other code wrangling with it
+
+        we have been given some sort of task payload information and
+          it now needs to get stuffed into the queue
+
+        is the queue list empty?  If it is then this is a new task to
+           be put into a new queue
+
+        otherwise this is a new task to be added into the existing
+           queue list
+
+        we can now remove the protection from the queue as we have
+           finished wrangling the contents inside it
+
+    }
+
+
+
+------------------------------------------------------------------------
+123456789+123456789+123456789+123456789+123456789+123456789+123456789+12
 
 
 
