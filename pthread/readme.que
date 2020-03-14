@@ -1,4 +1,14 @@
 
+    Programming today is a race between software engineers striving to
+    build bigger and better idiot-proof programs, and the Universe
+    trying to produce bigger and better idiots.
+
+    So far, the Universe is winning.
+
+         Rick Cook
+
+------------------------------------------------------------------------
+
 Consider the possibility of a collection of tasks or jobs that go into a
 bucket. We need some way to drop the job information into the bucket and
 some way to get access to the job information and also to clear the job
@@ -49,6 +59,10 @@ few pointers inside it to queue items we shall call q_item types :
         * also exist as the "tail". */
 
         struct q_item *tail;
+
+       /* It is nice to have a counter somewhere
+        * to tell us how many things are in the queue */
+        int length;
 
        /* We need a way to control access to
         * this list from many places and protect
@@ -136,6 +150,9 @@ function will have a datatype return value :
          q->head = NULL;
          q->tail = NULL;
 
+        /* we know that the length of this queue is zero */
+        q->length = 0;
+
          /* be sure the magic mutex thing exists and is setup
           * as an initialized POSIX thread mutual exclusion lock
           * based on the macro PTHREAD_MUTEX_INITIALIZER */
@@ -178,6 +195,108 @@ queue :
 
         we can now remove the protection from the queue as we have
            finished wrangling the contents inside it
+   
+        return back the number of items in the queue
+
+    }
+
+
+Lets try to write that magic in the C programming language now : 
+
+    size_t q_push ( q_type *q, void *p ) {
+
+        /* set the mutex as locked */
+        pthread_mutex_lock ( &( q->q_mutex ) );
+
+        /* we need to create a new queue item and put
+         * the payload into it */
+        struct q_item *new_item = calloc((size_t) 1, (size_t)sizeof(struct q_item));
+        new_item->payload = p;
+
+        /* we used calloc to give us clear memory but to be 
+         * clear this item points to nowhere at the moment */
+        new_item->next = NULL;
+
+        /* Is the queue list empty? Check if head and tail
+         * point nowhere OR even check if length is zero.
+         *
+         * To be clear the queue itself is NOT a linked 
+         * list but rather the items inside it are linked.
+         *
+         * If the queue is empty then the head points to
+         * nowhere as well as the tail. The length will
+         * also be zero.  If there is only a single item
+         * in the queue then the head and tail both point
+         * to that single item. */
+
+        if ( ( (q->length) == 0 )
+            && ( (q->head) == NULL )
+            && ( (q->tail) == NULL ) ) {
+
+            /* the queue is indeed empty.
+             *
+             * Just place the new_item on the head and
+             * the tail and set length to one.
+             */
+            q->head = new_item;
+            q->tail = new_item;
+            q->length = 1;
+
+        } else {
+
+            /* The queue is not empty.
+             *
+             * Take this new_item and stick it on the queue
+             * tail.  However we already have something on
+             * the tail and we need to preserve that pointer.
+             * Therefore whatever is on the tail now must
+             * point to the new_item. Also the queue tail
+             * will point to this new_item as it really is
+             * now on the end of the list. 
+             *
+             *   +--------- queue -----------+
+             *   |                           |
+             *   |   head -->  some_item_N   |
+             *   |                           |
+             *   |   tail -->  some_item_X   |
+             *   |                           |
+             *   |   length =   3            |
+             *   |                           |
+             *   +---------------------------+
+             *
+             *   However the some_item_N looks like : 
+             *
+             *   +----- some_item_N ---------+
+             *   |                           |
+             *   |    payload = a_pointer_x  |
+             *   |                           |
+             *   |    next ---> some_item_P  |
+             *   |                           | 
+             *   +---------------------------+
+             *
+             *   +----- some_item_P ---------+
+             *   |                           |
+             *   |    payload = a_pointer_y  |
+             *   |                           |
+             *   |    next ---> some_item_X  |
+             *   |                           | 
+             *   +---------------------------+
+             *
+             *   +----- some_item_X ---------+
+             *   |                           |
+             *   |    payload = a_pointer_z  |
+             *   |                           |
+             *   |    next ---> NULL         |
+             *   |                           |
+             *   +---------------------------+
+             *
+             */
+            q->tail->next = new_item;
+            q->tail = new_item;
+            q->length += 1;
+
+        }
+
 
     }
 
@@ -185,19 +304,4 @@ queue :
 
 ------------------------------------------------------------------------
 123456789+123456789+123456789+123456789+123456789+123456789+123456789+12
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
