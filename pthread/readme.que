@@ -62,6 +62,7 @@ few pointers inside it to queue items we shall call q_item types :
 
        /* It is nice to have a counter somewhere
         * to tell us how many things are in the queue */
+
         int length;
 
        /* We need a way to control access to
@@ -72,6 +73,9 @@ few pointers inside it to queue items we shall call q_item types :
         * queue elements.
 
         pthread_mutex_t q_mutex;
+
+        /* are we alive or dead */
+        pthread_cond_t alive;
 
     } q_type;
 
@@ -297,10 +301,39 @@ Lets try to write that magic in the C programming language now :
 
         }
 
+        /* unlock the mutex */
+        pthread_mutex_unlock ( &( q->q_mutex ) );
 
     }
 
 
+How do we pop anything out of that job list thing? 
+
+Good question. We have to talk about a "consumer" thingy idea that 
+eats up the tasks in the job queue. A consumer does what you think. It
+goes looking for something to "eat" and if it finds something for it
+then it "eats" the task up and as far as the queue is concerned the
+problem is out of its hands.  We can get to consumer eating stuff later
+but for now ... lets be able to get something off the task list.
+
+    some_magic_get_job_thing ( some queue ) {
+
+         protect the queue from all other processes accessing it 
+
+         whoa nellie! Are we even allowed to access the queue? 
+
+         check if the queue is empty ?  That won't work well for us.
+              what to do here ? we want to pop a task but there is 
+                  nothing for us. Let me think on that. We need a
+                   queue condition. we need to know is the queue
+                   alive and loading a task or now?
+
+
+         
+
+         remove the protection
+
+    }
 
 ------------------------------------------------------------------------
 123456789+123456789+123456789+123456789+123456789+123456789+123456789+12
