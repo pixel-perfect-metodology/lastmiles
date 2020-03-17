@@ -17,19 +17,6 @@
 #include <pthread.h>
 #include "q.h"
 
-/*
-typedef struct q_type {
-} q_type;
-typedef struct q_item {
-} q_item;
-q_type *q_create() {
-}
-size_t q_push ( q_type *q, void *p ) {
-}
-void *q_pop( q_type *q ) {
-}
-*/
-
 int main(int argc, char **argv) {
 
     int foo;
@@ -39,14 +26,29 @@ int main(int argc, char **argv) {
     q_type *my_q = q_create();
 
     char *barf = calloc( (size_t) 32, (size_t)sizeof(unsigned char) );
+    printf ( "INFO :  barf string is at %p\n", barf );
 
-    foo = q_push ( my_q, (void *)barf );
+    foo = q_push( my_q, (void *)barf );
     printf ( "INFO : q_push() returned %i\n", foo );
+    printf ( "     : my_q->length = %i\n", my_q->length );
 
-    char *gagme = calloc( (size_t) 64, (size_t)sizeof(unsigned char) );
+    char *gag = calloc( (size_t) 64, (size_t)sizeof(unsigned char) );
+    printf ( "INFO :   gag string is at %p\n", gag );
 
-    foo = q_push ( my_q, (void *)gagme );
+    foo = q_push( my_q, (void *)gag );
     printf ( "INFO : q_push() returned %i\n", foo );
+    printf ( "     : my_q->length = %i\n", my_q->length );
+
+    /* okay lets cast a void pointer and listen to the screams */
+    char *puke = (char *)q_pop( my_q );
+    printf ( "     : my_q->length = %i\n", my_q->length );
+    printf ( "     :  puke string is at %p\n", puke );
+    printf ( "     : my_q->length = %i\n", my_q->length );
+
+    char *fart = (char *)q_pop( my_q );
+    printf ( "     : my_q->length = %i\n", my_q->length );
+    printf ( "     :  fart string is at %p\n", fart );
+    printf ( "     : my_q->length = %i\n", my_q->length );
 
     /* we will need a q_destroy() at some point but
      * for now we can just check if the thing is empty

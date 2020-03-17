@@ -24,4 +24,4 @@ p0: $(OBJ)
 	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) $(LIBS)
 
 clean:
-	rm -f *.o p0
+	rm -f *.o p0 q

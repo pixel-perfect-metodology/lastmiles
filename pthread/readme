@@ -645,5 +645,26 @@ Great. Not lets translate that into some sort of valid C code :
 123456789+123456789+123456789+123456789+123456789+123456789+123456789+12
 
 
+esther$ valgrind --leak-check=full ./q 
+==28657== Memcheck, a memory error detector
+==28657== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==28657== Using Valgrind-3.15.0 and LibVEX; rerun with -h for copyright info
+==28657== Command: ./q
+==28657== 
+hellow you threaded world you.
+INFO : q_push() returned 1
+INFO : q_push() returned 2
+==28657== 
+==28657== HEAP SUMMARY:
+==28657==     in use at exit: 0 bytes in 0 blocks
+==28657==   total heap usage: 6 allocs, 6 frees, 1,224 bytes allocated
+==28657== 
+==28657== All heap blocks were freed -- no leaks are possible
+==28657== 
+==28657== For lists of detected and suppressed errors, rerun with: -s
+==28657== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+esther$ 
+
+
 
 
