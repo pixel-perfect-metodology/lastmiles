@@ -1,6 +1,4 @@
 
-IDIR = .
-
 CC=/usr/bin/cc
 
 CFLAGS= -I$(IDIR) -std=iso9899:1999 -pedantic -pedantic-errors \
@@ -13,10 +11,14 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 
 LIBS = -lpthread -lrt -lm
 
-OBJ = p0.o  ru.o  sysinfo.o  sysmem.o
+OBJ = p0.o ru.o sysinfo.o sysmem.o
+OBJQ = q.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+
+q: $(OBJQ)
+	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) -D_REENTRANT $(LIBS)
 
 p0: $(OBJ)
 	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) $(LIBS)

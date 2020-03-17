@@ -1,0 +1,26 @@
+GNU MP: Cannot allocate memory (size=521842244)
+-------------------------------------------------------------
+           system name = Linux
+             node name = arm7
+               release = 4.4.132+
+               version = #1 SMP Wed May 15 19:37:54 CST 2019
+               machine = armv7l
+             page size = 4096
+          avail memory = 2109849600
+                       = 2060400 kB
+                       = 2012 MB
+     fp rounding mode is FE_TONEAREST
+ sizeof(unsigned long) = 4
+-------------------------------------------------------------
+GMP  library version : 6.2.0
+MPFR library: 4.0.2       
+MPFR header : 4.0.2 (based on 4.0.2)
+            : compiled as thread safe using TLS
+MPFR thresholds file used at compile time : src/arm/mparam.h
+Merry Christmas, you asked for it!
+INFO : using 1043614489 bits of precision.
+
+Command terminated by signal 6
+real 97279.43
+user 97134.19
+sys 124.50
