@@ -14,6 +14,13 @@
 
 #include <pthread.h>
 
+/* struct to pass params to a POSIX thread */
+typedef struct {
+  uint32_t  t_num;   /* this is the thread number */
+  double    ret_val; /* some sort of a return value */
+  uint64_t *big_array;
+} thread_parm_t;
+
 typedef struct q_type {
 
    /* We need a thing here which is 
@@ -99,6 +106,38 @@ q_type *q_create() {
 
     /* return the shiney new empty queue */
     return q;
+
+}
+
+int q_destroy(q_type *q) {
+
+    int destroyed_item_count = 0;
+    q_item *tmp;
+
+    if ( q->head != NULL ) {
+        /* traverse the list and free items as we hit them */
+        tmp = q->head;
+        while ( tmp != NULL ) {
+            /* if the payload exists then free it */
+            if ( tmp->payload != NULL ) {
+                free ( tmp->payload );
+                tmp->payload = NULL;
+                destroyed_item_count += 1;
+            }
+
+            tmp = tmp->next;
+
+            free( q->head );
+
+            q->head = tmp;
+
+        }
+
+    }
+
+    free(q);
+
+    return destroyed_item_count;
 
 }
 
