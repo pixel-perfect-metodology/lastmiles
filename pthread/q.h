@@ -23,28 +23,16 @@ typedef struct {
 
 typedef struct q_type {
 
-   /* We need a thing here which is 
-    * the top or "head" of the list. */
-
     struct q_item *head;
-
-   /* The end of the whole list will 
-    * also exist as the "tail". */
-
     struct q_item *tail;
 
-   /* It is nice to have a counter somewhere
-    * to tell us how many things are in the queue */
-
+   /* how many items are in the queue */
     int length;
 
    /* We need a way to control access to
     * this list from many places and protect
     * us from multiple accesses happening at
-    * the same time. Essentially protect us
-    * from data corruption or inconsistent
-    * queue elements. */
-
+    * the same time. */
     pthread_mutex_t q_mutex;
 
     /* Is this queue live or dead?
@@ -63,11 +51,9 @@ typedef struct q_item {
 
     /* we need a way to stuff a data payload or 
      * parameter information load in this thing */
-
     void *payload;
 
     /* is there a next item in the list ? */
-
     struct q_item *next;
 
 } q_item;
@@ -141,7 +127,7 @@ int q_destroy(q_type *q) {
 
 }
 
-int q_push ( q_type *q, void *p ) {
+void q_push ( q_type *q, void *p ) {
 
     /* set the mutex as locked */
     pthread_mutex_lock ( &( q->q_mutex ) );
@@ -254,8 +240,6 @@ int q_push ( q_type *q, void *p ) {
      *
      */
     pthread_cond_signal( &( q->alive ) );
-
-    return ( q->length );
 
 }
 

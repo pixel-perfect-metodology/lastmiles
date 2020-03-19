@@ -84,8 +84,8 @@ int main(int argc, char **argv) {
     strncpy ( str0, "This is some string in str0", (size_t)27 );
     printf ( "     : str0 set to \"%s\"\n", str0 );
 
-    q_len = q_push( my_q, (void *)str0 );
-    printf ( "INFO : q_push(str0) returned %i\n", q_len );
+    q_push( my_q, (void *)str0 );
+    printf ( "INFO : q_push(str0) done\n" );
     printf ( "     : my_q->length = %i\n\n", my_q->length );
 
     char *str1 = calloc( (size_t) 64, (size_t)sizeof(unsigned char) );
@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
     strncpy ( str1, "Feed the dead beef bad caffee in str1", (size_t)37 );
     printf ( "     : str1 set to \"%s\"\n", str1 );
 
-    q_len = q_push( my_q, (void *)str1 );
-    printf ( "INFO : q_push() returned %i\n", q_len );
+    q_push( my_q, (void *)str1 );
+    printf ( "INFO : q_push() done\n" );
     printf ( "     : my_q->length = %i\n", my_q->length );
 
     /* okay lets cast a void pointer and listen to the screams */
@@ -113,16 +113,16 @@ int main(int argc, char **argv) {
     str0 = calloc( (size_t) 16, (size_t)sizeof(unsigned char) );
     printf ( "INFO : string str0 exists again at %p\n", str0 );
     strncpy ( str0, "something", (size_t)10 );
-    q_len = q_push( my_q, (void *)str0 );
-    printf ( "INFO : q_push(str0) returned %i\n", q_len );
+    q_push( my_q, (void *)str0 );
+    printf ( "INFO : q_push(str0) done\n" );
     printf ( "     : my_q->length = %i\n\n", my_q->length );
 
     /* push something else the queue */
     str1 = calloc( (size_t) 16, (size_t)sizeof(unsigned char) );
     printf ( "INFO : string str1 exists again at %p\n", str1 );
     strncpy ( str1, "something else", (size_t)15 );
-    q_len = q_push( my_q, (void *)str1 );
-    printf ( "INFO : q_push(str1) returned %i\n", q_len );
+    q_push( my_q, (void *)str1 );
+    printf ( "INFO : q_push(str1) done\n" );
     printf ( "     : my_q->length = %i\n\n", my_q->length );
 
     printf ( "     : about to call q_destroy(my_q)\n");
