@@ -126,7 +126,8 @@ int main(int argc, char **argv) {
         }
     }
     free(my_q);
-    my_q = NULL;
+    free(str2);
+    free(str3);
 
     return ( EXIT_SUCCESS );
 
