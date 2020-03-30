@@ -233,7 +233,7 @@ int main(int argc, char*argv[])
             perror("     ");
             return ( EXIT_FAILURE );
         }
-        if ( ( candidate_int < 256 ) || ( candidate_int > 262144 ) ){
+        if ( ( candidate_int < 256 ) || ( candidate_int > 1048576 ) ){
             fprintf(stderr,"WARN : mandlebrot bail out is unreasonable\n");
             fprintf(stderr,"     : we shall assume 4096 and proceed.\n");
             mand_bail = (uint32_t)4096;

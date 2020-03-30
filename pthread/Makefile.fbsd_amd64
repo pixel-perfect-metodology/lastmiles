@@ -11,12 +11,12 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 LIBS = -lpthread -lrt
 
 OBJ = p0.o ru.o sysinfo.o sysmem.o
-OBJQ = sysmem.o sysinfo.o q.o
+OBJQ = sysmem.o sysinfo.o q_test.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
-q: $(OBJQ)
+q_test: $(OBJQ)
 	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) -D_REENTRANT $(LIBS)
 
 p0: $(OBJ)

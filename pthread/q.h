@@ -70,10 +70,6 @@ q_type *q_create() {
     /* make sure "head" and "tail" exist and 
      * since the queue is empty we want them both to 
      * be NULL pointers that point to nowhere. 
-     *
-     * Special note : we already asked above that the
-     * memory be all set to zero and so this really is
-     * not needed.  We do it anyways for clarity reasons.
      */
      q->head = NULL;
      q->tail = NULL;
@@ -81,16 +77,14 @@ q_type *q_create() {
     /* we know that the length of this queue is zero */
     q->length = 0;
 
-    /* be sure the magic mutex thing exists and is setup
-     * as an initialized POSIX thread mutual exclusion lock
-     * based on the macro PTHREAD_MUTEX_INITIALIZER */
+    /* mutex setup as an initialized POSIX thread mutual
+     * exclusion lock based on the macro PTHREAD_MUTEX_INITIALIZER */
     q->q_mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 
     /* setup the alive condition as a POSIX thread "condition"
      * type thing. */
     q->alive = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
 
-    /* return the shiney new empty queue */
     return q;
 
 }
@@ -99,6 +93,9 @@ int q_destroy(q_type *q) {
 
     int destroyed_item_count = 0;
     q_item *tmp;
+
+    /* set the mutex as locked */
+    pthread_mutex_lock ( &( q->q_mutex ) );
 
     if ( q->head != NULL ) {
         /* traverse the list and free items as we hit them */
@@ -112,15 +109,17 @@ int q_destroy(q_type *q) {
             }
 
             tmp = tmp->next;
-
             free( q->head );
-
             q->head = tmp;
 
         }
-
     }
 
+    /* unlock the mutex */
+    pthread_mutex_unlock ( &( q->q_mutex ) );
+
+    /* we may be wrecking havok here with threads that
+     * are awaiting the queue to be available */
     free(q);
 
     return destroyed_item_count;

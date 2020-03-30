@@ -11,7 +11,7 @@ Pentium II debian Linux server says :
 
 ============================================================
 
-Horrifically slow example on ye VIA EDen Esther machine :
+Horrifically slow example on ye VIA Eden Esther machine :
 
     magnify = pow( 2.0, 16.0);
     obs_x_width = 4.0 / magnify;
@@ -107,5 +107,87 @@ click at 443 502
 right click
 click at 551 678 
 right click
+
+
+------- heavy duty numerical load example ------------------------
+
+Note : we modified the code to allow for 2^20 mandlebrot height
+
+vesta$ ./xmand 1048576 262144 -7.499252259685e-01 -1.213768124597e-02 16
+-------------------------------------------------------------
+           system name = FreeBSD
+             node name = vesta
+               release = 12.1-RELEASE-p3
+               version = FreeBSD 12.1-RELEASE-p3 GENERIC
+               machine = amd64
+             page size = 4096
+          avail memory = 10328125440
+                       = 10086060 kB
+                       = 9849 MB
+     fp rounding mode is FE_TONEAREST
+ sizeof(unsigned long) = 8
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+    mand_bail = 1048576
+pthread_limit = 16
+    translate = ( -7.499252259685e-01 , -1.213768124597e-02 )
+      magnify = +2.621440000000e+05
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 3840 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 009 , 009 ]
+[mand] =  1460730489327 nsec   1.460730e+03 sec
+
+click at 638 441 
+vbox  [ 015 , 015 ]
+c = ( -7.499181479169e-01 , -1.213052868860e-02 )
+[ t00 ] : 0  -> 3 
+[ t01 ] : 4  -> 7 
+[ t02 ] : 8  -> 11
+[ t03 ] : 12 -> 15
+[ t04 ] : 16 -> 19
+[ t05 ] : 20 -> 23
+[ t08 ] : 32 -> 35
+[ t09 ] : 36 -> 39
+[ t14 ] : 56 -> 59
+[ t15 ] : 60 -> 63
+[ t10 ] : 40 -> 43
+[ t07 ] : 28 -> 31
+[ t06 ] : 24 -> 27
+[ t13 ] : 52 -> 55
+[ t12 ] : 48 -> 51
+[ t11 ] : 44 -> 47
+PTHRD: join 0 done
+PTHRD: join 1 done
+PTHRD: join 2 done
+PTHRD: join 3 done
+PTHRD: join 4 done
+PTHRD: join 5 done
+PTHRD: join 6 done
+PTHRD: join 7 done
+PTHRD: join 8 done
+PTHRD: join 9 done
+PTHRD: join 10 done
+PTHRD: join 11 done
+PTHRD: join 12 done
+PTHRD: join 13 done
+PTHRD: join 14 done
+PTHRD: join 15 done
+[join] =    11238069953 nsec   1.123807e+01 sec
+
+vesta$ 
 
 
