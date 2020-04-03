@@ -31,17 +31,16 @@ int sysinfo(void);
  * pointer to a qork queue. */
 void do_some_array_thing ( q_type *work_q );
 
+/* struct to pass params to a POSIX thread */
+typedef struct {
+  uint32_t  t_num;   /* this is the thread number */
+  int       ret_val; /* some sort of a return value */
+  uint64_t *big_array; /* do some work and put data here */
+} thread_parm_t;
+
 int main(int argc, char **argv) {
 
     int candidate_int, num_pthreads;
-
-    /* locally in this code block we can keep around some
-     * integer length of the queue but to be honest we
-     * should ask the queue what its length is. This means
-     * a method or function should exist that will safely
-     * get that data for us from the queue structure. */
-    int q_len;
-
     struct timespec now_time;
 
     setlocale( LC_ALL, "C" );
@@ -87,9 +86,9 @@ int main(int argc, char **argv) {
     /* make work out of think air */
     thread_parm_t *make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
 
-    printf ( "INFO : make_work0 is at %p\n", str0 );
+    printf ( "INFO : make_work is at %p\n", make_work );
 
-    q_push( my_q, (void *)make_work );
+    enqueue( my_q, (void *)make_work );
     printf ( "INFO : q_push(make_work) done\n" );
     printf ( "     : my_q->length = %i\n\n", my_q->length );
 
@@ -108,28 +107,23 @@ void do_some_array_thing ( q_type *work_q ) {
      * where no thread can work until something exists
      * in the list .. we can just try to pop something
      * out of it */
-    thread_parm_t *foo = (thread_parm_t *)q_pop( work_q );
-
-    /*  stuff in the parameter struct 
-     *  uint32_t  t_num;
-     *  double    ret_val;
-     * uint64_t *big_array;
-     */
+    thread_parm_t *foo = (thread_parm_t *)dequeue( work_q );
 
     /* lets calloc a bucket of memory for the big_array */
     foo->big_array = calloc( (size_t)1048576, (size_t)sizeof(uint64_t) );
-    /* maybe check if that calloc actually worked */
+    /* TODO maybe check if that calloc actually worked */
 
     for ( j=0; j<1048576; j++ ) {
-        *((foo->big_array)+j) = j + 123456789;
+        *((foo->big_array)+j) = (uint64_t)( j + 123456789 );
     }
 
     for ( k=0; k<1024; k++ ) {
-        *((foo->big_array)+(k * 256)) = k;
+        *((foo->big_array)+(k * 256)) = (uint64_t) k;
     }
 
     /* gee .. throw that away */
     free( foo->big_array );
+    foo->big_array = NULL;
 
 }
 
