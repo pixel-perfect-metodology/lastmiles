@@ -49,7 +49,7 @@ typedef struct q_type {
 
 typedef struct q_item {
 
-    /* we need a way to stuff a data payload or 
+    /* we need a way to stuff a data payload or
      * parameter information load in this thing */
     void *payload;
 
@@ -67,9 +67,9 @@ q_type *q_create() {
 
     struct q_type *q = calloc( (size_t) 1, (size_t) sizeof(struct q_type));
 
-    /* make sure "head" and "tail" exist and 
-     * since the queue is empty we want them both to 
-     * be NULL pointers that point to nowhere. 
+    /* make sure "head" and "tail" exist and
+     * since the queue is empty we want them both to
+     * be NULL pointers that point to nowhere.
      */
      q->head = NULL;
      q->tail = NULL;
@@ -115,6 +115,20 @@ int q_destroy(q_type *q) {
         }
     }
 
+    /* TODO destroy the condition variable in the queue,
+     *
+     *   The pthread_cond_destroy() function may fail if:
+     *
+     *       EBUSY   The implementation has detected  an  attempt
+     *               to  destroy  the  object  referenced by cond
+     *               while it is referenced (for  example,  while
+     *               being   used  in  a  pthread_cond_wait()  or
+     *               pthread_cond_timedwait()) by another thread.
+     *
+     *       EINVAL  The value specified by cond is invalid.
+     *
+     */
+
     /* unlock the mutex */
     pthread_mutex_unlock ( &( q->q_mutex ) );
 
@@ -126,7 +140,7 @@ int q_destroy(q_type *q) {
 
 }
 
-void q_push ( q_type *q, void *p ) {
+void enqueue ( q_type *q, void *p ) {
 
     /* set the mutex as locked */
     pthread_mutex_lock ( &( q->q_mutex ) );
@@ -136,14 +150,14 @@ void q_push ( q_type *q, void *p ) {
     struct q_item *new_item = calloc((size_t) 1, (size_t)sizeof(struct q_item));
     new_item->payload = p;
 
-    /* we used calloc to give us clear memory but to be 
+    /* we used calloc to give us clear memory but to be
      * clear this item points to nowhere at the moment */
     new_item->next = NULL;
 
     /* Is the queue list empty? Check if head and tail
      * point nowhere OR even check if length is zero.
      *
-     * To be clear the queue itself is NOT a linked 
+     * To be clear the queue itself is NOT a linked
      * list but rather the items inside it are linked.
      *
      * If the queue is empty then the head points to
@@ -175,7 +189,7 @@ void q_push ( q_type *q, void *p ) {
          * Therefore whatever is on the tail now must
          * point to the new_item. Also the queue tail
          * will point to this new_item as it really is
-         * now on the end of the list. 
+         * now on the end of the list.
          *
          *   +--------- queue -----------+
          *   |                           |
@@ -187,14 +201,14 @@ void q_push ( q_type *q, void *p ) {
          *   |                           |
          *   +---------------------------+
          *
-         *   However the some_item_N looks like : 
+         *   However the some_item_N looks like :
          *
          *   +----- some_item_N ---------+
          *   |                           |
          *   |    payload = a_pointer_x  |
          *   |                           |
          *   |    next ---> some_item_P  |
-         *   |                           | 
+         *   |                           |
          *   +---------------------------+
          *
          *   +----- some_item_P ---------+
@@ -202,7 +216,7 @@ void q_push ( q_type *q, void *p ) {
          *   |    payload = a_pointer_y  |
          *   |                           |
          *   |    next ---> some_item_X  |
-         *   |                           | 
+         *   |                           |
          *   +---------------------------+
          *
          *   +----- some_item_X ---------+
@@ -227,10 +241,10 @@ void q_push ( q_type *q, void *p ) {
 
     /* send out a signal to at least one thread consumer
      * which may be waiting. No promise anything is actually
-     * waiting but if there are then we signal that a new
+     * waiting but if there is then we signal that a new
      * task has arrived.
      *
-     * From the manpage : 
+     * From the manpage :
      *
      *    The pthread_cond_signal() call unblocks at least one
      *    of the threads that are blocked on the specified
@@ -242,14 +256,14 @@ void q_push ( q_type *q, void *p ) {
 
 }
 
-void *q_pop( q_type *q ) {
+void *dequeue( q_type *q ) {
 
     void *return_payload = NULL;
 
     /* We only care about the first item in the queue and
      * we want the payload from that first item. Looking
      * at this diagram we see queue->head->payload is what
-     * we want. 
+     * we want.
      *
      *   +--------- queue -----------+
      *   |                           |
@@ -284,7 +298,7 @@ void *q_pop( q_type *q ) {
     while ( ( (q->length) == 0 )
             && ( (q->head) == NULL )
             && ( (q->tail) == NULL ) ) {
-    
+
         /* queue is empty so we await for it to get a task */
         pthread_cond_wait( &( q->alive ), &( q->q_mutex ) );
 
@@ -295,7 +309,7 @@ void *q_pop( q_type *q ) {
     return_payload = q->head->payload;
 
     /* redirect the head of the queue to point to whatever
-     * was the next item, HOWEVER we need to save the 
+     * was the next item, HOWEVER we need to save the
      * current pointer data to free() the memory later */
     q_item *tmp=q->head;
     q->head = tmp->next;
@@ -315,6 +329,6 @@ void *q_pop( q_type *q ) {
     pthread_mutex_unlock ( &( q->q_mutex ) );
 
     return ( return_payload );
-     
+
 }
 

@@ -281,9 +281,10 @@ queue :
     }
 
 
-Lets try to write that magic in the C programming language now : 
+Lets try to write that magic in the C programming language now where
+we say that we are putting something onto the end of the queue :
 
-    int q_enqueue ( q_type *q, void *p ) {
+    int enqueue ( q_type *q, void *p ) {
 
         /* set the mutex as locked */
         pthread_mutex_lock ( &( q->q_mutex ) );
@@ -437,10 +438,11 @@ but for now ... lets be able to get something from the task list.
     }
 
 
-Great. Not lets translate that into some sort of valid C code :
+Great. Not lets translate that into some sort of valid C code where
+the objective is to remove something from the head of the queue :
 
 
-    void *q_dequeue( q_type *q ) {
+    void *dequeue( q_type *q ) {
 
         void *return_payload = NULL;
 
@@ -518,6 +520,8 @@ Great. Not lets translate that into some sort of valid C code :
 
 ------------------------------------------------------------------------
 123456789+123456789+123456789+123456789+123456789+123456789+123456789+12
+
+Compile and memory check the queue test code : 
 
 len$ 
 len$ valgrind -s --leak-check=full ./q 1
