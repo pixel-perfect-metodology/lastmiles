@@ -1,4 +1,8 @@
 
+see below for the job queue model discussion.
+
+
+
 
 The idea here is to dispatch a set of POSIX threads ( pthread ) which
 receive some simple information from the calling main process and then
@@ -58,141 +62,7 @@ CommitLimit:     6077292 kB
 Committed_AS:      79572 kB
 titan# 
 
-
-
----------------------------------------------------------------------
-
-on Solaris :
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -mt -c -o sysmem.o sysmem.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -mt -c -o ru.o ru.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -mt -c -o sysinfo.o sysinfo.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -mt -c -o p0.o p0.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -mt -o p0 p0.o sysinfo.o sysmem.o ru.o -lpthread -lrt
-
-
-on FreeBSD with LLVM Clang
-$CC -mthread-model posix $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o sysmem.o sysmem.c
-$CC -mthread-model posix $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o ru.o ru.c
-$CC -mthread-model posix $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o sysinfo.o sysinfo.c
-$CC -mthread-model posix $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o p0.o p0.c
-$CC -mthread-model posix $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -I. -c -o p0.o p0.c
-$CC -mthread-model posix $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -I. -o p0 p0.o sysinfo.o sysmem.o ru.o -lpthread -lrt
-
-on debian amd64 with gcc9 and most other places
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o sysmem.o sysmem.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o ru.o ru.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o sysinfo.o sysinfo.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o p0.o p0.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -o p0 p0.o sysinfo.o sysmem.o ru.o -lpthread -lrt
-
-
-on debian 32-bit armv7 :
-
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o sysmem.o sysmem.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o ru.o ru.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o sysinfo.o sysinfo.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -c -o p0.o p0.c
-$CC $CFLAGS $CPPFLAGS -D_XOPEN_SOURCE=600 -D_REENTRANT -o p0 p0.o sysinfo.o sysmem.o ru.o -lpthread -lrt
-
-
-From the Linux manpages for getrusage :
-
-       Not  all  fields are completed;  unmaintained  fields  are
-       set to zero by the kernel.  (The unmaintained fields are provided
-       for compatibility with other systems, and because they may
-       one day be supported on Linux.)  The fields are interpreted as
-       follows:
-
-       ru_utime
-              This  is the total amount of time  spent  executing
-              in user mode, expressed in a timeval structure 
-              (seconds plus mibcroseconds).
-
-       ru_stime
-              This is the total amount of time spent executing in
-kernel mode, expressed in a timeval  structure  (seconds  plus
-              microseconds).
-
-       ru_maxrss (since Linux 2.6.32)
-              This  is the maximum resident  set  size  used  (in
-kilobytes).   For  RUSAGE_CHILDREN, this is the resident set size
-of
-              the largest child, not  the  maximum  resident  set
-size of the process tree.
-
-       ru_ixrss (unmaintained)
-              This field is currently unused on Linux.
-
-       ru_idrss (unmaintained)
-              This field is currently unused on Linux.
-
-       ru_isrss (unmaintained)
-              This field is currently unused on Linux.
-
-       ru_minflt
-              The number of page faults serviced without any  I/O
-activity; here I/O activity is avoided by "reclaiming" a  page
-              frame from the list of pages awaiting reallocation.
-
-       ru_majflt
-              The number of page faults  serviced  that  required
-I/O activity.
-
-       ru_nswap (unmaintained)
-              This field is currently unused on Linux.
-
-       ru_inblock (since Linux 2.6.22)
-              The number of times the filesystem had  to  perform
-input.
-
-       ru_oublock (since Linux 2.6.22)
-              The number of times the filesystem had  to  perform
-output.
-
-       ru_msgsnd (unmaintained)
-              This field is currently unused on Linux.
-
-       ru_msgrcv (unmaintained)
-              This field is currently unused on Linux.
-
-       ru_nsignals (unmaintained)
-              This field is currently unused on Linux.
-
-       ru_nvcsw (since Linux 2.6)
-              The number of times a context switch  resulted  due
-to a process voluntarily giving up the processor before its time
-              slice was completed (usually to await  availability
-of a resource).
-
-       ru_nivcsw (since Linux 2.6)
-              The number of times a context switch  resulted  due
-to a higher priority process becoming runnable  or  because  the
-              current process exceeded its time slice.
-
-
-Be advised that some of the linux stuff is non-standard and  non-
-portable however :
-
-CONFORMING TO
-       POSIX.1-2001,   POSIX.1-2008,   SVr4,   4.3BSD.    POSIX.1
-specifies getrusage(), but specifies only the fields ru_utime and
-       ru_stime.
-
-       RUSAGE_THREAD is Linux-specific.
-
-
 -------------- what about a job queue for these threads ? --------------
-
-
-    Programming today is a race between software engineers striving to
-    build bigger and better idiot-proof programs, and the Universe
-    trying to produce bigger and better idiots.
-
-    So far, the Universe is winning.
-
-         Rick Cook
-
-------------------------------------------------------------------------
 
 Consider the possibility of a collection of tasks or jobs that go into a
 bucket. We need some way to drop the job information into the bucket and
@@ -210,13 +80,13 @@ The above is a list of jobs in which we have some start point at job n
 which could be n=0 or n=56. We could have the "first" job in the queue
 as some number larger than zero if once upon a time there existed some
 previous jobs that had already been handled. Regardless what we have for
-the first value "n" in this list it is ordered in that one task somehow
+the first value "n" in this list is ordered in that one task somehow
 points to the next task in the overall queue list members. I would like
 to point out that the list is ordered but the values of "n" need not be
 ordered. This may be confusing but what I mean to say is that the number
 n could point to some other task that has a number lessor or greater.
 
-If we pick tasks out of the list and handle them in some way then we may
+If we pick tasks out of the list and handles them in some way then we may
 eventually end up with just the last task.  That last task will point to
 nowhere at all as there are no more tasks.  It gets even better in that
 we can even have a queue of nothing where there are no tasks at all.
@@ -347,7 +217,9 @@ function will have a datatype return value :
          q->head = NULL;
          q->tail = NULL;
 
-        /* we know that the length of this queue is zero */
+        /* we know that the length of this queue is zero and
+         * again we alread yasked for clean memory that is all
+         * zeros but lets do this for clarity. */
         q->length = 0;
 
         /* be sure the magic mutex thing exists and is setup
@@ -373,14 +245,15 @@ At this time we should think about what type of a queue are we dealing
 with?  For the sake of being real simple I am thinking of a FIFO queue
 where stuff gets put into it and also taken out of in order. We do not
 just randomly toss stuff into the queue nor do we randomly take stuff
-out. Whatever goes in first is always going to be the "top" of a list
+out. Whatever goes in first is always going to be the "head" of a list
 of things and then new stuff may be stuffed in after. The First stuff
-In is also the First stuff Out.  This is FIFO queue type order.
+in is also the First stuff Out.  This is FIFO queue type order.
 
 We need a magic function again that somehow stuffs a thing into the 
 queue : 
 
-    magic_stuff_it_in_queue ( gimme a queue, gimme task information ) {
+    magic_stuff_it_in_queue ( gimme a queue,
+                              gimme task information to stuff in ) {
 
         first we need to protect the queue from other processes or
            other code wrangling with it
@@ -391,7 +264,9 @@ queue :
           task information "payload".
 
         is the queue list empty?  If it is then this is a new task to
-           be put into a new queue
+           be put into a new queue where the head and tail of the queue
+           are currently pointing nowhere.  Be sure to protect the 
+           queue with the mutex lock thing.
 
         otherwise this is a new task to be added into the existing
            queue list. We may need to protect the queue from data
@@ -408,7 +283,7 @@ queue :
 
 Lets try to write that magic in the C programming language now : 
 
-    size_t q_push ( q_type *q, void *p ) {
+    int q_enqueue ( q_type *q, void *p ) {
 
         /* set the mutex as locked */
         pthread_mutex_lock ( &( q->q_mutex ) );
@@ -419,7 +294,7 @@ Lets try to write that magic in the C programming language now :
         new_item->payload = p;
 
         /* we used calloc to give us clear memory but to be 
-         * clear this item points to nowhere at the moment */
+         * more obvious this item points to nowhere at the moment */
         new_item->next = NULL;
 
         /* Is the queue list empty? Check if head and tail
@@ -441,7 +316,8 @@ Lets try to write that magic in the C programming language now :
             /* the queue is indeed empty.
              *
              * Just place the new_item on the head and
-             * the tail and set length to one.
+             * the tail also is the same item and then
+             * set the length to one.
              */
             q->head = new_item;
             q->tail = new_item;
@@ -452,7 +328,7 @@ Lets try to write that magic in the C programming language now :
             /* The queue is not empty.
              *
              * Take this new_item and stick it on the queue
-             * tail.  However we already have something on
+             * tail. However we already have something on
              * the tail and we need to preserve that pointer.
              * Therefore whatever is on the tail now must
              * point to the new_item. Also the queue tail
@@ -492,6 +368,7 @@ Lets try to write that magic in the C programming language now :
              *   |    payload = a_pointer_z  |
              *   |                           |
              *   |    next ---> NULL         |
+             *   |                           |
              *   |      This "next" is also  |
              *   |      queue->tail->next    |
              *   |                           |
@@ -525,14 +402,14 @@ Lets try to write that magic in the C programming language now :
     }
 
 
-How do we pop anything out of that job list queue? 
+How do we get anything out of that job list queue? 
 
 Good question. We have to talk about a "consumer" thingy idea that 
 eats up the tasks in the job queue. A consumer does what you think. It
 goes looking for something to "eat" and if it finds something for it
 then it "eats" the task up and as far as the queue is concerned the
 problem is out of its hands.  We can get to consumer eating stuff later
-but for now ... lets be able to get something off the task list.
+but for now ... lets be able to get something from the task list.
 
     some_magic_get_job_thing ( some queue ) {
 
@@ -548,16 +425,14 @@ but for now ... lets be able to get something off the task list.
           because we definately have a task that we can pop from the
           queue.
 
-
         get a task item thing from the queue and here we must get the
           task item at the front of the list. This is a FIFO which 
           means that the first thing that went into the queue is also
           the first thing we take out.
 
+        remove the protection
 
-         remove the protection
-
-         return the task payload thing to whomever called for a "pop".
+        return the task payload thing to whomever called for a "dequeue".
 
     }
 
@@ -565,7 +440,7 @@ but for now ... lets be able to get something off the task list.
 Great. Not lets translate that into some sort of valid C code :
 
 
-    void *q_pop( q_type *q ) {
+    void *q_dequeue( q_type *q ) {
 
         void *return_payload = NULL;
 
