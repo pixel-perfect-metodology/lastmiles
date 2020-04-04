@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 
         enqueue( my_q, (void *)make_work );
         printf ( "INFO : q_push(make_work) done\n" );
-        printf ( "     : my_q->length = %i\n\n", my_q->length );
+        printf ( "     : my_q->length = %i\n", my_q->length );
 
     }
 
@@ -171,9 +171,9 @@ int main(int argc, char **argv) {
         }
     }
 
-    /* hey .. did we ever ask of the threads were done? 
+    /* hey .. did we ever ask of the threads were done?
      *
-     * how about a nice polite sequential "join" 
+     * how about a nice polite sequential "join"
      */
     for ( j=0; j < num_pthreads; j++ ) {
         printf("calling for %i ", j );
