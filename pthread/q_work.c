@@ -192,7 +192,6 @@ int main(int argc, char **argv) {
 }
 
 void *do_some_array_thing ( void *work_q ) {
-
     int j, k;
     /* given that the queue is a blocking type of list
      * where no thread can work until something exists
@@ -232,6 +231,10 @@ void *do_some_array_thing ( void *work_q ) {
     /* gee .. throw that away */
     free( foo->big_array );
     foo->big_array = NULL;
+
+    free( foo );
+    foo = NULL;
+
 
     return ( NULL );
 
