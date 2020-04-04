@@ -1309,7 +1309,7 @@ void *mbrot_vbox_pthread(void *recv_parm)
             zi = 0.0;
             mag = 0.0;
 
-            while ( ( height < p->bail_out ) && ( mag <= 4.0 ) ) {
+            while ( ( height < ( 16 * p->bail_out ) ) && ( mag <= 4.0 ) ) {
                 tmp_r = ( zr * zr ) - ( zi * zi );
                 tmp_i = ( zr * zi ) + ( zr * zi );
                 zr = tmp_r + x_prime;
