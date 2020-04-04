@@ -33,6 +33,10 @@ int sysinfo(void) {
     uint64_t pagesize = (uint64_t)sysconf(_SC_PAGESIZE);
     int fp_round_mode;
 
+    /* can we guess the architecture endianess? */
+    int end_check = 1;
+    int little_endian = (*(uint8_t*)&end_check == 1) ? 1 : 0;
+
     setlocale( LC_MESSAGES, "C" );
     if ( uname( &uname_data ) < 0 ) {
         fprintf ( stderr,
@@ -59,6 +63,19 @@ int sysinfo(void) {
          *  }
          */
         /* get the current floating point rounding mode */
+
+        printf ( "                endian = ");
+        if ( little_endian ) {
+            printf ( "little");
+        } else {
+            printf ( "big");
+        }
+        printf ( " endian\n" );
+
+        printf ( " sizeof(unsigned long) = %i\n", sizeof(unsigned long) );
+        printf ( "           sizeof(int) = %i\n", sizeof(int) );
+        printf ( "         sizeof(void*) = %i\n", sizeof(void*) );
+
         fp_round_mode = fegetround();
         printf("     fp rounding mode is ");
         switch(fp_round_mode){
@@ -78,7 +95,6 @@ int sysinfo(void) {
                 printf("bloody unknown!\n");
                 break;
         }
-        printf ( " sizeof(unsigned long) = %i\n", sizeof(unsigned long) );
 
         printf ( "-------------------------------" );
         printf ( "------------------------------" );
