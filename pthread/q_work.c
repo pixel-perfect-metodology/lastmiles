@@ -34,8 +34,8 @@ void *do_some_array_thing ( void *work_q );
 
 /* struct to pass params to a POSIX thread */
 typedef struct {
-  uint32_t  t_num;   /* this is the thread number */
-  int       ret_val; /* some sort of a return value */
+  uint32_t  work_num;  /* this is some arbitrary work order number */
+  int       ret_val;   /* some sort of a return value */
   uint64_t *big_array; /* do some work and put data here */
 } thread_parm_t;
 
@@ -47,7 +47,18 @@ int main(int argc, char **argv) {
     struct timespec now_time;
 
     pthread_attr_t *attr = calloc( (size_t) 1, (size_t)sizeof(pthread_attr_t) );
-    /* TODO check for the calloc dude */
+    if ( attr == NULL ) {
+        /* really? possible ENOMEM? */
+        if ( errno == ENOMEM ) {
+            fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
+                    __FILE__, __LINE__ );
+        } else {
+            fprintf(stderr,"FAIL : calloc fails at %s:%d\n",
+                    __FILE__, __LINE__ );
+        }
+        perror("FAIL ");
+        return ( EXIT_FAILURE );
+    }
 
     pthread_t thread[256];
 
@@ -91,14 +102,32 @@ int main(int argc, char **argv) {
     q_type *my_q = q_create();
     printf ( "DBUG : my_q now exists at %p\n\n", my_q);
 
-    /* make work out of think air */
-    thread_parm_t *make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
+    thread_parm_t *make_work;
+    /* make some work out of think air */
+    for ( j=0; j<num_pthreads; j++ ) {
+        make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
+        if ( make_work == NULL ) {
+            /* really? possible ENOMEM? */
+            if ( errno == ENOMEM ) {
+                fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
+                        __FILE__, __LINE__ );
+            } else {
+                fprintf(stderr,"FAIL : calloc fails at %s:%d\n",
+                        __FILE__, __LINE__ );
+            }
+            perror("FAIL ");
+            /* TODO we need a smooth fail where we backout the previous
+             * memory calloc calls if this is j>0 */
+            return ( EXIT_FAILURE );
+        }
 
-    printf ( "INFO : make_work is at %p\n", make_work );
+        make_work->work_num = j;
 
-    enqueue( my_q, (void *)make_work );
-    printf ( "INFO : q_push(make_work) done\n" );
-    printf ( "     : my_q->length = %i\n\n", my_q->length );
+        enqueue( my_q, (void *)make_work );
+        printf ( "INFO : q_push(make_work) done\n" );
+        printf ( "     : my_q->length = %i\n\n", my_q->length );
+
+    }
 
     /* initialize attr with default attributes */
     if ( pthread_attr_init(attr) == ENOMEM ) {
@@ -142,14 +171,12 @@ int main(int argc, char **argv) {
         }
     }
 
-
-
-
-
-
     printf ( "     : about to call q_destroy(my_q)\n");
     printf ( "     : q_destroy(my_q) says %i items were thrown away\n",
                                                      q_destroy(my_q) );
+
+    free( attr );
+    attr = NULL;
 
     return ( EXIT_SUCCESS );
 
@@ -166,7 +193,19 @@ void *do_some_array_thing ( void *work_q ) {
 
     /* lets calloc a bucket of memory for the big_array */
     foo->big_array = calloc( (size_t)1048576, (size_t)sizeof(uint64_t) );
-    /* TODO maybe check if that calloc actually worked */
+    if ( foo->big_array == NULL ) {
+        /* really? possible ENOMEM? */
+        if ( errno == ENOMEM ) {
+            fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
+                    __FILE__, __LINE__ );
+        } else {
+            fprintf(stderr,"FAIL : calloc fails at %s:%d\n",
+                    __FILE__, __LINE__ );
+        }
+        perror("FAIL ");
+        /* this is horrible and here we bail like ass hats */
+        exit ( EXIT_FAILURE );
+    }
 
     for ( j=0; j<1048576; j++ ) {
         *((foo->big_array)+j) = (uint64_t)( j + 123456789 );
