@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
     /* system-wide contention */
     pthread_attr_setscope(attr, PTHREAD_SCOPE_SYSTEM);
 
-    for ( j=0; j<num_pthreads; j++ ) {
+    for ( j=0; j < num_pthreads; j++ ) {
         errno = 0;
         pthread_err = pthread_create( &thread[j], attr, do_some_array_thing, (void *)my_q );
         /*
@@ -171,7 +171,16 @@ int main(int argc, char **argv) {
         }
     }
 
-    printf ( "     : about to call q_destroy(my_q)\n");
+    /* hey .. did we ever ask of the threads were done? 
+     *
+     * how about a nice polite sequential "join" 
+     */
+    for ( j=0; j < num_pthreads; j++ ) {
+        printf("calling for %i ", j );
+        pthread_join( thread[j], NULL );
+        printf(" ... done\n");
+    }
+
     printf ( "     : q_destroy(my_q) says %i items were thrown away\n",
                                                      q_destroy(my_q) );
 
@@ -190,6 +199,11 @@ void *do_some_array_thing ( void *work_q ) {
      * in the list .. we can just try to pop something
      * out of it */
     thread_parm_t *foo = (thread_parm_t *)dequeue( (q_type *)work_q );
+
+    /* we need a thread safe way to say hello */
+    char tbuf[32] = "";
+    k = sprintf( tbuf, "\nthread %i\n", foo->work_num );
+    puts( tbuf );
 
     /* lets calloc a bucket of memory for the big_array */
     foo->big_array = calloc( (size_t)1048576, (size_t)sizeof(uint64_t) );
