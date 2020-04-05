@@ -19,7 +19,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#include <unistd.h>
+
 #include "q.h"
+
+#define ELEMENT_COUNT_LIMIT 2147483648
 
 /* this is an external custom written function that will
  * output the basic system information such as machine name
@@ -37,12 +43,29 @@ typedef struct {
   uint32_t  work_num;  /* this is some arbitrary work order number */
   int       ret_val;   /* some sort of a return value */
   uint64_t *big_array; /* do some work and put data here */
+  uint64_t  fibber;    /* horrific fibonacci number computation */
+  size_t    array_cnt; /* number of elements to malloc/calloc */
 } thread_parm_t;
+
+uint64_t fib(uint64_t n) {
+    /* this is pure ugly horrific and beautiful in its
+     * horrific terrible performance */
+    if(n == 0){
+        return 0;
+    } else if(n == 1) {
+        return 1;
+    } else {
+        return fib(n-1) + fib(n-2);
+    }
+}
 
 int main(int argc, char **argv) {
 
     int j, candidate_int, num_pthreads;
     int pthread_err;
+
+    /* how many elements to calloc into the arrays? */
+    size_t req_element_num;
 
     struct timespec now_time;
 
@@ -76,9 +99,10 @@ int main(int argc, char **argv) {
     }
 
     errno = 0;
-    if ( argc != 2 ) {
+    if ( argc != 3 ) {
         fprintf(stderr,"FAIL : insufficient arguments provided\n");
-        fprintf(stderr,"     : usage %s num_pthreads\n",argv[0]);
+        fprintf(stderr,"     : usage %s num_pthreads, ",argv[0]);
+        fprintf(stderr,"     :          array_cnt\n");
         return ( EXIT_FAILURE );
     } else {
         candidate_int = (int)strtol(argv[1], (char **)NULL, 10);
@@ -94,6 +118,20 @@ int main(int argc, char **argv) {
         } else {
             num_pthreads = candidate_int;
             fprintf(stderr,"INFO : num_pthreads is %i\n", num_pthreads);
+        }
+        candidate_int = (int)strtol(argv[2], (char **)NULL, 10);
+        if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+            fprintf(stderr,"FAIL : array_cnt not understood\n");
+            perror("     ");
+            return ( EXIT_FAILURE );
+        }
+        if ( ( candidate_int < 1048576 ) || ( candidate_int > ELEMENT_COUNT_LIMIT ) ){
+            fprintf(stderr,"WARN : array_cnt is unreasonable\n");
+            fprintf(stderr,"     : we shall assume 1048576 elements and proceed.\n");
+            req_element_num = 1048576;
+        } else {
+            req_element_num = (size_t)candidate_int;
+            fprintf(stderr,"INFO : req_element_num is %i\n", req_element_num );
         }
     }
 
@@ -122,6 +160,13 @@ int main(int argc, char **argv) {
         }
 
         make_work->work_num = j;
+
+        /* create a random fibonacci number to compute and 
+         * stay between 32 and 43 */
+        make_work->fibber = drand48() * 12 + 32;
+
+        /* number of the uint64_t elements in the thread big_array */
+        make_work->array_cnt = req_element_num;
 
         enqueue( my_q, (void *)make_work );
         printf ( "INFO : q_push(make_work) done\n" );
@@ -193,6 +238,10 @@ int main(int argc, char **argv) {
 
 void *do_some_array_thing ( void *work_q ) {
     int j, k;
+
+    /* our entirely random fibonacci number to compute */
+    uint64_t scary_fib = 0;
+
     /* given that the queue is a blocking type of list
      * where no thread can work until something exists
      * in the list .. we can just try to pop something
@@ -201,11 +250,11 @@ void *do_some_array_thing ( void *work_q ) {
 
     /* we need a thread safe way to say hello */
     char tbuf[32] = "";
-    k = sprintf( tbuf, "\nthread %i\n", foo->work_num );
+    k = sprintf( tbuf, "\nthread %3i\n", foo->work_num );
     puts( tbuf );
 
-    /* lets calloc a bucket of memory for the big_array */
-    foo->big_array = calloc( (size_t)1048576, (size_t)sizeof(uint64_t) );
+    /* lets calloc foo->array_cnt uint64_t elements in big_array */
+    foo->big_array = calloc( foo->array_cnt, (size_t)sizeof(uint64_t));
     if ( foo->big_array == NULL ) {
         /* really? possible ENOMEM? */
         if ( errno == ENOMEM ) {
@@ -216,17 +265,24 @@ void *do_some_array_thing ( void *work_q ) {
                     __FILE__, __LINE__ );
         }
         perror("FAIL ");
-        /* this is horrible and here we bail like ass hats */
+        /* this is horrible and here we bail out */
         exit ( EXIT_FAILURE );
     }
 
-    for ( j=0; j<1048576; j++ ) {
-        *((foo->big_array)+j) = (uint64_t)( j + 123456789 );
+    for ( j=0; j<(int)foo->array_cnt; j++ ) {
+        *((foo->big_array)+j) = (uint64_t)( j + 123456789 + foo->fibber );
     }
 
     for ( k=0; k<1024; k++ ) {
         *((foo->big_array)+(k * 256)) = (uint64_t) k;
     }
+
+    char fbuf[32] = "";
+    k = sprintf( fbuf,
+            "\nthread %3i compute fib(%-3" PRIu64 ") = %12" PRIu64 "\n",
+                        foo->work_num, foo->fibber, fib(foo->fibber) );
+
+    puts( fbuf );
 
     /* gee .. throw that away */
     free( foo->big_array );
