@@ -19,7 +19,19 @@ int main(int argc,char *argv[])
                                0, 4, 0, 0,
                                0,12,34, 1 };
     
+    /* also for giggles 0x01df 0x5e76 */
+    uint8_t not_pi[4] = { 0x01, 0xdf, 0x5e, 0x76 };
+    uint8_t really_not_pi[4] = { 0x76, 0x5e, 0xdf, 0x01 };
+
     printf("%u\n",(bmp_header[7]<<24)|(bmp_header[6]<<16)|(bmp_header[5]<<8)|bmp_header[4]);
+
+
+    printf("%u\n",(not_pi[3]<<24)|(not_pi[2]<<16)|(not_pi[1]<<8)|not_pi[0]);
+    printf("%u\n",(really_not_pi[3]<<24)|(really_not_pi[2]<<16)|(really_not_pi[1]<<8)|really_not_pi[0]);
+
+    printf("%u\n",(not_pi[0]<<24)|(not_pi[1]<<16)|(not_pi[2]<<8)|not_pi[3]);
+    printf("%u\n",(really_not_pi[0]<<24)|(really_not_pi[1]<<16)|(really_not_pi[2]<<8)|really_not_pi[3]);
+
     return 0;
 }
 

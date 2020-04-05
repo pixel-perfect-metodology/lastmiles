@@ -1,0 +1,41 @@
+
+
+64-bit big endian sparcv9 : 
+
+alpha$ 
+alpha$ ./foo 
+1024
+1985928961
+31415926
+31415926
+1985928961
+alpha$ 
+
+
+
+alpha$ ./endian 
+DBUG : our test pi = 0x01DF5E76
+     : could be      0x01DF5E76
+-------------------------------------------------------------
+           system name = SunOS
+             node name = alpha
+               release = 5.10
+               version = Generic_150400-65
+               machine = sun4u
+             page size = 8192
+          avail memory = 17179869184
+                       = 16777216 kB
+                       = 16384 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+This is a big endian machine.
+bmp_width = 1024
+alpha$ 
+
+
+
+
