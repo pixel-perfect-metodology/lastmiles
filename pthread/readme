@@ -1,68 +1,5 @@
 
-see below for the job queue model discussion.
-
-
-
-
-The idea here is to dispatch a set of POSIX threads ( pthread ) which
-receive some simple information from the calling main process and then
-they just sleep based on what they were told to do. Then each pthread
-will return some random data back to the main routine. Everything does
-a bit of output and looking at the output pretty much reveals that we
-have asynchronous stuff happening and then an neatly organized "join"
-of those threads too.
-
-The thread code is trivial : 
-
-void *sleeper(void *recv_parm)
-{
-    thread_parm_t *p = (thread_parm_t *)recv_parm;
-
-    printf("TRD  : %d sleeping %d seconds\n", p->tnum, p->sleep_time);
-    sleep(p->sleep_time);
-    printf("TRD  : %d awake\n", p->tnum);
-
-    /* return some random data */
-    p->ret_val = drand48();
-
-    return (NULL);
-}
-
-Note that memory pressure is a very real thing and we can manage
-some of that on Linux with : 
-
-titan$ cat /proc/meminfo | grep -i 'commit'
-CommitLimit:     6077292 kB
-Committed_AS:      81192 kB
-titan$ sysctl vm.overcommit_memory
-vm.overcommit_memory = 0
-titan$ sysctl vm.overcommit_ratio
-vm.overcommit_ratio = 50
-titan$ sysctl vm.overcommit_kbytes
-vm.overcommit_kbytes = 0
-titan$ wc -l /etc/sysctl.conf
-68 /etc/sysctl.conf
-titan$ sysctl -p  ^C
-titan$ 
-titan$ sysctl -w vm.overcommit_memory=1  ^C
-titan$ 
-
-see https://www.kernel.org/doc/html/v5.4/vm/overcommit-accounting.html
-
-
-titan# 
-titan# sysctl vm.overcommit_memory
-vm.overcommit_memory = 0
-titan# sysctl -w vm.overcommit_memory=1 
-vm.overcommit_memory = 1
-titan# sysctl vm.overcommit_memory
-vm.overcommit_memory = 1
-titan# cat /proc/meminfo | grep -i 'commit'
-CommitLimit:     6077292 kB
-Committed_AS:      79572 kB
-titan# 
-
--------------- what about a job queue for these threads ? --------------
+-------------- what about a job queue for POSIX threads ? --------------
 
 Consider the possibility of a collection of tasks or jobs that go into a
 bucket. We need some way to drop the job information into the bucket and
@@ -596,3 +533,62 @@ INFO : q_push(make_work) done
 ==2993== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
 
 
+----------- other messing about with thread stuff ---------------------
+
+The idea here is to dispatch a set of POSIX threads ( pthread ) which
+receive some simple information from the calling main process and then
+they just sleep based on what they were told to do. Then each pthread
+will return some random data back to the main routine. Everything does
+a bit of output and looking at the output pretty much reveals that we
+have asynchronous stuff happening and then an neatly organized "join"
+of those threads too.
+
+The thread code is trivial : 
+
+void *sleeper(void *recv_parm)
+{
+    thread_parm_t *p = (thread_parm_t *)recv_parm;
+
+    printf("TRD  : %d sleeping %d seconds\n", p->tnum, p->sleep_time);
+    sleep(p->sleep_time);
+    printf("TRD  : %d awake\n", p->tnum);
+
+    /* return some random data */
+    p->ret_val = drand48();
+
+    return (NULL);
+}
+
+Note that memory pressure is a very real thing and we can manage
+some of that on Linux with : 
+
+titan$ cat /proc/meminfo | grep -i 'commit'
+CommitLimit:     6077292 kB
+Committed_AS:      81192 kB
+titan$ sysctl vm.overcommit_memory
+vm.overcommit_memory = 0
+titan$ sysctl vm.overcommit_ratio
+vm.overcommit_ratio = 50
+titan$ sysctl vm.overcommit_kbytes
+vm.overcommit_kbytes = 0
+titan$ wc -l /etc/sysctl.conf
+68 /etc/sysctl.conf
+titan$ sysctl -p  ^C
+titan$ 
+titan$ sysctl -w vm.overcommit_memory=1  ^C
+titan$ 
+
+see https://www.kernel.org/doc/html/v5.4/vm/overcommit-accounting.html
+
+
+titan# 
+titan# sysctl vm.overcommit_memory
+vm.overcommit_memory = 0
+titan# sysctl -w vm.overcommit_memory=1 
+vm.overcommit_memory = 1
+titan# sysctl vm.overcommit_memory
+vm.overcommit_memory = 1
+titan# cat /proc/meminfo | grep -i 'commit'
+CommitLimit:     6077292 kB
+Committed_AS:      79572 kB
+titan# 

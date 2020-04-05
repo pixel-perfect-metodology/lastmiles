@@ -245,8 +245,11 @@ void *do_some_array_thing ( void *work_q ) {
 
     /* given that the queue is a blocking type of list
      * where no thread can work until something exists
-     * in the list .. we can just try to pop something
-     * out of it */
+     * in the list .. we can just try to get something
+     * out of the queue. Note that this will block and
+     * wait for actual work to be in the queue due to 
+     * a pthread condition variable that we put into the
+     * queue. */
     thread_parm_t *foo = (thread_parm_t *)dequeue( (q_type *)work_q );
 
     /* we need a thread safe way to say hello */
@@ -291,7 +294,6 @@ void *do_some_array_thing ( void *work_q ) {
 
     free( foo );
     foo = NULL;
-
 
     return ( NULL );
 

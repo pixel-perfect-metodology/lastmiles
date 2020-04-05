@@ -54,8 +54,10 @@ void *dequeue( q_type *q ) {
     /* protect the queue from all other threads accessing it */
     pthread_mutex_lock ( &( q->q_mutex ) );
 
-    /* check if the queue is empty and wait until it is alive */
-    while ( ( (q->length) == 0 )
+    /**********************************************************
+     * check if the queue is empty and wait until it is alive *
+     **********************************************************/
+    while (    ( (q->length) == 0 )
             && ( (q->head) == NULL )
             && ( (q->tail) == NULL ) ) {
 
