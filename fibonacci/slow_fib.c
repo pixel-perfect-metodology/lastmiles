@@ -20,6 +20,7 @@
 #include <inttypes.h>
 #include <time.h>
 #include <unistd.h>
+#include <errno.h>
 
 uint64_t fib(uint64_t n) {
    if(n == 0){
@@ -39,7 +40,32 @@ int main ( int argc, char **argv)
     struct timespec t0, t1;
     uint64_t fibber;
 
-    for ( fibber = 0; fibber < 32; fibber++ ) {
+    int candidate_int;
+    int fib_limit;
+
+    errno = 0;
+    if ( argc != 2 ) {
+        fprintf(stderr,"FAIL : insufficient arguments provided\n");
+        fprintf(stderr,"     : usage %s fibonacci_limit\n",argv[0]);
+        return ( EXIT_FAILURE );
+    } else {
+        candidate_int = (int)strtol(argv[1], (char **)NULL, 10);
+        if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
+            fprintf(stderr,"FAIL : fibonacci_limit not understood\n");
+            perror("     ");
+            return ( EXIT_FAILURE );
+        }
+        if ( ( candidate_int < 1 ) || ( candidate_int > 56 ) ){
+            fprintf(stderr,"WARN : fibonacci_limit is unreasonable\n");
+            fprintf(stderr,"     : we shall assume 40 and proceed.\n");
+            fib_limit = 40;
+        } else {
+            fib_limit = candidate_int;
+            fprintf(stderr,"INFO : fib_limit is %i\n", fib_limit);
+        }
+    }
+
+    for ( fibber = 0; fibber < ( fib_limit + 1 ); fibber++ ) {
         clock_gettime( CLOCK_MONOTONIC, &t0 );
         fprintf ( stdout, "fib(%-3" PRIu64 ") = %-12" PRIu64 "    dt = ", fibber, fib(fibber) );
         clock_gettime( CLOCK_MONOTONIC, &t1 );
