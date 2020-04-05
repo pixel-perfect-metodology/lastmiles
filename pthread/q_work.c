@@ -217,7 +217,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    /* hey .. did we ever ask of the threads were done?
+    /* did we ask if the threads were done?
      *
      * how about a nice polite sequential "join"
      */

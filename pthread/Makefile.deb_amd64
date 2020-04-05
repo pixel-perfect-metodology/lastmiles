@@ -1,17 +1,17 @@
 
 CC=/usr/bin/cc
 
-CFLAGS= -I$(IDIR) -std=iso9899:1999 -m64 -g -O0 -fno-builtin -march=k8 \
-	-mtune=k8 -mieee-fp -mhard-float -mpc80 -fno-fast-math \
-	-mno-fancy-math-387 -malign-double -m128bit-long-double \
-	-mlong-double-80 -mstackrealign -mpreferred-stack-boundary=8 -mno-mmx
+CFLAGS= -I$(IDIR) -std=iso9899:1999 -pedantic -pedantic-errors -m64 -g \
+	-O0 -march=k8 -mtune=k8 -Wl,-rpath=/opt/bw/lib,--enable-new-dtags \
+   	-fno-builtin -malign-double -mpc80
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
-	-D_X_OPEN_SOURCE=600 -D_REENTRANT
+		-D_X_OPEN_SOURCE=600 -D_REENTRANT
 
 LIBS = -lpthread -lrt -lm
 
 OBJ = p0.o ru.o sysinfo.o sysmem.o
+
 OBJQ = sysmem.o sysinfo.o q_work.o enqueue.o dequeue.o q_create.o \
 	q_destroy.o 
 
