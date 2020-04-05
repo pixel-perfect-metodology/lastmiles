@@ -38,4 +38,46 @@ alpha$
 
 
 
+========= on a little endian 64-bit FreeBSD UNIX AMD Opteron ====
+
+vesta$ 
+vesta$ ./endian
+DBUG : our test pi = 0x01DF5E76
+     : could be      0x01DF5E76
+-------------------------------------------------------------
+           system name = FreeBSD
+             node name = vesta
+               release = 12.1-RELEASE-p3
+               version = FreeBSD 12.1-RELEASE-p3 GENERIC
+               machine = amd64
+             page size = 4096
+          avail memory = 10328125440
+                       = 10086060 kB
+                       = 9849 MB
+                endian = little endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+This is a little endian machine.
+DBUG : (uint32_t)bmp_header[7]           = 00000000
+DBUG : ( ((uint32_t)bmp_header[6])<<8  ) = 00000000
+DBUG : ( ((uint32_t)bmp_header[5])<<16 ) = 00040000
+DBUG : ( ((uint32_t)bmp_header[4])<<24 ) = 00000000
+bmp_width = 262144
+
+
+theddmage says just keep it simple stupid
+
+bmp_width = 1024
+vesta$ 
+vesta$ ./foo
+1024
+1985928961
+31415926
+31415926
+1985928961
+vesta$ 
+
 

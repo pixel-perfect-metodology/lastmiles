@@ -108,6 +108,10 @@ int main ( int argc, char **argv )
 
     printf ( "bmp_width = %i\n", bmp_width );
 
+    printf("\n\ntheddmage says just keep it simple stupid\n\n");
+    bmp_width = ( (bmp_header[7]<<24)|(bmp_header[6]<<16)|(bmp_header[5]<<8)|bmp_header[4] );
+    printf ( "bmp_width = %i\n", bmp_width );
+
     /* should be 1024 */
 
     return EXIT_SUCCESS;
