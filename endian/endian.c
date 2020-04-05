@@ -21,6 +21,10 @@ int main ( int argc, char **argv )
     /* thus the bytes 0x00 0x04 0x00 0x00 must be 
      * a little endian integer of value 1024 decimal */
 
+    uint32_t pi =  31415926; /* should be 0x1DF5E76 */ 
+    printf("DBUG : our test pi = 0x%08X\n", pi );
+    printf("     : could be      0x01DF5E76\n");
+
     /* this is the bmp_width data that we are really trying
      * to extract from that array bmp_header. We shall set
      * this to a reasonable interpretation of the bytes
@@ -81,10 +85,15 @@ int main ( int argc, char **argv )
 
         printf ("This is a little endian machine.\n");
 
-        bmp_width =  ( bmp_header[7]     ) 
-                   | ( bmp_header[6]<<8  ) 
-                   | ( bmp_header[5]<<16 )
-                   | ( bmp_header[4]<<24 );
+        printf ("DBUG : (uint32_t)bmp_header[7]           = %08X\n",  (uint32_t)bmp_header[7] );
+        printf ("DBUG : ( ((uint32_t)bmp_header[6])<<8  ) = %08X\n",  ( ((uint32_t)bmp_header[6])<<8  ) );
+        printf ("DBUG : ( ((uint32_t)bmp_header[5])<<16 ) = %08X\n",  ( ((uint32_t)bmp_header[5])<<16 ) );
+        printf ("DBUG : ( ((uint32_t)bmp_header[4])<<24 ) = %08X\n",  ( ((uint32_t)bmp_header[4])<<24 ) );
+
+        bmp_width =  ( ( (uint32_t)bmp_header[7] )     ) 
+                   | ( ( (uint32_t)bmp_header[6] )<<8  ) 
+                   | ( ( (uint32_t)bmp_header[5] )<<16 )
+                   | ( ( (uint32_t)bmp_header[4] )<<24 );
 
     } else {
 
