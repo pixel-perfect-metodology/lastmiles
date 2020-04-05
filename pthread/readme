@@ -85,6 +85,7 @@ points to the next task in the overall queue list members. I would like
 to point out that the list is ordered but the values of "n" need not be
 ordered. This may be confusing but what I mean to say is that the number
 n could point to some other task that has a number lessor or greater.
+This is an "ordered" list of things where the order need not be sorted.
 
 If we pick tasks out of the list and handles them in some way then we may
 eventually end up with just the last task.  That last task will point to
