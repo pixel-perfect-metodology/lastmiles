@@ -141,8 +141,9 @@ int main(int argc, char **argv) {
     printf ( "DBUG : my_q now exists at %p\n\n", my_q);
 
     thread_parm_t *make_work;
-    /* make some work out of think air */
-    for ( j=0; j<num_pthreads; j++ ) {
+    /* make some work where the queue has more work elements
+     * than we produce consumer threads */
+    for ( j=0; j<( num_pthreads + 2 ); j++ ) {
         make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
         if ( make_work == NULL ) {
             /* really? possible ENOMEM? */
@@ -163,7 +164,7 @@ int main(int argc, char **argv) {
 
         /* create a random fibonacci number to compute and 
          * stay between 32 and 43 */
-        make_work->fibber = drand48() * 10 + 36;
+        make_work->fibber = ( drand48() * 10 ) + 30;
 
         /* number of the uint64_t elements in the thread big_array */
         make_work->array_cnt = req_element_num;
