@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
 
         /* create a random fibonacci number to compute and 
          * stay between 32 and 43 */
-        make_work->fibber = drand48() * 12 + 32;
+        make_work->fibber = drand48() * 10 + 36;
 
         /* number of the uint64_t elements in the thread big_array */
         make_work->array_cnt = req_element_num;
