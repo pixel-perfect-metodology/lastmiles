@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
     if ( argc != 3 ) {
         fprintf(stderr,"FAIL : insufficient arguments provided\n");
         fprintf(stderr,"     : usage %s num_pthreads, ",argv[0]);
-        fprintf(stderr,"     :          array_cnt\n");
+        fprintf(stderr," array_cnt\n");
         return ( EXIT_FAILURE );
     } else {
         candidate_int = (int)strtol(argv[1], (char **)NULL, 10);

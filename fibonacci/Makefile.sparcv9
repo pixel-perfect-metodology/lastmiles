@@ -9,21 +9,15 @@ CFLAGS= -I$(IDIR) -Xc -g -errfmt=error -erroff=%none \
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600 -D_REENTRANT
 
-LIBS = -lpthread -lrt -lm
+LIBS = -lrt
 
-OBJ = p0.o ru.o sysinfo.o sysmem.o
-
-OBJQ = sysmem.o sysinfo.o q_work.o enqueue.o dequeue.o q_create.o \
-	q_destroy.o 
+OBJ = slow_fib.o ../time_and_date/timediff.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
 
-q_work: $(OBJQ)
-	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) -D_REENTRANT $(LIBS)
-
-p0: $(OBJ)
+slow_fib: $(OBJ)
 	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) $(LIBS)
 
 clean:
-	rm -f *.o p0 q_work
+	rm -f *.o slow_fib
