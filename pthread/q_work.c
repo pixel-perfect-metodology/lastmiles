@@ -24,8 +24,9 @@
 #include <unistd.h>
 
 #include "q.h"
+#include "do_work.h"
 
-#define ELEMENT_COUNT_LIMIT 2147483648
+#define ELEMENT_COUNT_LIMIT 1073741824
 
 /* this is an external custom written function that will
  * output the basic system information such as machine name
@@ -37,27 +38,6 @@ int sysinfo(void);
  * pointer to a work queue. However pthread_create expects
  * void pointers */
 void *do_some_array_thing ( void *work_q );
-
-/* struct to pass params to a POSIX thread */
-typedef struct {
-  uint32_t  work_num;  /* this is some arbitrary work order number */
-  int       ret_val;   /* some sort of a return value */
-  uint64_t *big_array; /* do some work and put data here */
-  uint64_t  fibber;    /* horrific fibonacci number computation */
-  size_t    array_cnt; /* number of elements to malloc/calloc */
-} thread_parm_t;
-
-uint64_t fib(uint64_t n) {
-    /* this is pure ugly horrific and beautiful in its
-     * horrific terrible performance */
-    if(n == 0){
-        return 0;
-    } else if(n == 1) {
-        return 1;
-    } else {
-        return fib(n-1) + fib(n-2);
-    }
-}
 
 int main(int argc, char **argv) {
 
@@ -143,7 +123,7 @@ int main(int argc, char **argv) {
     thread_parm_t *make_work;
     /* make some work where the queue has more work elements
      * than we produce consumer threads */
-    for ( j=0; j<( num_pthreads + 2 ); j++ ) {
+    for ( j=0; j < ( num_pthreads * 2 ); j++ ) {
         make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
         if ( make_work == NULL ) {
             /* really? possible ENOMEM? */
@@ -160,11 +140,10 @@ int main(int argc, char **argv) {
             return ( EXIT_FAILURE );
         }
 
-        make_work->work_num = j;
+        make_work->work_num = (uint32_t)j;
 
-        /* create a random fibonacci number to compute and 
-         * stay between 32 and 43 */
-        make_work->fibber = ( drand48() * 10 ) + 30;
+        /* create a random fibonacci number to compute */
+        make_work->fibber = (uint8_t)( drand48() * 10 ) + (uint8_t)30;
 
         /* number of the uint64_t elements in the thread big_array */
         make_work->array_cnt = req_element_num;
@@ -187,7 +166,9 @@ int main(int argc, char **argv) {
 
     for ( j=0; j < num_pthreads; j++ ) {
         errno = 0;
-        pthread_err = pthread_create( &thread[j], attr, do_some_array_thing, (void *)my_q );
+        pthread_err = pthread_create( &thread[j], attr,
+                                      do_some_array_thing,
+                                              (void *)my_q );
         /*
          * The pthread_create() function will fail if:
          *
@@ -202,18 +183,25 @@ int main(int argc, char **argv) {
          *             set the required scheduling parameters or schedul-
          *             ing policy.
          */
+
         if ( pthread_err == EAGAIN ) {
+
             fprintf(stderr,"FAIL : EAGAIN system lacked resources\n");
             perror("FAIL : EAGAIN");
             return ( EXIT_FAILURE );
+
         } else if ( pthread_err == EINVAL ) {
+
             fprintf(stderr,"FAIL : EINVAL attr is invalid\n");
             perror("FAIL : EINVAL");
             return ( EXIT_FAILURE );
+
         } else if ( pthread_err == EPERM ) {
+
            fprintf(stderr,"FAIL : EPERM permission denied\n");
            perror("FAIL : EPERM");
            return ( EXIT_FAILURE );
+
         }
     }
 
@@ -222,11 +210,15 @@ int main(int argc, char **argv) {
      * how about a nice polite sequential "join"
      */
     for ( j=0; j < num_pthreads; j++ ) {
-        printf("calling for %i ", j );
+        printf("calling for join on thread %i\n", j );
         pthread_join( thread[j], NULL );
-        printf(" ... done\n");
+        printf("join of thread %i is now complete\n", j );
     }
 
+    /* Really we should check the length of the queue before we 
+     * drop the hammer here and destroy whatever queue we have.
+     * AT this point we have NO DAMN clue if the work in the queue
+     * actually was all done. TODO check if the queue is empty. */
     printf ( "     : q_destroy(my_q) says %i items were thrown away\n",
                                                      q_destroy(my_q) );
 
@@ -234,68 +226,6 @@ int main(int argc, char **argv) {
     attr = NULL;
 
     return ( EXIT_SUCCESS );
-
-}
-
-void *do_some_array_thing ( void *work_q ) {
-    int j, k;
-
-    /* our entirely random fibonacci number to compute */
-    uint64_t scary_fib = 0;
-
-    /* given that the queue is a blocking type of list
-     * where no thread can work until something exists
-     * in the list .. we can just try to get something
-     * out of the queue. Note that this will block and
-     * wait for actual work to be in the queue due to 
-     * a pthread condition variable that we put into the
-     * queue. */
-    thread_parm_t *foo = (thread_parm_t *)dequeue( (q_type *)work_q );
-
-    /* we need a thread safe way to say hello */
-    char tbuf[32] = "";
-    k = sprintf( tbuf, "\nthread %3i\n", foo->work_num );
-    puts( tbuf );
-
-    /* lets calloc foo->array_cnt uint64_t elements in big_array */
-    foo->big_array = calloc( foo->array_cnt, (size_t)sizeof(uint64_t));
-    if ( foo->big_array == NULL ) {
-        /* really? possible ENOMEM? */
-        if ( errno == ENOMEM ) {
-            fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
-                    __FILE__, __LINE__ );
-        } else {
-            fprintf(stderr,"FAIL : calloc fails at %s:%d\n",
-                    __FILE__, __LINE__ );
-        }
-        perror("FAIL ");
-        /* this is horrible and here we bail out */
-        exit ( EXIT_FAILURE );
-    }
-
-    for ( j=0; j<(int)foo->array_cnt; j++ ) {
-        *((foo->big_array)+j) = (uint64_t)( j + 123456789 + foo->fibber );
-    }
-
-    for ( k=0; k<1024; k++ ) {
-        *((foo->big_array)+(k * 256)) = (uint64_t) k;
-    }
-
-    char fbuf[32] = "";
-    k = sprintf( fbuf,
-            "\nthread %3i compute fib(%-3" PRIu64 ") = %12" PRIu64 "\n",
-                        foo->work_num, foo->fibber, fib(foo->fibber) );
-
-    puts( fbuf );
-
-    /* gee .. throw that away */
-    free( foo->big_array );
-    foo->big_array = NULL;
-
-    free( foo );
-    foo = NULL;
-
-    return ( NULL );
 
 }
 

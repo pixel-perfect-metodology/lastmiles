@@ -11,8 +11,9 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 LIBS = -lpthread -lrt
 
 OBJ = p0.o ru.o sysinfo.o sysmem.o
+
 OBJQ = sysmem.o sysinfo.o q_work.o enqueue.o dequeue.o q_create.o \
-	q_destroy.o 
+	q_destroy.o do_work.o fibber.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
