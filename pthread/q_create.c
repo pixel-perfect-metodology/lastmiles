@@ -113,6 +113,17 @@ q_type *q_create() {
         exit ( EXIT_FAILURE );
     }
 
+    err_trap_flag = 0;
+    err_trap_flag = pthread_mutexattr_init( q->mutex_attr);
+    if ( err_trap_flag == ENOMEM ) {
+        fprintf(stderr,"FAIL : pthread_mutexattr_init at %s:%d\n",
+                __FILE__, __LINE__ );
+
+        perror("FAIL ");
+        exit ( EXIT_FAILURE );
+    }
+
+    err_trap_flag = 0;
     err_trap_flag = pthread_mutexattr_settype( q->mutex_attr, PTHREAD_MUTEX_ERRORCHECK);
     if ( err_trap_flag == EINVAL ) {
         fprintf(stderr,"FAIL : pthread_mutexattr_settype at %s:%d\n",
@@ -122,6 +133,7 @@ q_type *q_create() {
         exit ( EXIT_FAILURE );
     }
 
+    err_trap_flag = 0;
     err_trap_flag = pthread_mutex_init( q->mutex, q->mutex_attr );
     if ( err_trap_flag != 0 ) {
         if ( err_trap_flag == EAGAIN ) {
