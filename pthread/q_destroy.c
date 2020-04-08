@@ -18,7 +18,7 @@
 
 int q_destroy(q_type *q) {
 
-    int destroyed_item_count = 0;
+    int err_trap_flag, destroyed_item_count = 0;
     q_item *tmp;
 
     /* set the mutex as locked */
@@ -58,6 +58,29 @@ int q_destroy(q_type *q) {
 
     /* unlock the mutex */
     pthread_mutex_unlock ( q->mutex );
+
+    /* destroy the mutex and the mutex attribute */
+    err_trap_flag = 0;
+    err_trap_flag = pthread_mutex_destroy( q->mutex );
+    if ( err_trap_flag == EBUSY ) {
+        fprintf(stderr,"FAIL : EBUSY from pthread_mutex_destroy at %s:%d\n",
+                        __FILE__, __LINE__ );
+    } else if ( err_trap_flag == EINVAL ) {
+        fprintf(stderr,"FAIL : EINVAL in pthread_mutex_destroy at %s:%d\n",
+                        __FILE__, __LINE__ );
+    }
+
+    err_trap_flag = 0;
+    err_trap_flag = pthread_mutexattr_destroy( q->mutex_attr);
+    if ( err_trap_flag == EINVAL ) {
+        fprintf(stderr,"FAIL : EINVAL in pthread_mutexattr_destroy at %s:%d\n",
+                        __FILE__, __LINE__ );
+    }
+
+    free(q->mutex);
+    q->mutex = NULL;
+    free(q->mutex_attr);
+    q->mutex_attr = NULL;
 
     /* we may be wrecking havok here with threads that
      * are awaiting the queue to be available */
