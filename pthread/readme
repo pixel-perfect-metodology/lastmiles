@@ -339,45 +339,46 @@ we are putting something onto the head of the queue :
              * will point to this new_item as it really is
              * now on the end of the list. 
              *
-             *   +-------------- queue --------------+
-             *   |                                   |
-             *   |   length =   3                    |
-             *   |                                   |
-             *   |   head ----+                      |
-             *   |            |                      |
-             *   |            V                      |
-             *   |   +----- some_item_N ---------+   |
-             *   |   |                           |   |
-             *   |   |    payload = a_pointer_x  |   |
-             *   |   |                           |   |
-             *   |   |    next -----+            |   |
-             *   |   |              |            |   |
-             *   |   +------------  |  ----------+   |
-             *   |                  |                |
-             *   |                  V                |
-             *   |   +----- some_item_P ---------+   |
-             *   |   |                           |   |
-             *   |   |    payload = a_pointer_y  |   |
-             *   |   |                           |   |
-             *   |   |    next -----+            |   |
-             *   |   |              |            |   |
-             *   |   +------------  |  ----------+   |
-             *   |                  |                |
-             *   |   tail ----+     |                |
-             *   |            |     |                |
-             *   |            V     V                |
-             *   |   +----- some_item_X ---------+   |
-             *   |   |                           |   |
-             *   |   |    payload = a_pointer_z  |   |
-             *   |   |                           |   |
-             *   |   |    next ---> NULL         |   |
-             *   |   |                           |   |
-             *   |   |      This "next" is also  |   |
-             *   |   |      queue->tail->next    |   |
-             *   |   |                           |   |
-             *   |   +---------------------------+   |
-             *   |                                   |
-             *   +-----------------------------------+
+             *   +-------------- queue ----------------+
+             *   |                                     |
+             *   |   length =   3                      |
+             *   |                                     |
+             *   |   head ----+                        |
+             *   |            |                        |
+             *   |            V                        |
+             *   |     +----- some_item_N ---------+   |
+             *   |     |                           |   |
+             *   |     |    payload = a_pointer_x  |   |
+             *   |     |                           |   |
+             *   |     |    next -----+            |   |
+             *   |     |              |            |   |
+             *   |     +------------  |  ----------+   |
+             *   |                    |                |
+             *   |                    V                |
+             *   |     +----- some_item_P ---------+   |
+             *   |     |                           |   |
+             *   |     |    payload = a_pointer_y  |   |
+             *   |     |                           |   |
+             *   |     |    next -----+            |   |
+             *   |     |              |            |   |
+             *   |     +------------  |  ----------+   |
+             *   |                    |                |
+             *   |                    |                |
+             *   |   tail ----+       |                |
+             *   |            |       |                |
+             *   |            V       V                |
+             *   |     +----- some_item_X ---------+   |
+             *   |     |                           |   |
+             *   |     |    payload = a_pointer_z  |   |
+             *   |     |                           |   |
+             *   |     |    next ---> NULL         |   |
+             *   |     |                           |   |
+             *   |     |      This "next" is also  |   |
+             *   |     |      queue->tail->next    |   |
+             *   |     |                           |   |
+             *   |     +---------------------------+   |
+             *   |                                     |
+             *   +-------------------------------------+
              *
              */
             q->tail->next = new_item;
@@ -418,34 +419,33 @@ of its hands.  We can get to consumer eating stuff later but for now
 be able to get something from the queue.
 
 
-    some_magic_get_job_thing ( some queue ) {
+    get_job_thing ( some queue ) {
 
         protect the queue from all other threads accessing it 
 
-        whoa nellie! check if the queue is empty ?
-            we want to pop a job out of the queue but there is 
+        check if the queue is empty ?
+            we want to get a job out of the queue but there is 
             nothing for us. We need to check the queue condition
             as being alive or dead.  This is where we await a
             signal that tells us the queue is good to go.
 
         If we had to wait for a signal then we are now fine and good
-          because we definately have a task that we can pop from the
+          because we definately have a job that we can get from the
           queue.
 
-        get a task item thing from the queue and here we must get the
-          task item at the front of the list. This is a FIFO which 
-          means that the first thing that went into the queue is also
-          the first thing we take out.
+        get a job item from the head of the queue. This is a FIFO which
+          means that the first job that went into the queue is also
+          the first job we take out.
 
         remove the protection
 
-        return the task payload thing to whomever called for a "dequeue".
+        return the task payload thing
 
     }
 
 
 Great. Now lets translate that into some sort of valid C code where
-the objective is to remove something from the head of the queue :
+the objective is to remove a job from the head of the queue :
 
 
     void *dequeue( q_type *q ) {
