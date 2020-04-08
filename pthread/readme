@@ -253,23 +253,23 @@ We need a function that somehow puts a thing into the queue :
 
 
     magic_stuff_it_in_queue ( gimme a queue,
-                              gimme task information to stuff in ) {
+                              gimme job information payload ) {
 
         first we need to protect the queue from other processes or
            other code wrangling with it.  Use the mutex lock.
 
-        we have been given some sort of task payload information and
+        we have been given some sort of job payload information and
           it now needs to get stuffed into the queue. We will need
           to create a new queue item thing and load it with the new
-          task information "payload".
+          job information "payload".
 
         is the queue list empty?
 
-            yes : then this is a new task to be put into a new
+            yes : then this is a new job to be put into a new
                   queue where the head and tail of the queue
                   are currently pointing nowhere.
 
-            no  : this is a new task to be added into the existing
+            no  : this is a new job to be added into the existing
                   queue list at the "tail".
 
         we can now remove the protection from the queue as we have
@@ -391,15 +391,16 @@ we are putting something onto the head of the queue :
 
         /* send out a signal to at least one thread consumer
          * which may be waiting. No promise anything is actually
-         * waiting but if there are then we signal that a new
-         * task has arrived.
+         * waiting but if there is then we signal that a new
+         * job has arrived.
          *
          * From the manpage : 
          *
          *    The pthread_cond_signal() call unblocks at least one
          *    of the threads that are blocked on the specified
-         *    condition variable condition. This is if any threads
-         *    are blocked on cond.
+         *    condition variable.
+         *
+         *    This is if any threads are blocked.
          *
          */
         pthread_cond_signal( &( q->alive ) );
@@ -410,18 +411,19 @@ we are putting something onto the head of the queue :
 How do we get anything out of that job list queue? 
 
 Good question. We have to talk about a "consumer" thingy idea that 
-eats up the tasks in the job queue. A consumer does what you think. It
-goes looking for something to "eat" and if it finds something for it
-then it "eats" the task up and as far as the queue is concerned the
-problem is out of its hands.  We can get to consumer eating stuff later
-but for now ... lets be able to get something from the task list.
+eats up the jobs in the job queue. A consumer does what you think. It
+goes looking for something to "eat" and if it finds something it then
+"eats" the job up.  As far as the queue is concerned the problem is out
+of its hands.  We can get to consumer eating stuff later but for now
+be able to get something from the queue.
+
 
     some_magic_get_job_thing ( some queue ) {
 
         protect the queue from all other threads accessing it 
 
         whoa nellie! check if the queue is empty ?
-            we want to pop a task out of the queue but there is 
+            we want to pop a job out of the queue but there is 
             nothing for us. We need to check the queue condition
             as being alive or dead.  This is where we await a
             signal that tells us the queue is good to go.
@@ -442,7 +444,7 @@ but for now ... lets be able to get something from the task list.
     }
 
 
-Great. Not lets translate that into some sort of valid C code where
+Great. Now lets translate that into some sort of valid C code where
 the objective is to remove something from the head of the queue :
 
 
@@ -450,8 +452,8 @@ the objective is to remove something from the head of the queue :
 
         void *return_payload = NULL;
 
-        /* We only care about the first item in the queue and
-         * we want the payload from that first item. Looking
+        /* We only care about the first job in the queue and
+         * we want the payload from that first job. Looking
          * at this diagram we see queue->head->payload is what
          * we want. 
          *
@@ -475,7 +477,7 @@ the objective is to remove something from the head of the queue :
          *   |                           |
          *   +---------------------------+
          *
-         * Once we get queue->head->payload then the item that
+         * Once we get queue->head->payload then the job that
          * was called "some_item_N" no longer needs to exist.
          * The queue head must now point to whatever some_item_N
          * was pointing to as "next". That could even be NULL.
@@ -510,23 +512,25 @@ the objective is to remove something from the head of the queue :
             q->tail = NULL;
         }
 
+        /* unlock the mutex */
+        pthread_mutex_unlock ( &( q->q_mutex ) );
+
         /* free up the memory that was being used by the item
          * we just took the payload from */
         free(tmp);
         tmp = NULL;
 
-        /* unlock the mutex */
-        pthread_mutex_unlock ( &( q->q_mutex ) );
 
         return ( return_payload );
          
     }
 
 
-Index of references : 
+Footnote : 
 
-    [1] "The C Programming Language", 2nd Ed, Brian W. Kernighan, Dennis
-        Ritchie, page 31 section 1.10 "External variables and Scope"
+    [1] "The C Programming Language", 2nd Ed, Brian W. Kernighan,
+        Dennis Ritchie, page 31 section 1.10 "External variables and
+        Scope"
 
 
 
