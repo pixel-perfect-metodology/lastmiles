@@ -459,6 +459,14 @@ the objective is to remove something from the head of the queue :
 ------------------------------------------------------------------------
 123456789+123456789+123456789+123456789+123456789+123456789+123456789+12
 
+    W A R N I N G :    e v e r y t h i n g     b e l o w    i s   j u s t 
+                      
+                             e x t r a     i n f o
+
+                                     a b o u t   v a l g r i n d
+
+
+
 len$   
 len$ valgrind -s --leak-check=full --leak-check=full --show-leak-kinds=all ./q_work 4
 ==2993== Memcheck, a memory error detector
@@ -532,32 +540,6 @@ INFO : q_push(make_work) done
 ==2993== 
 ==2993== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
 
-
------------ other messing about with thread stuff ---------------------
-
-The idea here is to dispatch a set of POSIX threads ( pthread ) which
-receive some simple information from the calling main process and then
-they just sleep based on what they were told to do. Then each pthread
-will return some random data back to the main routine. Everything does
-a bit of output and looking at the output pretty much reveals that we
-have asynchronous stuff happening and then an neatly organized "join"
-of those threads too.
-
-The thread code is trivial : 
-
-void *sleeper(void *recv_parm)
-{
-    thread_parm_t *p = (thread_parm_t *)recv_parm;
-
-    printf("TRD  : %d sleeping %d seconds\n", p->tnum, p->sleep_time);
-    sleep(p->sleep_time);
-    printf("TRD  : %d awake\n", p->tnum);
-
-    /* return some random data */
-    p->ret_val = drand48();
-
-    return (NULL);
-}
 
 Note that memory pressure is a very real thing and we can manage
 some of that on Linux with : 
