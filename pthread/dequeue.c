@@ -82,13 +82,18 @@ void *dequeue( q_type *q ) {
         q->tail = NULL;
     }
 
+    /* unlock the mutex */
+    pthread_mutex_unlock ( &( q->q_mutex ) );
+
     /* free up the memory that was being used by the item
-     * we just took the payload from */
+     * we just took the payload from.
+     *
+     * UPDATE from awesome strager who advises to keep the
+     * free outside of the critical code section.
+     */
     free(tmp);
     tmp = NULL;
 
-    /* unlock the mutex */
-    pthread_mutex_unlock ( &( q->q_mutex ) );
 
     return ( return_payload );
 
