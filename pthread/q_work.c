@@ -27,6 +27,7 @@
 #include "do_work.h"
 
 #define ELEMENT_COUNT_LIMIT 1073741824
+#define THREAD_LIMIT 256
 
 /* this is an external custom written function that will
  * output the basic system information such as machine name
@@ -63,7 +64,9 @@ int main(int argc, char **argv) {
         return ( EXIT_FAILURE );
     }
 
-    pthread_t thread[256];
+    pthread_t thread[THREAD_LIMIT];
+    uint8_t thread_flag[THREAD_LIMIT];
+    memset( &thread_flag, 0x00, (size_t)(THREAD_LIMIT)* sizeof(uint8_t));
 
     setlocale( LC_ALL, "C" );
     sysinfo();
@@ -78,13 +81,14 @@ int main(int argc, char **argv) {
         srand48( (long) now_time.tv_nsec );
     }
 
-    errno = 0;
     if ( argc != 3 ) {
         fprintf(stderr,"FAIL : insufficient arguments provided\n");
         fprintf(stderr,"     : usage %s num_pthreads, ",argv[0]);
         fprintf(stderr," array_cnt\n");
         return ( EXIT_FAILURE );
     } else {
+
+        errno = 0;
         candidate_int = (int)strtol(argv[1], (char **)NULL, 10);
         if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
             fprintf(stderr,"FAIL : num_pthreads not understood\n");
@@ -99,6 +103,8 @@ int main(int argc, char **argv) {
             num_pthreads = candidate_int;
             fprintf(stderr,"INFO : num_pthreads is %i\n", num_pthreads);
         }
+
+        errno = 0;
         candidate_int = (int)strtol(argv[2], (char **)NULL, 10);
         if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
             fprintf(stderr,"FAIL : array_cnt not understood\n");
@@ -124,6 +130,7 @@ int main(int argc, char **argv) {
     /* make some work where the queue has more work elements
      * than we produce consumer threads */
     for ( j=0; j < ( num_pthreads * 2 ); j++ ) {
+        errno = 0;
         make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
         if ( make_work == NULL ) {
             /* really? possible ENOMEM? */
@@ -155,14 +162,55 @@ int main(int argc, char **argv) {
     }
 
     /* initialize attr with default attributes */
+    errno = 0;
     if ( pthread_attr_init(attr) == ENOMEM ) {
         fprintf(stderr,"FAIL : ENOMEM from pthread_attr_init\n");
         perror("FAIL : ENOMEM");
         return ( EXIT_FAILURE );
     }
 
-    /* system-wide contention */
-    pthread_attr_setscope(attr, PTHREAD_SCOPE_SYSTEM);
+    /* system-wide contention or process contention?
+     *
+     * PTHREAD_SCOPE_PROCESS  or 
+     * PTHREAD_SCOPE_SYSTEM 
+     *
+     * which is not documented much of anywhere that I have
+     * seen .. yet. 
+     */
+    errno = 0;
+    if ( pthread_attr_setscope( attr,
+                                PTHREAD_SCOPE_SYSTEM)
+
+            == EINVAL) {
+
+        fprintf(stderr,"FAIL : pthread_attr_setscope\n");
+        perror("FAIL : EINVAL");
+        return ( EXIT_FAILURE );
+
+    }
+
+    /* From pthread_attr_setdetachstate : 
+     *
+     *    The detachstate can be set to either PTHREAD_CREATE_DETACHED
+     *    or PTHREAD_CREATE_JOINABLE.
+     *
+     *    A value of PTHREAD_CREATE_DETACHED causes all threads created
+     *    with attr to be in the detached state, whereas using a value
+     *    of PTHREAD_CREATE_JOINABLE causes all threads created with
+     *    attr to be in the joinable state. The default value of the
+     *    detachstate attribute is PTHREAD_CREATE_JOINABLE.
+     */
+    errno = 0;
+    if ( pthread_attr_setdetachstate( attr,
+                                      PTHREAD_CREATE_DETACHED)
+
+            == EINVAL) {
+
+        fprintf(stderr,"FAIL : pthread_attr_setdetachstate\n");
+        perror("FAIL : EINVAL");
+        return ( EXIT_FAILURE );
+
+    }
 
     for ( j=0; j < num_pthreads; j++ ) {
         errno = 0;

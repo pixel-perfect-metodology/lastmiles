@@ -26,7 +26,8 @@ typedef struct q_type {
     * this list from many places and protect
     * us from multiple accesses happening at
     * the same time. */
-    pthread_mutex_t q_mutex;
+    pthread_mutexattr_t *mutex_attr;
+    pthread_mutex_t *mutex;
 
     /* Is this queue live or dead?
      *

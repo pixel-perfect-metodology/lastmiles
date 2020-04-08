@@ -52,7 +52,7 @@ void *dequeue( q_type *q ) {
      */
 
     /* protect the queue from all other threads accessing it */
-    pthread_mutex_lock ( &( q->q_mutex ) );
+    pthread_mutex_lock ( q->mutex );
 
     /**********************************************************
      * check if the queue is empty and wait until it is alive *
@@ -62,7 +62,7 @@ void *dequeue( q_type *q ) {
             && ( (q->tail) == NULL ) ) {
 
         /* queue is empty so we await for it to get a task */
-        pthread_cond_wait( &( q->alive ), &( q->q_mutex ) );
+        pthread_cond_wait( &( q->alive ), q->mutex );
 
     }
 
@@ -83,7 +83,7 @@ void *dequeue( q_type *q ) {
     }
 
     /* unlock the mutex */
-    pthread_mutex_unlock ( &( q->q_mutex ) );
+    pthread_mutex_unlock ( q->mutex );
 
     /* free up the memory that was being used by the item
      * we just took the payload from.

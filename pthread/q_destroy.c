@@ -22,7 +22,7 @@ int q_destroy(q_type *q) {
     q_item *tmp;
 
     /* set the mutex as locked */
-    pthread_mutex_lock ( &( q->q_mutex ) );
+    pthread_mutex_lock ( q->mutex );
 
     if ( q->head != NULL ) {
         /* traverse the list and free items as we hit them */
@@ -57,7 +57,7 @@ int q_destroy(q_type *q) {
      */
 
     /* unlock the mutex */
-    pthread_mutex_unlock ( &( q->q_mutex ) );
+    pthread_mutex_unlock ( q->mutex );
 
     /* we may be wrecking havok here with threads that
      * are awaiting the queue to be available */

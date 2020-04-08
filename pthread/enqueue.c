@@ -19,7 +19,7 @@
 void enqueue ( q_type *q, void *p ) {
 
     /* set the mutex as locked */
-    pthread_mutex_lock ( &( q->q_mutex ) );
+    pthread_mutex_lock ( q->mutex );
 
     /* we need to create a new queue item and put
      * the payload into it */
@@ -113,7 +113,7 @@ void enqueue ( q_type *q, void *p ) {
     }
 
     /* unlock the mutex */
-    pthread_mutex_unlock ( &( q->q_mutex ) );
+    pthread_mutex_unlock ( q->mutex );
 
     /* send out a signal to at least one thread consumer
      * which may be waiting. No promise anything is actually
