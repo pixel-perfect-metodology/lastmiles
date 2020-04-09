@@ -1,5 +1,5 @@
 
-CC=/usr/bin/c99
+CC=/opt/developerstudio12.6/bin/c99
 
 CFLAGS= -I$(IDIR) -Xc -g -errfmt=error -erroff=%none \
 	-xmemalign=8s -errshort=full -xstrconst -xildoff -m64 -xnolibmil \
@@ -11,8 +11,6 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 
 LIBS = -lpthread -lrt -lm
 
-OBJ = p0.o ru.o sysinfo.o sysmem.o
-
 OBJQ = sysmem.o sysinfo.o q_work.o enqueue.o dequeue.o q_create.o \
 	q_destroy.o do_work.o fibber.o
 
@@ -22,8 +20,5 @@ OBJQ = sysmem.o sysinfo.o q_work.o enqueue.o dequeue.o q_create.o \
 q_work: $(OBJQ)
 	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) -D_REENTRANT $(LIBS)
 
-p0: $(OBJ)
-	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) $(LIBS)
-
 clean:
-	rm -f *.o p0 q_work
+	rm -f *.o q_work

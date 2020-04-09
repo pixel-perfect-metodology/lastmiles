@@ -19,7 +19,7 @@
 
 extern pthread_t worker_thread[THREAD_LIMIT];
 /* extern int working[THREAD_LIMIT]; */
-static pthread_mutex_t working_now = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+extern pthread_mutex_t working_now;
 
 typedef struct q_type {
 
