@@ -12,7 +12,14 @@
  *********************************************************************/
 #define _XOPEN_SOURCE 600
 
+#define ELEMENT_COUNT_LIMIT 1073741824
+#define THREAD_LIMIT 256
+
 #include <pthread.h>
+
+extern pthread_t worker_thread[THREAD_LIMIT];
+/* extern int working[THREAD_LIMIT]; */
+static pthread_mutex_t working_now = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct q_type {
 

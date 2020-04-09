@@ -26,6 +26,9 @@ uint64_t fib(uint64_t n);
 
 void *do_some_array_thing ( void *work_q ) {
     int j, k, work_counter = 0;
+
+    pthread_t this_thread_id;
+
     char tbuf[32] = "";
     char fbuf[32] = "";
 
@@ -70,10 +73,6 @@ void *do_some_array_thing ( void *work_q ) {
                                                    + (uint64_t)foo->fibber;
         }
 
-        for ( k=0; k<1024; k++ ) {
-            *((foo->big_array)+(k * 256)) = (uint64_t) k;
-        }
-
         k = sprintf( fbuf,
                "\nthread %3i compute fib(%-3" PRIu64 ") = %12" PRIu64 "\n",
                             foo->work_num, foo->fibber, fib(foo->fibber) );
@@ -87,10 +86,54 @@ void *do_some_array_thing ( void *work_q ) {
         free( foo );
         foo = NULL;
 
+        /* before even looking if there is new work and being blocked
+         * on the condition it may be reasonable to check if we were
+         * signaled to close down and exit cleanly.
+         *
+         *
+         * who am I ? 
+         *
+         * int pthread_equal(pthread_t t1, pthread_t t2);
+         *
+         * DESCRIPTION
+         *      The pthread_equal() function compares the
+         *      thread IDs t1 and t2.
+         *
+         * RETURN VALUES
+         *      The pthread_equal() function will return non-zero
+         *      if the thread IDs t1 and t2 correspond to the same
+         *      thread, otherwise it will return zero.
+         *
+         *
+         * pthread_t pthread_self(void);
+         *
+         * DESCRIPTION
+         *      The pthread_self() function returns the thread ID
+         *      of the calling thread.
+         *
+         * RETURN VALUES
+         *      The pthread_self() function returns the thread ID
+         *      of the calling thread.
+         */
+
+        /* walk the entire thread collection to find this threads
+         * actual id      pthread_t this_thread_id;    */
+        for ( k = 0; k < THREAD_LIMIT; k++ ) {
+            this_thread_id = pthread_self();
+            if ( pthread_equal( worker_thread[k], this_thread_id ) ) {
+                /* okay we found out out thread id number */
+                sprintf( fbuf, "\nDBUG : my thread id is %3i\n", k );
+                puts( fbuf );
+                /* now check the flag to see if work should 
+                 * continue for this thread */
+            }
+        }
+
         foo = (thread_parm_t *)dequeue( (q_type *)work_q );
 
     }
 
     return (NULL);
+
 }
 

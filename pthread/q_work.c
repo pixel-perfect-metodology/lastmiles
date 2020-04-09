@@ -26,9 +26,6 @@
 #include "q.h"
 #include "do_work.h"
 
-#define ELEMENT_COUNT_LIMIT 1073741824
-#define THREAD_LIMIT 256
-
 /* this is an external custom written function that will
  * output the basic system information such as machine name
  * and operating system and kernel and memory etc. */
@@ -39,6 +36,12 @@ int sysinfo(void);
  * pointer to a work queue. However pthread_create expects
  * void pointers */
 void *do_some_array_thing ( void *work_q );
+
+/* we need some global way to signal to the threads that there
+ * may be work for them in the queue. We also need to signal
+ * to the worker threads that there is no work and they can
+ * shut down cleanly. 
+ */
 
 int main(int argc, char **argv) {
 
@@ -64,9 +67,10 @@ int main(int argc, char **argv) {
         return ( EXIT_FAILURE );
     }
 
-    pthread_t thread[THREAD_LIMIT];
-    uint8_t thread_flag[THREAD_LIMIT];
-    memset( &thread_flag, 0x00, (size_t)(THREAD_LIMIT)* sizeof(uint8_t));
+    /* set up a collection of flags that indicate that a thread
+     * is working or not.
+    memset( &working, 0x00, (size_t)(THREAD_LIMIT) * sizeof( int ) );
+    */
 
     setlocale( LC_ALL, "C" );
     sysinfo();
@@ -202,7 +206,7 @@ int main(int argc, char **argv) {
      */
     errno = 0;
     if ( pthread_attr_setdetachstate( attr,
-                                      PTHREAD_CREATE_DETACHED)
+                                      PTHREAD_CREATE_DETACHED )
 
             == EINVAL) {
 
@@ -214,7 +218,7 @@ int main(int argc, char **argv) {
 
     for ( j=0; j < num_pthreads; j++ ) {
         errno = 0;
-        pthread_err = pthread_create( &thread[j], attr,
+        pthread_err = pthread_create( &worker_thread[j], attr,
                                       do_some_array_thing,
                                               (void *)my_q );
         /*
@@ -255,11 +259,20 @@ int main(int argc, char **argv) {
 
     /* did we ask if the threads were done?
      *
+     *
+     * work_exist_flag
+static pthread_mutex_t work_exist = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
+int work_exist_flag = 0;
+     *
      * how about a nice polite sequential "join"
      */
     for ( j=0; j < num_pthreads; j++ ) {
+
+
+
+
         printf("calling for join on thread %i\n", j );
-        pthread_join( thread[j], NULL );
+        pthread_join( worker_thread[j], NULL );
         printf("join of thread %i is now complete\n", j );
     }
 
