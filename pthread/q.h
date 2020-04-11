@@ -18,8 +18,10 @@
 #include <pthread.h>
 
 extern pthread_t worker_thread[THREAD_LIMIT];
-/* extern int working[THREAD_LIMIT]; */
+
+/* a mutex to allow access to the work_flag array */
 extern pthread_mutex_t working_now;
+extern int work_flag[THREAD_LIMIT];
 
 typedef struct q_type {
 

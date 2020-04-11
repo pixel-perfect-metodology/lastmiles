@@ -23,16 +23,65 @@
 #include "do_work.h"
 
 pthread_t worker_thread[THREAD_LIMIT];
+int work_flag[THREAD_LIMIT];
 
 uint64_t fib(uint64_t n);
 
 void *do_some_array_thing ( void *work_q ) {
-    int j, k, work_counter = 0;
+
+    int j, k;
+    int thread_id = 0;
+    int work_counter = 0;
+    char tbuf[32] = "";
+    char fbuf[64] = "";
+
+    q_type *the_q = (q_type *)work_q;
 
     pthread_t this_thread_id;
 
-    char tbuf[32] = "";
-    char fbuf[32] = "";
+    thread_parm_t *foo = NULL;
+
+    /* 
+     * What thread id is this ?
+     *
+     * int pthread_equal(pthread_t t1, pthread_t t2);
+     *
+     * DESCRIPTION
+     *      The pthread_equal() function compares the
+     *      thread IDs t1 and t2.
+     *
+     * RETURN VALUES
+     *      The pthread_equal() function will return non-zero
+     *      if the thread IDs t1 and t2 correspond to the same
+     *      thread, otherwise it will return zero.
+     *
+     *
+     * pthread_t pthread_self(void);
+     *
+     * DESCRIPTION
+     *      The pthread_self() function returns the thread ID
+     *      of the calling thread.
+     *
+     * RETURN VALUES
+     *      The pthread_self() function returns the thread ID
+     *      of the calling thread.
+     *
+     * Walk the entire thread collection to find this
+     * thread id which is of datatype pthread_t this_thread_id
+     */
+    for ( k = 0; k < THREAD_LIMIT; k++ ) {
+        this_thread_id = pthread_self();
+        if ( pthread_equal( worker_thread[k], this_thread_id ) ) {
+            /* okay we found our thread id number */
+            thread_id = k;
+
+            sprintf( tbuf, "\nDBUG : this thread id is %3i\n",
+                                                           thread_id );
+
+            puts( tbuf );
+
+        }
+    }
 
     /* given that the queue is a blocking type of list
      * where no thread can work until something exists
@@ -40,26 +89,55 @@ void *do_some_array_thing ( void *work_q ) {
      * out of the queue. Note that this will block and
      * wait for actual work to be in the queue due to
      * a pthread condition variable that we put into the
-     * queue. */
-    thread_parm_t *foo = (thread_parm_t *)dequeue( (q_type *)work_q );
+     * queue. Before we get into a blocking situation we
+     * check the work_flag for this thread and see if if
+     * is set to 0 in which case we bail out cleanly. */
+
+    /* TODO think about a mutex lock to read this flag */
+    if ( work_flag[thread_id] == 0 ) goto bail_out;
+
+    /* check if the queue is empty */
+    pthread_mutex_lock ( the_q->mutex );
+    if (  ( the_q->length == 0 )
+         && ( the_q->head == NULL )
+         && ( the_q->tail == NULL ) ) {
+
+        /* the queue is empty and thus we bail out */
+        pthread_mutex_unlock ( the_q->mutex );
+        return ( NULL );
+
+    }
+    pthread_mutex_unlock ( the_q->mutex );
+    /****************************************************************
+     *                                                              *
+     *        d a n g e r     d a n g e r     d a n g e r           *
+     *                                                              *
+     *        We just released the mutex lock on the queue and      *
+     *        thus some other thread could consume the job in       *
+     *        the queue and again we stall on the condition var     *
+     *                                                              *
+     ****************************************************************/
+    foo = (thread_parm_t *)dequeue( (q_type *)work_q );
 
     while ( foo ) {
-        /* we have some work to do .. yay for us */
+
         work_counter = work_counter + 1;
 
         /* we need a thread safe way to say hello */
-        k = sprintf( tbuf, "\nthread %3i has work item %2i\n",
-                                    foo->work_num, work_counter );
+        k = sprintf( tbuf, "\nthr %3i : work %3i q_item %3i\n",
+                              thread_id, work_counter, foo->work_num );
 
         puts( tbuf );
 
         /* lets calloc foo->array_cnt uint64_t elements in big_array */
-        foo->big_array = calloc( foo->array_cnt, (size_t)sizeof(uint64_t));
+        foo->big_array = calloc( foo->array_cnt,
+                                 (size_t)sizeof(uint64_t));
+
         if ( foo->big_array == NULL ) {
             /* really? possible ENOMEM? */
             if ( errno == ENOMEM ) {
                 /* TODO : this is not a thread safe way to output */
-                fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
+                fprintf(stderr,"FAIL : calloc ENOMEM at %s:%d\n",
                         __FILE__, __LINE__ );
             } else {
                 fprintf(stderr,"FAIL : calloc fails at %s:%d\n",
@@ -71,13 +149,13 @@ void *do_some_array_thing ( void *work_q ) {
         }
 
         for ( j=0; j<(int)foo->array_cnt; j++ ) {
-            *((foo->big_array)+j) = (uint64_t)j + ( (uint64_t)123456789 )
-                                                   + (uint64_t)foo->fibber;
+            *((foo->big_array)+j) = (uint64_t)j + ((uint64_t)123456789)
+                                               + (uint64_t)foo->fibber;
         }
 
         k = sprintf( fbuf,
-               "\nthread %3i compute fib(%-3" PRIu64 ") = %12" PRIu64 "\n",
-                            foo->work_num, foo->fibber, fib(foo->fibber) );
+               "\nthr %3i : fib(%-3" PRIu64 ") = %12" PRIu64 "\n",
+                             thread_id, foo->fibber, fib(foo->fibber));
 
         puts( fbuf );
 
@@ -88,51 +166,33 @@ void *do_some_array_thing ( void *work_q ) {
         free( foo );
         foo = NULL;
 
-        /* before even looking if there is new work and being blocked
-         * on the condition it may be reasonable to check if we were
-         * signaled to close down and exit cleanly.
-         *
-         *
-         * who am I ? 
-         *
-         * int pthread_equal(pthread_t t1, pthread_t t2);
-         *
-         * DESCRIPTION
-         *      The pthread_equal() function compares the
-         *      thread IDs t1 and t2.
-         *
-         * RETURN VALUES
-         *      The pthread_equal() function will return non-zero
-         *      if the thread IDs t1 and t2 correspond to the same
-         *      thread, otherwise it will return zero.
-         *
-         *
-         * pthread_t pthread_self(void);
-         *
-         * DESCRIPTION
-         *      The pthread_self() function returns the thread ID
-         *      of the calling thread.
-         *
-         * RETURN VALUES
-         *      The pthread_self() function returns the thread ID
-         *      of the calling thread.
-         */
+        /* TODO think about a mutex lock to read this flag */
+        if ( work_flag[thread_id] == 0 ) goto bail_out;
 
-        /* walk the entire thread collection to find this threads
-         * actual id      pthread_t this_thread_id;    */
-        for ( k = 0; k < THREAD_LIMIT; k++ ) {
-            this_thread_id = pthread_self();
-            if ( pthread_equal( worker_thread[k], this_thread_id ) ) {
-                /* okay we found out out thread id number */
-                sprintf( fbuf, "\nDBUG : my thread id is %3i\n", k );
-                puts( fbuf );
-                /* now check the flag to see if work should 
-                 * continue for this thread */
-            }
+        /* check again if the queue is empty */
+        pthread_mutex_lock ( the_q->mutex );
+        if (  ( the_q->length == 0 )
+             && ( the_q->head == NULL )
+             && ( the_q->tail == NULL ) ) {
+
+            /* the queue is empty and thus we bail out */
+            pthread_mutex_unlock ( the_q->mutex );
+            return ( NULL );
+
         }
-
+        pthread_mutex_unlock ( the_q->mutex );
         foo = (thread_parm_t *)dequeue( (q_type *)work_q );
 
+    }
+
+    return (NULL);
+
+bail_out:
+
+    if ( foo != NULL ) {
+        /* we have to assume that we are throwing work away. */
+        free( foo );
+        foo = NULL;
     }
 
     return (NULL);

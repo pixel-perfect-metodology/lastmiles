@@ -40,8 +40,17 @@ void *do_some_array_thing ( void *work_q );
 /* we need some global way to signal to the threads that there
  * may be work for them in the queue. We also need to signal
  * to the worker threads that there is no work and they can
- * shut down cleanly. 
+ * shut down cleanly. We may also receive information from the
+ * threads to let us know that they are working.
+ *
+ * The "work flag" may have two valid values :
+ * 
+ *    0 - zero indicates to the thread to stop operations
+ *
+ *    1 - one indicates that the thread may do work
+ * 
  */
+int work_flag[THREAD_LIMIT];
 
 int main(int argc, char **argv) {
 
@@ -131,9 +140,9 @@ int main(int argc, char **argv) {
     printf ( "DBUG : my_q now exists at %p\n\n", my_q);
 
     thread_parm_t *make_work;
-    /* make some work where the queue has more work elements
+    /* make plenty of work where the queue has more work elements
      * than we produce consumer threads */
-    for ( j=0; j < ( num_pthreads * 2 ); j++ ) {
+    for ( j=0; j < ( num_pthreads + 9 ); j++ ) {
         errno = 0;
         make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
         if ( make_work == NULL ) {
@@ -175,15 +184,14 @@ int main(int argc, char **argv) {
 
     /* system-wide contention or process contention?
      *
-     * PTHREAD_SCOPE_PROCESS  or 
-     * PTHREAD_SCOPE_SYSTEM 
+     * PTHREAD_SCOPE_PROCESS or PTHREAD_SCOPE_SYSTEM
      *
      * which is not documented much of anywhere that I have
-     * seen .. yet. 
+     * seen .. yet.
      */
     errno = 0;
     if ( pthread_attr_setscope( attr,
-                                PTHREAD_SCOPE_SYSTEM)
+                                PTHREAD_SCOPE_PROCESS )
 
             == EINVAL) {
 
@@ -193,7 +201,7 @@ int main(int argc, char **argv) {
 
     }
 
-    /* From pthread_attr_setdetachstate : 
+    /* From pthread_attr_setdetachstate :
      *
      *    The detachstate can be set to either PTHREAD_CREATE_DETACHED
      *    or PTHREAD_CREATE_JOINABLE.
@@ -206,7 +214,7 @@ int main(int argc, char **argv) {
      */
     errno = 0;
     if ( pthread_attr_setdetachstate( attr,
-                                      PTHREAD_CREATE_DETACHED )
+                                      PTHREAD_CREATE_JOINABLE )
 
             == EINVAL) {
 
@@ -217,6 +225,11 @@ int main(int argc, char **argv) {
     }
 
     for ( j=0; j < num_pthreads; j++ ) {
+
+        /* this flag indicates to the worker_thread[j] that it may
+         * do work */
+        work_flag[j] = 1;
+
         errno = 0;
         pthread_err = pthread_create( &worker_thread[j], attr,
                                       do_some_array_thing,
@@ -237,46 +250,29 @@ int main(int argc, char **argv) {
          */
 
         if ( pthread_err == EAGAIN ) {
-
             fprintf(stderr,"FAIL : EAGAIN system lacked resources\n");
             perror("FAIL : EAGAIN");
             return ( EXIT_FAILURE );
-
         } else if ( pthread_err == EINVAL ) {
-
             fprintf(stderr,"FAIL : EINVAL attr is invalid\n");
             perror("FAIL : EINVAL");
             return ( EXIT_FAILURE );
-
         } else if ( pthread_err == EPERM ) {
-
            fprintf(stderr,"FAIL : EPERM permission denied\n");
            perror("FAIL : EPERM");
            return ( EXIT_FAILURE );
-
         }
+
     }
 
-    /* did we ask if the threads were done?
-     *
-     *
-     * work_exist_flag
-static pthread_mutex_t work_exist = (pthread_mutex_t) PTHREAD_MUTEX_INITIALIZER;
-int work_exist_flag = 0;
-     *
-     * how about a nice polite sequential "join"
-     */
     for ( j=0; j < num_pthreads; j++ ) {
-
-
-
 
         printf("calling for join on thread %i\n", j );
         pthread_join( worker_thread[j], NULL );
         printf("join of thread %i is now complete\n", j );
     }
 
-    /* Really we should check the length of the queue before we 
+    /* Really we should check the length of the queue before we
      * drop the hammer here and destroy whatever queue we have.
      * AT this point we have NO DAMN clue if the work in the queue
      * actually was all done. TODO check if the queue is empty. */

@@ -3,7 +3,8 @@ CC=/usr/bin/cc
 
 CFLAGS= -std=iso9899:1999 -m64 -g -O0 -pedantic -pedantic-errors \
 	-Weverything -Wno-reserved-id-macro -Wno-unused-macros \
-	-Wno-missing-prototypes -Wno-padded -fno-fast-math -fno-builtin
+	-Wno-missing-prototypes -Wno-padded -fno-fast-math -fno-builtin \
+	-fsanitize=thread
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600
