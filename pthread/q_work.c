@@ -141,8 +141,9 @@ int main(int argc, char **argv) {
 
     thread_parm_t *make_work;
     /* make plenty of work where the queue has more work elements
-     * than we produce consumer threads */
-    for ( j=0; j < ( num_pthreads + 9 ); j++ ) {
+     * than consumer threads.
+     */
+    for ( j=0; j < ( num_pthreads + 3 ); j++ ) {
         errno = 0;
         make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
         if ( make_work == NULL ) {
