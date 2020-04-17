@@ -51,9 +51,6 @@ int cplex_sqrt( cplex_type res[2], cplex_type *op1 )
      * case we are staying with a zero result exactly.
      */
 
-    /* note that we add 0.0 to avoid the signed zero */
-    theta += 0.0;
-
     if ( theta == 0.0 ) {
         res[0].r = sqrt_mag;
         res[0].i = 0.0;
@@ -62,8 +59,8 @@ int cplex_sqrt( cplex_type res[2], cplex_type *op1 )
     } else {
         res[0].r = sqrt_mag * cos( theta / 2.0 );
         res[0].i = sqrt_mag * sin( theta / 2.0 );
-        res[1].r = sqrt_mag * cos( PI_L + theta / 2.0 );
-        res[1].i = sqrt_mag * sin( PI_L + theta / 2.0 );
+        res[1].r = sqrt_mag * cos( (double)PI_L + theta / 2.0 );
+        res[1].i = sqrt_mag * sin( (double)PI_L + theta / 2.0 );
     }
 
     return ( 0 );

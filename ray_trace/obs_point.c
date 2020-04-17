@@ -30,7 +30,7 @@ int main ( int argc, char **argv)
     cplex_type c_tmp[4];
     vec_type grad, grad_norm, reflect;
     double vec_T_mag, theta_i;
-    int status, k, intercept_cnt = -1;
+    int status, intercept_cnt = -1;
 
     /* https://github.com/blastwave/lastmiles/blob/master/ray_trace/
      *                                  math_notes/notes_rt_math_006.png
@@ -38,11 +38,6 @@ int main ( int argc, char **argv)
      * per our diagrams we are just solving for k in the complex
      * coefficient quadratic */
     cplex_type k_val[2];
-
-    /* given that we only care about a real root that is forward
-     * looking from the observation plane then we need a double
-     * value for the root k */
-    double k_root;
 
     /* If we actually do get an intercept then we need to determine
      * the closest forward looking point which is our actual point

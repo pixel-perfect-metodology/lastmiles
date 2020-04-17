@@ -60,7 +60,7 @@ int cplex_quadratic( cplex_type res[2],
      * real roots.
      ****************************************************************/
 
-    int j, status, real_root_count;
+    int status, real_root_count;
     cplex_type neg_one, two, four, denom, radicand;
     cplex_type tmp0, tmp1, tmp2;
     cplex_type full_res[4], roots[2];
@@ -134,6 +134,7 @@ int cplex_quadratic( cplex_type res[2],
         /* Thanks to the IEEE754-2008 zero equality rules we know
          * that we have two real roots. */
         real_root_count = 2;
+        /* TODO perhaps use an epsilon check here */
         if ( res[0].r == res[1].r ) {
             real_root_count = 1;
         }

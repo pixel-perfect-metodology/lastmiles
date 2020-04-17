@@ -36,11 +36,11 @@ int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 )
      * in the complex space.
      */
 
-    if ( ( &op1->x.i == 0 ) && ( &op2->x.i == 0 )
+    if ( ( op1->x.i == 0 ) && ( op2->x.i == 0 )
             &&
-         ( &op1->y.i == 0 ) && ( &op2->y.i == 0 )
+         ( op1->y.i == 0 ) && ( op2->y.i == 0 )
             &&
-         ( &op1->z.i == 0 ) && ( &op2->z.i == 0 ) ) {
+         ( op1->z.i == 0 ) && ( op2->z.i == 0 ) ) {
 
         /* we have pure real space vector inputs
          * and this we check the result for a pure real space */
