@@ -18,13 +18,12 @@
 int main(int argc, char *argv[])
 {
 
-    /* last digit was round up from a 3 to a 4 */
-    long double pi = 3.1415926535897932384626433832795028841971694L;
+    long double pi = 3.14159265358979323846264338327950288419716939937510L;
 
     printf("the sizeof(pi) is %i bytes\n", sizeof(long double) );
 
     printf("\npi is this  3.14159265358979323846264338");
-    printf("3279502884197169.....\n\n");
+    printf("327950288419716939937510.....\n\n");
 
     printf("pi could be %42.38Le\n", pi);
 

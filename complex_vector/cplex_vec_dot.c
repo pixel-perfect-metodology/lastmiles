@@ -27,10 +27,34 @@ int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 )
     res->r = tmp[0].r + tmp[1].r + tmp[2].r;
     res->i = tmp[0].i + tmp[1].i + tmp[2].i;
 
-    /* for most computation we want real results only */
-    if ( res->i == 0.0 ) return ( 0 );
+    /* For most computation we want real results only
+     * however in general a vector dot product is 
+     * complex in nature if the vector inputs
+     * are also complex. 
+     *
+     * Thus we need to test if the input vectors were
+     * in the complex space.
+     */
 
-    return ( EXIT_FAILURE );
+    if ( ( &op1->x.i == 0 ) && ( &op2->x.i == 0 )
+            &&
+         ( &op1->y.i == 0 ) && ( &op2->y.i == 0 )
+            &&
+         ( &op1->z.i == 0 ) && ( &op2->z.i == 0 ) ) {
+
+        /* we have pure real space vector inputs
+         * and this we check the result for a pure real space */
+        if ( res->i == 0.0 ) {
+            return ( 0 );
+        } else {
+            /* there must not be any imaginary component */
+            return ( EXIT_FAILURE );
+        }
+
+    }
+
+    /* the result is whatever it is */
+    return ( 0 );
 
 }
 
