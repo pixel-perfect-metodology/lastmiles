@@ -1,4 +1,31 @@
 
+
+enceladus$ 
+enceladus$ $CC $CFLAGS $CPPFLAGS -c -o sysinfo.o sysinfo.c 
+enceladus$ $CC $CFLAGS $CPPFLAGS -c -o sysmem.o sysmem.c  
+enceladus$ $CC $CFLAGS $CPPFLAGS -c -o report.o report.c 
+enceladus$ $CC $CFLAGS $CPPFLAGS -o report report.o sysinfo.o sysmem.o -lm
+enceladus$ 
+enceladus$ ./report 
+-------------------------------------------------------------
+           system name = Linux
+             node name = enceladus
+               release = 5.7.0-rc2
+               version = #1 SMP Tue Apr 21 23:32:43 UTC 2020
+               machine = ppc64
+             page size = 4096
+          avail memory = 8233553920
+                       = 8040580 kB
+                       = 7852 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+enceladus$ 
+
+=======================================================================
 Bizarre off the cuff test to show that malloc may spit in
 your coffee and kick your dog and just because you free 
 a buffer or think it will be zero ... think again.

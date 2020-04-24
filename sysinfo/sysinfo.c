@@ -72,9 +72,11 @@ int sysinfo(void) {
         }
         printf ( " endian\n" );
 
-        printf ( " sizeof(unsigned long) = %i\n", sizeof(unsigned long) );
-        printf ( "           sizeof(int) = %i\n", sizeof(int) );
-        printf ( "         sizeof(void*) = %i\n", sizeof(void*) );
+        /* note that sizeof reports back an unsigned long integer and
+         * thus the format string for printf should be %lu */
+        printf ( " sizeof(unsigned long) = %lu\n", sizeof(unsigned long) );
+        printf ( "           sizeof(int) = %lu\n", sizeof(int) );
+        printf ( "         sizeof(void*) = %lu\n", sizeof(void*) );
 
         fp_round_mode = fegetround();
         printf("     fp rounding mode is ");

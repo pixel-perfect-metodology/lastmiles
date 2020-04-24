@@ -19,30 +19,16 @@
 #include <locale.h>
 #include <sys/utsname.h>
 
+int sysinfo(void);
+uint64_t system_memory(void);
+
 int main(int argc, char *argv[]) 
 {
 
     int foo = 0;
     int char_count_total = 0;
-    struct utsname uname_data;
-
-    setlocale( LC_MESSAGES, "C" );
-    if ( uname( &uname_data ) < 0 ) {
-        fprintf ( stderr,
-                 "WARNING : Could not attain system uname data.\n" );
-        perror ( "uname" );
-    } else {
-        printf ( "-------------------------------" );
-        printf ( "------------------------------\n" );
-        printf ( "        system name = %s\n", uname_data.sysname );
-        printf ( "          node name = %s\n", uname_data.nodename );
-        printf ( "            release = %s\n", uname_data.release );
-        printf ( "            version = %s\n", uname_data.version );
-        printf ( "            machine = %s\n", uname_data.machine );
-        printf ( "-------------------------------" );
-        printf ( "------------------------------" );
-    }
-    printf ("\n");
+    setlocale( LC_ALL, "C" );
+    sysinfo();
 
     /* The C standard really doesn't clearly say how a
      * pointer will be printed. C11 ISO/IEC 9899:2011
@@ -52,7 +38,6 @@ int main(int argc, char *argv[])
      * Just use C99 <inttypes.h> and uintptr_t instead. */
 
     printf ( "argc = %i\n", argc );
-
     printf ( "&argc = %p\n", &argc );
     printf ( "argv = %p\n", argv );
 
@@ -64,6 +49,8 @@ int main(int argc, char *argv[])
     for ( foo = 0; foo < ( char_count_total + argc ); foo++ ) {
         printf("%02x ", ((uint8_t*)argv[0])[foo] );
     }
+
+    printf("\n");
 
     return ( 42 );
 
