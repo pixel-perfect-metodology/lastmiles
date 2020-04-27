@@ -41,30 +41,7 @@ void *do_some_array_thing ( void *work_q ) {
 
     thread_parm_t *foo = NULL;
 
-    /* 
-     * What thread id is this ?
-     *
-     * int pthread_equal(pthread_t t1, pthread_t t2);
-     *
-     * DESCRIPTION
-     *      The pthread_equal() function compares the
-     *      thread IDs t1 and t2.
-     *
-     * RETURN VALUES
-     *      The pthread_equal() function will return non-zero
-     *      if the thread IDs t1 and t2 correspond to the same
-     *      thread, otherwise it will return zero.
-     *
-     *
-     * pthread_t pthread_self(void);
-     *
-     * DESCRIPTION
-     *      The pthread_self() function returns the thread ID
-     *      of the calling thread.
-     *
-     * RETURN VALUES
-     *      The pthread_self() function returns the thread ID
-     *      of the calling thread.
+    /* What thread id is this ?
      *
      * Walk the entire thread collection to find this
      * thread id which is of datatype pthread_t this_thread_id

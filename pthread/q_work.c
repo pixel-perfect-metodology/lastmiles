@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
     /* make plenty of work where the queue has more work elements
      * than consumer threads.
      */
-    for ( j=0; j < ( num_pthreads + 3 ); j++ ) {
+    for ( j=0; j < ( 2 * num_pthreads + 3 ); j++ ) {
         errno = 0;
         make_work = calloc( (size_t) 1, (size_t)sizeof(thread_parm_t) );
         if ( make_work == NULL ) {
@@ -267,7 +267,6 @@ int main(int argc, char **argv) {
     }
 
     for ( j=0; j < num_pthreads; j++ ) {
-
         printf("calling for join on thread %i\n", j );
         pthread_join( worker_thread[j], NULL );
         printf("join of thread %i is now complete\n", j );
