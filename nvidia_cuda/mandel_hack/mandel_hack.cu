@@ -24,7 +24,7 @@
 #include <omp.h>
 
 #define NUM_ELEMENTS 16777216
-#define THREADS_PER_BLOCK 1024
+#define THREADS_PER_BLOCK 256
 #define BAIL_OUT 4096
 
 int sysinfo(void);
