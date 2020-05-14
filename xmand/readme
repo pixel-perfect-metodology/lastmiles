@@ -1,6 +1,56 @@
 
 
-A pretty example : 
+A few pretty examples : 
+
+
+C_nix$ ./xmand 4096 4096 -3.004150390625e-01 +6.553039550781e-01 4 
+-------------------------------------------------------------
+           system name = Linux
+             node name = nix
+               release = 4.19.0-9-amd64
+               version = #1 SMP Debian 4.19.118-2 (2020-04-29)
+               machine = x86_64
+             page size = 4096
+          avail memory = 16765591552
+                       = 16372648 kB
+                       = 15988 MB
+                endian = little endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+    mand_bail = 4096
+pthread_limit = 4
+    translate = ( -3.004150390625e-01 , +6.553039550781e-01 )
+      magnify = +4.096000000000e+03
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 5760 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 006 , 004 ]
+[mand] =     3551093111 nsec   3.551093e+00 sec
+
+click at 439 767 
+right click
+click at 585 540 
+right click
+
+
+
+Also ...
+
 
 ./xmand 4096 250000 +2.833992242813e-01 +9.314656257627e-03
 

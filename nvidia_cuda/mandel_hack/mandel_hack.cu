@@ -24,7 +24,7 @@
 #include <omp.h>
 
 #define NUM_ELEMENTS 16777216
-#define THREADS_PER_BLOCK 256
+#define THREADS_PER_BLOCK 1024
 #define BAIL_OUT 4096
 
 int sysinfo(void);
@@ -92,8 +92,8 @@ int main(int argc, char *argv[])
         fprintf(stderr,"ERROR : could not attain CLOCK_REALTIME\n");
         return(EXIT_FAILURE);
     } else {
-        /* srand48((long int)t0.tv_nsec); */
-        srand48(((long int)123456789));
+        srand48((long int)t0.tv_nsec);
+        /* srand48(((long int)123456789)); */
     }
 
     /* determine the number of CUDA capable GPUs */
@@ -171,6 +171,13 @@ int main(int argc, char *argv[])
     printf("     : cudaMalloc device_i %" PRIu64 " nsecs\n",
                                                           tdelta_nsec);
 
+    fprintf( stderr,"DBUG : at %d in %s\n", __LINE__, __FILE__);
+    err = cudaDeviceSynchronize();
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "FAIL : CUDA failed cudaDeviceSynchronize()\n");
+        fprintf(stderr, "err = %0x\n", err );
+        exit(EXIT_FAILURE);
+    }
 
     clock_gettime( CLOCK_REALTIME, &t0 );
     device_mval = NULL;
@@ -185,33 +192,72 @@ int main(int argc, char *argv[])
     printf("     : cudaMalloc device_mval %" PRIu64 " nsecs\n",
                                                           tdelta_nsec);
 
+
+    fprintf( stderr,"DBUG : at %d in %s\n", __LINE__, __FILE__);
+    err = cudaDeviceSynchronize();
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "FAIL : CUDA failed cudaDeviceSynchronize()\n");
+        fprintf(stderr, "err = %0x\n", err );
+        exit(EXIT_FAILURE);
+    }
+
     /* Copy the host input arrays in host memory
      * to the device memory */
     clock_gettime( CLOCK_REALTIME, &t0 );
-    if ( cudaMemcpy(device_r,host_r,size_coord,cudaMemcpyHostToDevice)
-            != cudaSuccess) {
-
-        err = cudaGetLastError();
+    /* possible stuff that can happen with cudaMemcpy()
+     *
+     *   cudaErrorInvalidValue
+     *   cudaErrorInvalidDevicePointer
+     *   cudaErrorInvalidMemcpyDirection
+     */
+    err = cudaMemcpy(device_r,host_r,size_coord,cudaMemcpyHostToDevice);
+    if ( err != cudaSuccess) {
         fprintf(stderr, "FAIL : CUDA failed memcopy host to device\n");
-        fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "FAIL : error ");
 
+        if ( err == cudaErrorInvalidValue ) {
+            fprintf(stderr, "cudaErrorInvalidValue\n");
+        } else if ( err == cudaErrorInvalidDevicePointer ) {
+            fprintf(stderr, "cudaErrorInvalidDevicePointer\n");
+        } else if ( err == cudaErrorInvalidMemcpyDirection ) {
+            fprintf(stderr, "cudaErrorInvalidMemcpyDirection\n");
+        } else {
+            fprintf(stderr, "what the absolute fuck?\n");
+            fprintf(stderr, "err = %0x\n", err );
+        }
+        exit(EXIT_FAILURE);
     }
     printf("INFO : Copy of real data from host to device done.\n");
     clock_gettime( CLOCK_REALTIME, &t1 );
     tdelta_nsec = timediff( t0, t1);
     printf("     : cudaMemcpy() %" PRIu64 "nsecs\n", tdelta_nsec);
 
+    fprintf( stderr,"DBUG : at %d in %s\n", __LINE__, __FILE__);
+    err = cudaDeviceSynchronize();
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "FAIL : CUDA failed cudaDeviceSynchronize()\n");
+        fprintf(stderr, "err = %0x\n", err );
+        exit(EXIT_FAILURE);
+    }
 
     clock_gettime( CLOCK_REALTIME, &t0 );
-    if ( cudaMemcpy(device_i,host_i,size_coord,cudaMemcpyHostToDevice)
-            != cudaSuccess) {
 
-        err = cudaGetLastError();
+    err = cudaMemcpy(device_i,host_i,size_coord,cudaMemcpyHostToDevice);
+    if ( err != cudaSuccess) {
         fprintf(stderr, "FAIL : CUDA failed memcopy host to device\n");
-        fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "FAIL : error ");
 
+        if ( err == cudaErrorInvalidValue ) {
+            fprintf(stderr, "cudaErrorInvalidValue\n");
+        } else if ( err == cudaErrorInvalidDevicePointer ) {
+            fprintf(stderr, "cudaErrorInvalidDevicePointer\n");
+        } else if ( err == cudaErrorInvalidMemcpyDirection ) {
+            fprintf(stderr, "cudaErrorInvalidMemcpyDirection\n");
+        } else {
+            fprintf(stderr, "what the absolute fuck?\n");
+            fprintf(stderr, "err = %0x\n", err );
+        }
+        exit(EXIT_FAILURE);
     }
     printf("INFO : Copy of imaginary data from host to device done.\n");
     clock_gettime( CLOCK_REALTIME, &t1 );
@@ -227,15 +273,24 @@ int main(int argc, char *argv[])
     printf("INFO : CUDA kernel launch with %d blocks of %d threads\n",
                                        blocksPerGrid, threadsPerBlock);
 
+    fprintf( stderr,"DBUG : at %d in %s\n", __LINE__, __FILE__);
+    err = cudaDeviceSynchronize();
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "FAIL : CUDA failed cudaDeviceSynchronize()\n");
+        fprintf(stderr, "err = %0x\n", err );
+        exit(EXIT_FAILURE);
+    }
+
     clock_gettime( CLOCK_REALTIME, &t0 );
 
     /* the NVidia CUDA code format is a bit special */
     gpu_mbrot<<<blocksPerGrid, threadsPerBlock>>>( device_r, device_i, device_mval, num_elements );
 
     err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    if ( err != cudaSuccess ) {
         fprintf(stderr, "FAIL : CUDA failed\n");
         fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
+        fprintf(stderr, "FAIL : err = %0x\n", err );
         exit(EXIT_FAILURE);
     }
     printf("INFO : done.\n");
@@ -243,24 +298,47 @@ int main(int argc, char *argv[])
     tdelta_nsec = timediff( t0, t1);
     printf("     : gpu_mbrot time delta %" PRIu64 " nsecs\n", tdelta_nsec);
 
+    fprintf( stderr,"DBUG : at %d in %s\n", __LINE__, __FILE__);
+    err = cudaDeviceSynchronize();
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "FAIL : CUDA failed cudaDeviceSynchronize()\n");
+        fprintf(stderr, "err = %0x\n", err );
+        exit(EXIT_FAILURE);
+    }
+
     /* Copy the device result memory to the host result memory */
     clock_gettime( CLOCK_REALTIME, &t0 );
 
-    if ( cudaMemcpy(host_mval, device_mval,
-                    size_height,
-                    cudaMemcpyDeviceToHost) != cudaSuccess) {
-
+    err = cudaMemcpy(host_mval, device_mval, size_height, cudaMemcpyDeviceToHost);
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "DBUG : at %d in %s\n", __LINE__, __FILE__);
         fprintf(stderr, "FAIL : CUDA fail copy result to host\n");
-        fprintf(stderr, "FAIL : error %s\n", cudaGetErrorString(err));
+        fprintf(stderr, "FAIL : error ");
+
+        if ( err == cudaErrorInvalidValue ) {
+            fprintf(stderr, "cudaErrorInvalidValue\n");
+        } else if ( err == cudaErrorInvalidDevicePointer ) {
+            fprintf(stderr, "cudaErrorInvalidDevicePointer\n");
+        } else if ( err == cudaErrorInvalidMemcpyDirection ) {
+            fprintf(stderr, "cudaErrorInvalidMemcpyDirection\n");
+        } else {
+            fprintf(stderr, "what the absolute fuck?\n");
+            fprintf(stderr, "err = %0x\n", err );
+        }
         exit(EXIT_FAILURE);
-
     }
-
     printf("INFO : Copy result from device to host done.\n");
     clock_gettime( CLOCK_REALTIME, &t1 );
     tdelta_nsec = timediff( t0, t1);
     printf("     : copy device result done %" PRIu64 " nsecs\n",
                                                           tdelta_nsec);
+    fprintf( stderr,"DBUG : at %d in %s\n", __LINE__, __FILE__);
+    err = cudaDeviceSynchronize();
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "FAIL : CUDA failed cudaDeviceSynchronize()\n");
+        fprintf(stderr, "err = %0x\n", err );
+        exit(EXIT_FAILURE);
+    }
 
     /* Free device memory */
     err = cudaFree(device_r);

@@ -22,7 +22,7 @@
 #include <cuda_profiler_api.h>
 #include <omp.h>
 
-#define NUM_ELEMENTS 167772160
+#define NUM_ELEMENTS 16777216
 #define THREADS_PER_BLOCK 1024
 #define EPSILON 1e-12
 

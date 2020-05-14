@@ -804,7 +804,8 @@ int main(int argc, char*argv[])
         XSetForeground(dsp, gc2, red.pixel);
         sprintf(buf,"raw  [ %-4i , %-4i ]", mouse_x_raw, mouse_y_raw);
         XDrawImageString( dsp, win2, gc2, 215, 210, buf, (int)strlen(buf));
-        /* adjustment of one or two pixels */
+
+        /* classic FiggleFratz jank adjustment of one or two pixels */
         mouse_x = mouse_x - 1;
         mouse_y = mouse_y - 2;
 
