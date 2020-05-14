@@ -897,7 +897,8 @@ int main(int argc, char*argv[])
                 /* time the computation before we dispatch a thread */
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
-                if ( 1 || ( vbox_flag[vbox_x][vbox_y] == 0 ) ) {
+                /* also possible is ( 1 || ( vbox_flag[vbox_x][vbox_y] == 0 ) ) */
+                if ( vbox_flag[vbox_x][vbox_y] == 0 ) {
                     for ( pt = 0; pt < pthread_limit; pt++ ) {
                         parm[pt]->t_num = pt;
                         parm[pt]->t_total = pthread_limit;
