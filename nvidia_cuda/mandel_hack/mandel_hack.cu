@@ -28,9 +28,10 @@
 #include <cuda_profiler_api.h>
 #include <omp.h>
 
-#define NUM_ELEMENTS 16777216
-#define THREADS_PER_BLOCK 2048
-#define BAIL_OUT 4096
+/* #define NUM_ELEMENTS 16777216 */
+#define NUM_ELEMENTS 1048576
+#define THREADS_PER_BLOCK 1024
+#define BAIL_OUT 16384
 
 int sysinfo(void);
 uint64_t system_memory();
@@ -97,8 +98,14 @@ int main(int argc, char *argv[])
         fprintf(stderr,"ERROR : could not attain CLOCK_REALTIME\n");
         return(EXIT_FAILURE);
     } else {
-        srand48((long int)t0.tv_nsec);
-        /* srand48(((long int)123456789)); */
+        /* to get a random seed value we should use the clock
+         * nanosec value. There may be better ways and we 
+         * could even read /dev/random to get some bytes and
+         * then seed wit that .. however this is cheap and 
+         * easy. 
+         *
+         * srand48((long int)t0.tv_nsec); */
+        srand48(((long int)123456789));
     }
 
     /* determine the number of CUDA capable GPUs */
@@ -106,6 +113,15 @@ int main(int argc, char *argv[])
     if ( num_gpus < 1 ) {
         printf("INFO : no CUDA capable devices were detected\n");
         return EXIT_FAILURE;
+    }
+
+    /* we may as well do a cudaDeviceReset ( void ) */
+    fprintf( stderr,"DBUG : at %d in %s\n", __LINE__, __FILE__);
+    err = cudaDeviceReset();
+    if ( err != cudaSuccess) {
+        fprintf(stderr, "FAIL : CUDA failed cudaDeviceReset()\n");
+        fprintf(stderr, "err = %0x\n", err );
+        exit(EXIT_FAILURE);
     }
 
     /* display CPU and GPU configuration */
