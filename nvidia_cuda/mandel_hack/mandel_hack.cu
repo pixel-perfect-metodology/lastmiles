@@ -1,6 +1,11 @@
 /**
  * hacked at by Dennis Clarke for some twitch fun stuff
- * okay hacked a LOT.
+ * okay hacked a LOT.  Then a lot more. Currently we may
+ * have a problem with needing cudaDeviceSynchronize over
+ * and over. Maybe. Also perhaps a device reset may be a
+ * need right up front. Not sure yet.  20200516094734
+ *
+ * https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
  *
  * Lets get system info and memory reports for local host
  * and then use the system clock to init the drand prng pool.
@@ -24,7 +29,7 @@
 #include <omp.h>
 
 #define NUM_ELEMENTS 16777216
-#define THREADS_PER_BLOCK 1024
+#define THREADS_PER_BLOCK 2048
 #define BAIL_OUT 4096
 
 int sysinfo(void);
