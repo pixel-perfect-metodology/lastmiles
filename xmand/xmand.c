@@ -1,6 +1,3 @@
-/* 202003131100
- * until further notic we put this on a back burner and start
- * over with a pthread work queue model ... elsewhere */
 
 /*********************************************************************
  * The Open Group Base Specifications Issue 6
@@ -184,6 +181,16 @@ int main(int argc, char*argv[])
 
     int candidate_int = 0;
     long long unsigned int candidate_magnify = 0;
+
+    /* the janky slider for magnify shall be a trivial
+     * position that gets mapped to a binary logarithmic
+     * scale from 2^(-10) to 2^(10) and thus we need
+     * no more than 21 possible values. The initial
+     * value shall be 2^0 == 1 as a factor and that
+     * must map to positive 10 on the scale. */
+    uint8_t magnify_jank_in, magnify_jank = 10;
+    double magnify_factor = 1.0;
+
     double candidate_double = 0.0;
     int fpe_raised = 0;
     uint32_t mand_height, mand_bail;
@@ -389,12 +396,13 @@ int main(int argc, char*argv[])
 
     printf("\n    mand_bail = %i\n", mand_bail);
     printf("pthread_limit = %i\n", pthread_limit);
-    printf("    translate = ( %-+18.12e , %-+18.12e )\n",
+
+    printf("    translate = ( %-+18.14e , %-+18.14e )\n",
                                       real_translate, imag_translate );
 
     printf("      magnify = %-+18.12e\n\n", magnify );
 
-    /* some values for the new color computation */
+    /* TODO allow adjustment of these values */
     gamma = 1.5;
     hue = 1.0;
     rotation = 5.0;
@@ -467,13 +475,13 @@ int main(int argc, char*argv[])
     gc = create_gc(dsp, win);
 
     /* create a smaller darker window to the right */
-    unsigned long gc2_bg = 0x080000;
+    unsigned long gc2_bg = 0x040004;
     win2 = create_borderless_topwin(dsp, 400, 330, 1070, 740, gc2_bg );
     gc2 = create_gc(dsp, win2);
     XSetBackground(dsp, gc2, gc2_bg);
 
     /* create another small window below that */
-    unsigned long gc3_bg = 0x001010;
+    unsigned long gc3_bg = 0x000810;
     win3 = create_borderless_topwin(dsp, 440, 330, 1470, 740, gc3_bg );
     gc3 = create_gc(dsp, win2);
     XSetBackground(dsp, gc3, gc3_bg);
@@ -556,7 +564,7 @@ int main(int argc, char*argv[])
 
     /* this is a hack color data value that we will abuse later
      * inside the main mandlebrot computation loop. Colors to
-     * be determined via a smooth function brought to use by
+     * be determined via a smooth function brought to you by
      * Patrick Scheibe. */
     mandlebrot.flags= DoRed | DoGreen | DoBlue;
     /* some dummy values */
@@ -576,13 +584,15 @@ int main(int argc, char*argv[])
     XDrawPoint(dsp, win, gc, (int)width - 5, 5);
     XDrawPoint(dsp, win, gc, (int)width - 5, (int)height - 5);
 
-    /* draw a blue box inside the second window */
-    XSetForeground(dsp, gc2, blue.pixel);
-
     XSetLineAttributes(dsp, gc2, 1, LineSolid,
                                     CapButt,
                                     JoinMiter);
 
+    XSetForeground(dsp, gc2, yellow.pixel);
+    XDrawRectangle(dsp, win2, gc2, 215, 10, 176, 12);
+
+    /* draw a blue box inside the second window */
+    XSetForeground(dsp, gc2, blue.pixel);
     XDrawRectangle(dsp, win2, gc2, 5, 5, 390, 320);
     XSetForeground(dsp, gc2, cyan.pixel);
 
@@ -656,12 +666,12 @@ int main(int argc, char*argv[])
      *
      * These may come in handy later to identify where the user has
      * clicked and to perhaps identify a small region that can be
-     * computed without the burder of computing the entire viewport.
-     *
+     * computed without the burden of computing the entire viewport.
      ****************************************************************/
     vbox_w = eff_width/16;
     vbox_h = eff_height/16;
 
+    /* horizontal tic marks */
     for ( j=offset_x + vbox_w; j<lx; j+=vbox_w ){
         XDrawLine(dsp, win, gc, j, 8, j, 12);
         XDrawLine(dsp, win, gc, j, (int)height - 8, j, (int)height - 12);
@@ -694,10 +704,12 @@ int main(int argc, char*argv[])
 
     /* royal blue border around the main viewport */
     XSetForeground(dsp, gc, royal_blue.pixel);
-    XDrawLine(dsp, win, gc, 10, 10, (int)width - 10, 10);
-    XDrawLine(dsp, win, gc, (int)width - 10, 10, (int)width - 10, (int)height - 10);
+    /* the thing annys me because the top line and the 
+     * vertical right line never get overdrawn later */
+    XDrawLine(dsp, win, gc, 11, 11, (int)width - 11, 11);
+    XDrawLine(dsp, win, gc, (int)width - 11, 11, (int)width - 11, (int)height - 10);
     XDrawLine(dsp, win, gc, (int)width - 10, (int)height - 10, 10, (int)height - 10);
-    XDrawLine(dsp, win, gc, 10, (int)height - 10, 10, 10);
+    XDrawLine(dsp, win, gc, 10, (int)height - 10, 10, 11);
 
     XFlush(dsp);
 
@@ -752,41 +764,35 @@ int main(int argc, char*argv[])
     while(1){
 
         XNextEvent(dsp,&event);
+        /* in the future this will not be wise
+         * if we track mouse drags */
+        mouse_x=event.xbutton.x;
+        mouse_y=event.xbutton.y;
 
         switch(event.type){
             case ButtonPress:
                 switch(event.xbutton.button){
                     case Button1: /* left mouse button */
-                        mouse_x=event.xbutton.x;
-                        mouse_y=event.xbutton.y;
                         button=Button1;
                         left_count += 1;
                         break;
 
                     case Button2: /* middle mouse scroll button */
-                        mouse_x=event.xbutton.x;
-                        mouse_y=event.xbutton.y;
                         button=Button2;
                         mid_count += 1;
                         break;
 
                     case Button3: /* right mouse button */
-                        mouse_x=event.xbutton.x;
-                        mouse_y=event.xbutton.y;
                         button=Button3;
                         right_count += 1;
                         break;
 
                     case Button4: /* mouse scroll wheel up */
-                        mouse_x=event.xbutton.x;
-                        mouse_y=event.xbutton.y;
                         button=Button4;
                         roll_up += 1;
                         break;
 
                     case Button5: /* mouse scroll wheel down */
-                        mouse_x=event.xbutton.x;
-                        mouse_y=event.xbutton.y;
                         button=Button5;
                         roll_dn += 1;
                         break;
@@ -861,36 +867,34 @@ int main(int argc, char*argv[])
                  *
                  * All of the above allows us to compute a starting
                  * point on the observation plane
-                 *
-                 * Note the x_prime = obs_x_width * win_x / 2.0
-                 *          y_prime = obs_y_height * win_y / 2.0
                  */
 
                 x_prime = obs_x_width * win_x / 2.0;
                 y_prime = obs_y_height * win_y / 2.0;
 
+                /* apply the translation on the complex plane */
                 x_prime = x_prime + real_translate;
                 y_prime = y_prime + imag_translate;
-                fprintf(stderr,"c = ( %-+18.12e , %-+18.12e )\n", x_prime, y_prime );
+                fprintf(stderr,"c = ( %-+18.14e, %-+18.14e )\n", x_prime, y_prime );
 
                 XSetForeground(dsp, gc3, red.pixel);
-                sprintf(buf,"   select = ( %-+16.10e , %-+16.10e )", x_prime, y_prime );
+                sprintf(buf," select = %-+16.12e, %-+16.12e  ", x_prime, y_prime );
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, green.pixel);
-                sprintf(buf,"mand_bail = %-8i with a pthread_limit = %-3i", mand_bail, pthread_limit);
+                sprintf(buf,"bailout = %-8i with a pthread_limit = %-3i", mand_bail, pthread_limit);
                 XDrawImageString( dsp, win3, gc3, 10, 100, buf, (int)strlen(buf));
-                sprintf(buf,"  magnify = %18.12e", magnify);
+                sprintf(buf,"magnify = %-12.10e", magnify);
                 XDrawImageString( dsp, win3, gc3, 10, 120, buf, (int)strlen(buf));
-                sprintf(buf,"   centre = ( %-+16.10e , %-+16.10e )", real_translate, imag_translate);
+                sprintf(buf," centre = %-+16.12e, %-+16.12e  ", real_translate, imag_translate);
                 XDrawImageString( dsp, win3, gc3, 10, 140, buf, (int)strlen(buf));
 
                 /* what is the real and imaginary axi pixel width which
                  * gets used by the physical screen ? */
                 pixel_real_width = obs_x_width / (double)eff_width;
-                sprintf(buf,"pixel_real_w = %-+16.10e",pixel_real_width);
+                sprintf(buf,"pixel_real_w = %-+16.12e",pixel_real_width);
                 XDrawImageString( dsp, win3, gc3, 10, 180, buf, (int)strlen(buf));
                 pixel_imag_height = obs_y_height / (double)eff_height;
-                sprintf(buf,"pixel_imag_h = %-+16.10e",pixel_imag_height);
+                sprintf(buf,"pixel_imag_h = %-+16.12e",pixel_imag_height);
                 XDrawImageString( dsp, win3, gc3, 10, 200, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
@@ -917,7 +921,8 @@ int main(int argc, char*argv[])
                         parm[pt]->ret_val = 0;
 
                         pthread_create( &tid[pt], NULL, mbrot_vbox_pthread, (void *)parm[pt] );
-                        /*
+                        /* TODO at some point maybe check the pthread_create err status
+                         *
                          * The pthread_create() function can return any of the following errors:
                          *
                          * [ENOMEM]  The system lacked the necessary resources to create
@@ -942,7 +947,7 @@ int main(int argc, char*argv[])
                          *           stack.
                          */
                     }
-                    /* join them back in home .. thank you and yes this is a blocking
+                    /* join them .. thank you and yes this is a blocking
                      * situation. Nothing happens while we await the thread. */
                     for ( pt = 0; pt < pthread_limit; pt++ ) {
                         pthread_join( tid[pt], NULL );
@@ -988,18 +993,11 @@ int main(int argc, char*argv[])
                         /* A few manual offsets of ( 16, 13 ) pixels to centre the
                          * plot data into a subwindow of gc2 */
 
-
-                        /* TODO be sure to actually handle this data better
-                         * in the future ... for now we comment this out ...
-                         *
-                         *
-                         */
                         gc2_x = 16 + ( 3 * mand_x_pix );
                         gc2_y = 13 + ( 192 - ( 3 * mand_y_pix ) );
 
                         /* walk around the samples clock wise and begin with
                          * offset the real coord by one third of pixel width */
-
                         for ( p = 0; p < 3; p++ ) {
                             for ( q = 0; q < 3; q++ ) {
 
@@ -1031,9 +1029,86 @@ int main(int argc, char*argv[])
                 XSetForeground(dsp, gc3, green.pixel);
                 XDrawImageString( dsp, win3, gc3, 10, 290, buf, (int)strlen(buf));
 
+            } else {
+                /* TODO here we implement the FiggleFratz "jank" slider
+                 * idea for input controls to modify essential
+                 * parameters */
+
+                /* are we inside the top jank slider for magnify ? */
+                if (   ( mouse_x_raw > 1268 ) && ( mouse_y_raw > 733 )
+                    && ( mouse_x_raw < 1440 ) && ( mouse_y_raw < 742 ) ) {
+
+                    XSetLineAttributes(dsp, gc2, 8, LineSolid, CapButt, JoinMiter);
+                    XSetForeground(dsp, gc2, BlackPixel(dsp, screen_num) );
+                    XDrawLine(dsp, win2, gc2, 218, 16, 388, 16);
+
+                    XSetLineAttributes(dsp, gc2, 1, LineSolid, CapButt, JoinMiter);
+                    XSetForeground(dsp, gc2, yellow.pixel);
+                    XDrawRectangle(dsp, win2, gc2, 215, 10, 176, 12);
+
+                    /* horizontal midline */
+                    XSetForeground(dsp, gc2, green.pixel);
+                    XDrawLine(dsp, win2, gc2, 218, 16, 388, 16);
+
+                    /* The slider shall have 21 possible positions where
+                     * they map to the values -10 upwards to positive 10.
+                     * These values in turn are used to select a factor
+                     * to modify the magnify value from 2^(-10) upwards
+                     * to 2^10 == 1024 which would be a reasonable upper
+                     * limit given the whole plotting surface is 1024^2.
+                     *
+                     * We did start with an initial value of 10 which maps
+                     * to the centre position at the zero spot.
+                     *
+                     * Let's draw the 21 possible locations on the scale.
+                     */
+                    XSetForeground(dsp, gc2, cyan.pixel);
+                    for ( j = 0; j<21; j++ ) {
+                        XDrawLine(dsp, win2, gc2, 5 + 218 + 8 * j, 13,
+                                                  5 + 218 + 8 * j, 20 );
+                    }
+                    /* what is the current magnify_jank value ? */
+                    XSetForeground(dsp, gc2, red.pixel);
+                    XDrawLine(dsp, win2, gc2, 
+                                           5 + 218 + 8 * magnify_jank, 13,
+                                           5 + 218 + 8 * magnify_jank, 20 );
+
+                    /* we know from direct tests that the centre line
+                     * is at 1354 raw mouse X and every tick mark left
+                     * or right with be 8 pixels away. */
+                    magnify_jank_in = ( ( mouse_x_raw - 1350 ) + 80 ) / 8;
+
+                    XDrawLine(dsp, win2, gc2, 
+                                           4 + 218 + 8 * magnify_jank_in, 13,
+                                           4 + 218 + 8 * magnify_jank_in, 20 );
+
+                    XDrawLine(dsp, win2, gc2, 
+                                           5 + 218 + 8 * magnify_jank_in, 13,
+                                           5 + 218 + 8 * magnify_jank_in, 20 );
+
+                    XDrawLine(dsp, win2, gc2, 
+                                           6 + 218 + 8 * magnify_jank_in, 13,
+                                           6 + 218 + 8 * magnify_jank_in, 20 );
+
+                    XSetForeground(dsp, gc2, magenta.pixel);
+                    XDrawLine(dsp, win2, gc2, 
+                                           5 + 218 + 8 * magnify_jank, 13,
+                                           5 + 218 + 8 * magnify_jank, 20 );
+
+                    XSetForeground(dsp, gc2, cornflowerblue.pixel);
+                    sprintf(buf,"f(%-+2i) = %-9.5e  ",
+                                                 magnify_jank_in - 10,
+                                                 pow ( 2.0, magnify_jank_in - 10 ) );
+
+                    XDrawImageString( dsp, win2, gc2, 215, 40, buf, (int)strlen(buf));
+
+                    magnify_jank = magnify_jank_in;
+
+                    XFlush(dsp);
+
+                }
+
             }
-            /* TODO here we implement the FiggleFratz "jank" slider idea
-             * for input controls to modify essential parameters */
 
         } else if ( button == Button2 ) {
 
@@ -1080,14 +1155,14 @@ int main(int argc, char*argv[])
                 y_prime = y_prime + imag_translate;
 
                 XSetForeground(dsp, gc3, red.pixel);
-                sprintf(buf,"   select = ( %-+16.10e , %-+16.10e )", x_prime, y_prime );
+                sprintf(buf," select = %-+16.12e, %-+16.12e  ", x_prime, y_prime );
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, green.pixel);
-                sprintf(buf,"mand_bail = %-6i        ", mand_bail);
+                sprintf(buf,"bailout = %-8i          ", mand_bail);
                 XDrawImageString( dsp, win3, gc3, 10, 100, buf, (int)strlen(buf));
-                sprintf(buf,"  magnify = %18.12e", magnify);
+                sprintf(buf,"magnify = %-12.10e", magnify);
                 XDrawImageString( dsp, win3, gc3, 10, 120, buf, (int)strlen(buf));
-                sprintf(buf,"   centre = ( %-+16.10e , %-+16.10e )", real_translate, imag_translate);
+                sprintf(buf," centre = %-+16.12e, %-+16.12e  ", real_translate, imag_translate);
                 XDrawImageString( dsp, win3, gc3, 10, 140, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 

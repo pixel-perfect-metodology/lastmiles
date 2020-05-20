@@ -29,9 +29,9 @@
 #include <omp.h>
 
 /* #define NUM_ELEMENTS 16777216 */
-#define NUM_ELEMENTS 1048576
+#define NUM_ELEMENTS 16777216
 #define THREADS_PER_BLOCK 1024
-#define BAIL_OUT 16384
+#define BAIL_OUT 65536
 
 int sysinfo(void);
 uint64_t system_memory();
@@ -155,11 +155,26 @@ int main(int argc, char *argv[])
     }
 
     /* fill the arrays host real and imaginary with random double
-     * floating point values within the range (-2.0, +2.0) */
+     * floating point values within the range (-2.0, +2.0)
+     *
+     * A far better test would be to gather 16M samples within
+     * a very small test slice similar to :
+     *
+     *  bail_out = 65536
+     *  magnify = 1048576
+     *  centre point = ( -1.68856739997864e-01, -8.95723879337311e-01 )
+     *
+     */
+    double offset_width = 1.0 / 524288.0;
+    double view_width = 1.0/262144.0;
     clock_gettime( CLOCK_REALTIME, &t0 );
     for (int i = 0; i < num_elements; ++i) {
+        /*
         host_r[i] = -2.0 + 4.0 * drand48();
         host_i[i] = -2.0 + 4.0 * drand48();
+        */
+        host_r[i] = -1.68856739997864e-01 + view_width * drand48() + offset_width;
+        host_i[i] = -8.95723879337311e-01 + view_width * drand48() + offset_width;
     }
     clock_gettime( CLOCK_REALTIME, &t1 );
     tdelta_nsec = timediff( t0, t1);
@@ -394,7 +409,7 @@ int main(int argc, char *argv[])
 
         if ( host_mval[i] != check_val ) {
 
-            printf("%-9i    :     ( %-+18.12e , %-+18.12e ) == %-6i",
+            printf("%-9i    :     ( %-+20.14e , %-+20.14e ) == %-6i",
                                i, host_r[i], host_i[i], host_mval[i] );
             printf("    ERROR %-6i    DELTA = ", check_val);
 
