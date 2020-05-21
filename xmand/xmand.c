@@ -31,6 +31,8 @@
 
 #include <pthread.h>
 
+#define EPSILON 1.0e-12
+
 Window create_borderless_topwin(Display *dsp,
                          unsigned int width, unsigned int height,
                          int x, int y,
@@ -109,6 +111,9 @@ int main(int argc, char*argv[])
     int colour_method_flag = 1;  /* Dennis Clarke LSD trippy */
     int invert_me_dammit = 0;
 
+    /* we need a double click on replot to trigger */
+    int replot_flag = 0;
+
     /* please see https://arxiv.org/abs/1108.5083
      * A colour scheme for the display of astronomical intensity images
      * D. A. Green 25 Aug 2011 (v1), revised 30 Aug 2011
@@ -157,7 +162,10 @@ int main(int argc, char*argv[])
     double sub_pixel_real, sub_pixel_imag;
     double pixel_real_width, pixel_imag_height;
     double magnify, real_translate, imag_translate;
-    double x_prime, y_prime;
+
+    /* ensure these are initialized */
+    double x_prime = -8.0;
+    double y_prime = -8.0;
 
     /* use the vbox lower left coords as reference */
     int vbox_ll_x, vbox_ll_y;
@@ -416,9 +424,7 @@ int main(int argc, char*argv[])
     obs_y_height = 4.0 / magnify;
 
     /* ensure we start with clear vbox flags */
-    for ( p=0; p<16; p++ )
-        for ( q=0; q<16; q++ )
-            vbox_flag[p][q] = 0;
+    memset( &vbox_flag, 0x00, (size_t)(16*16)*sizeof(int));
 
     width = WIN_WIDTH;
     height = WIN_HEIGHT;
@@ -588,6 +594,7 @@ int main(int argc, char*argv[])
                                     CapButt,
                                     JoinMiter);
 
+    /* janky magnify slider container */
     XSetForeground(dsp, gc2, yellow.pixel);
     XDrawRectangle(dsp, win2, gc2, 215, 10, 176, 12);
 
@@ -648,6 +655,13 @@ int main(int argc, char*argv[])
     XSetFont(dsp, gc2, type_font);
     XSetFont(dsp, gc3, type_font);
 
+    /* big dumb red box for the REPLOT button */
+    XSetForeground(dsp, gc2, red.pixel);
+    XDrawRectangle(dsp, win2, gc2, 320, 192, 72, 20);
+    sprintf(buf,"REPLOT");
+    XDrawImageString( dsp, win2, gc2, 332, 207, buf, (int)strlen(buf));
+
+
     /****************************************************************
      *
      * The viewport is made up of a neat grid of 16 x 16 little box
@@ -704,8 +718,6 @@ int main(int argc, char*argv[])
 
     /* royal blue border around the main viewport */
     XSetForeground(dsp, gc, royal_blue.pixel);
-    /* the thing annys me because the top line and the 
-     * vertical right line never get overdrawn later */
     XDrawLine(dsp, win, gc, 11, 11, (int)width - 11, 11);
     XDrawLine(dsp, win, gc, (int)width - 11, 11, (int)width - 11, (int)height - 10);
     XDrawLine(dsp, win, gc, (int)width - 10, (int)height - 10, 10, (int)height - 10);
@@ -732,12 +744,14 @@ int main(int argc, char*argv[])
     sprintf(buf,"[0000] tdelta = %14lld nsec", t_delta);
     XDrawImageString( dsp, win3, gc3, 10, 20, buf, (int)strlen(buf));
 
-    /* plot some points on the grid that we created */
+    /* WTF ?? 
+     * plot some points on the grid that we created 
     XSetForeground(dsp, gc, yellow.pixel);
     XDrawPoint(dsp, win, gc, 5, 5);
+    */
 
-
-    /* someday we are going to provide zoom controls and colour edit
+    /* TODO
+     * someday we are going to provide zoom controls and colour edit
      * controls and need to bounce way back up here and setup a
      * whole new plot globally. For now we are going to get our threads
      * setup. */
@@ -746,6 +760,20 @@ int main(int argc, char*argv[])
 
     for ( pt = 0; pt < pthread_limit; pt++ ){
         parm[pt] = calloc( (size_t) 1, (size_t) sizeof(thread_parm_t) );
+        /* ERRORS
+         *  The malloc(), calloc(), and realloc() functions will fail
+         *  if:
+         *
+         *  ENOMEM    The physical limits of the system are exceeded by
+         *            size bytes of memory which cannot be allocated.
+         *
+         *  EAGAIN    There is not enough memory available to allocate
+         *            size bytes of memory; but the application could
+         *            try again later.
+         *
+         * TODO put in a clean bail out procedure wherein we free up
+         * and thread structures that were already calloc'd
+         */
         if ( parm[pt] == NULL ) {
             if ( errno == ENOMEM ) {
                 fprintf(stderr,"FAIL : calloc says ENOMEM\n");
@@ -807,9 +835,9 @@ int main(int argc, char*argv[])
 
         mouse_x_raw = mouse_x;
         mouse_y_raw = mouse_y;
-        XSetForeground(dsp, gc2, red.pixel);
+        XSetForeground(dsp, gc3, red.pixel);
         sprintf(buf,"raw  [ %-4i , %-4i ]", mouse_x_raw, mouse_y_raw);
-        XDrawImageString( dsp, win2, gc2, 215, 210, buf, (int)strlen(buf));
+        XDrawImageString( dsp, win3, gc3, 10, 40, buf, (int)strlen(buf));
 
         /* classic FiggleFratz jank adjustment of one or two pixels */
         mouse_x = mouse_x - 1;
@@ -1030,6 +1058,7 @@ int main(int argc, char*argv[])
                 XDrawImageString( dsp, win3, gc3, 10, 290, buf, (int)strlen(buf));
 
             } else {
+
                 /* TODO here we implement the FiggleFratz "jank" slider
                  * idea for input controls to modify essential
                  * parameters */
@@ -1043,8 +1072,10 @@ int main(int argc, char*argv[])
                     XDrawLine(dsp, win2, gc2, 218, 16, 388, 16);
 
                     XSetLineAttributes(dsp, gc2, 1, LineSolid, CapButt, JoinMiter);
+                    /*
                     XSetForeground(dsp, gc2, yellow.pixel);
                     XDrawRectangle(dsp, win2, gc2, 215, 10, 176, 12);
+                    */
 
                     /* horizontal midline */
                     XSetForeground(dsp, gc2, green.pixel);
@@ -1076,7 +1107,7 @@ int main(int argc, char*argv[])
                     /* we know from direct tests that the centre line
                      * is at 1354 raw mouse X and every tick mark left
                      * or right with be 8 pixels away. */
-                    magnify_jank_in = ( ( mouse_x_raw - 1350 ) + 80 ) / 8;
+                    magnify_jank_in = (uint8_t)( ( ( mouse_x_raw - 1350 ) + 80 ) / 8);
 
                     XDrawLine(dsp, win2, gc2, 
                                            4 + 218 + 8 * magnify_jank_in, 13,
@@ -1095,10 +1126,12 @@ int main(int argc, char*argv[])
                                            5 + 218 + 8 * magnify_jank, 13,
                                            5 + 218 + 8 * magnify_jank, 20 );
 
+                    magnify_factor = pow ( 2.0, magnify_jank_in - 10 );
+
                     XSetForeground(dsp, gc2, cornflowerblue.pixel);
                     sprintf(buf,"f(%-+2i) = %-9.5e  ",
                                                  magnify_jank_in - 10,
-                                                 pow ( 2.0, magnify_jank_in - 10 ) );
+                                                 magnify_factor );
 
                     XDrawImageString( dsp, win2, gc2, 215, 40, buf, (int)strlen(buf));
 
@@ -1106,12 +1139,70 @@ int main(int argc, char*argv[])
 
                     XFlush(dsp);
 
+                } else if ( ( mouse_x_raw > 1372 ) && ( mouse_y_raw > 915 )
+                         && ( mouse_x_raw < 1442 ) && ( mouse_y_raw < 932 )
+
+                         && ( ( x_prime + 8.0 ) > EPSILON )
+
+                         && ( ( y_prime + 8.0 ) > EPSILON )
+                       
+                        ) {
+
+                    /* are we inside the replot button */
+                    if ( replot_flag == 0 ) {
+                        /* flip the button to warning status */
+                        XSetForeground(dsp, gc2, yellow.pixel);
+                        XDrawRectangle(dsp, win2, gc2, 320, 192, 72, 20);
+                        sprintf(buf,">REPLOT<");
+                        XDrawImageString( dsp, win2, gc2, 324, 207, buf, (int)strlen(buf));
+                        replot_flag = 1;
+                    } else {
+                        /* we are confirmed. Go back to red and actually replot
+                         * however we need to adjust the magnify as well as
+                         * other factors 
+                         *
+                         *  CHECK THAT x_primt and y_prime are NOT the initial
+                         *     impossible values ( -8.0, -8.0 ) 
+                         *
+                         * */
+                        XSetForeground(dsp, gc2, red.pixel);
+                        XDrawRectangle(dsp, win2, gc2, 320, 192, 72, 20);
+                        sprintf(buf," REPLOT ");
+                        XDrawImageString( dsp, win2, gc2, 324, 207, buf, (int)strlen(buf));
+                        replot_flag = 0;
+                        /* we now need to figure out what minimal stuff we can do to
+                         * actually get a replot at the selected center and with
+                         * the magnify_factor * whatever the current magnify is */
+
+                        mouse_x = 518;   /* try to be dead center */
+                        mouse_y = 518;   /* after a hokey adjustment */
+
+                        magnify *= magnify_factor;
+                        fprintf(stderr,"INFO : magnify changed to %-+16.10e\n", magnify);
+                        obs_x_width = 4.0 / magnify;
+                        obs_y_height = 4.0 / magnify;
+                        colour_method_flag = 1;
+                        invert_me_dammit = 0;
+                        button = Button2;
+
+                        /* ensure we trigger a recalc */
+                        memset( &vbox_flag, 0x00, (size_t)(16*16)*sizeof(int));
+
+                        real_translate = x_prime;
+                        imag_translate = y_prime;
+                        fprintf(stderr,"INFO : c = %-+16.12e, %-+16.12e  ", x_prime, y_prime );
+
+                        goto replot;
+
+                    }
+
                 }
 
             }
 
         } else if ( button == Button2 ) {
 
+replot:
             if (    ( mouse_x >=  offset_x ) && ( mouse_y >= offset_y )
                  && ( mouse_x < ( eff_width + offset_x ) )
                  && ( mouse_y < ( eff_height + offset_y ) ) ) {
