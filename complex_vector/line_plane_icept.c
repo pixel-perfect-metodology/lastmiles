@@ -72,32 +72,44 @@ int line_plane_icept( vec_type *icept_pt,
     if ( ( lp0 == NULL ) 
        ||( lpr == NULL )
        ||( pl0 == NULL )
-       ||( pn  == NULL ) ) return return_value;
+       ||( pn  == NULL ) ) {
+        return return_value;
+    }
 
     /* need vectors of a reasonable length to work with */
     if (  ( cplex_vec_mag( lpr ) < RT_EPSILON ) 
-       || ( cplex_vec_mag( pn  ) < RT_EPSILON ) )
-                           return return_value;
+       || ( cplex_vec_mag( pn  ) < RT_EPSILON ) ) {
+        return return_value;
+    }
 
     /* There are a few degenerate cases to check for. Firstly the
      * point on the line lp0 may be the same as the point in the
      * plane pl0. Unlikely but it solves the entire intercept
      * computation right away. What would remain is the need for
-     * reasonable plane_u and plane_v vectors. Another possible
-     * situation is that the line may actually be in the plane. In
-     * such a situation there are an infinite number of intercepts
-     * however the obvious solution is simply the line point lp0
-     * and then we only need to know the vectors u and v again as
-     * well as the coordinates s and t within the plane.
+     * reasonable plane_u and plane_v vectors. However we do have 
+     * k = s = t = 0 in this degenerate case.
+     *
+     * Another possible situation is that the line may actually be
+     * in the plane. In such a situation there are an infinite number
+     * of intercepts however the reasonable solution is simply the point
+     * on the line that is closest to the plane point pl0. This gives
+     * us value for k wherein the line and point pl0 are closest.
+     *
+     * need to verify that the vectors u and v are sane. However some
+     * minimal non-zero k will certainly result in non-zero s and t.
      *
      * To be more clear we could argue that a line in a plane has
      * an infinite number of intercept solutions and that if one
-     * were to select a single intercept point then it should be
+     * were to select a single intercept point then it "should" be
      * the point on the line which is nearest to the provided
      * plane point pl0. While that may make sense from a geometric
      * perspective it does not help with ray tracing. We therefore
      * merely accept that the line parameter k is zero and thus the
-     * intercept is the point lp0 provided for the line. */ 
+     * intercept is the point lp0 provided for the line and we 
+     *
+     *
+     *
+     * */ 
 
     /* we will need a direction vector from the plane point pl0 to the
      * line point lp0 below. We create this vector in pl0_lp0_dir. */
@@ -150,9 +162,7 @@ int line_plane_icept( vec_type *icept_pt,
 
         if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
 
-            /*
             fprintf(stderr,"WARN : line is in the plane\n");
-            */
 
             /* This really is a non-issue. We have an infinite number
              * of intercept points to choose from and we shall deal
