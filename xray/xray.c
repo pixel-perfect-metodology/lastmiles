@@ -1094,19 +1094,20 @@ int main(int argc, char*argv[])
             /* X11 load test where we fire a ton of XLib calls */
 
             double radius, angle, some_x, some_y, pi2 = M_PI * 2.0;
+            int radius_count = 0;
 
-            for ( int radius = 0; radius < vbox_w; radius++ ) {
-                for ( int p=0; p<720; p++ ) {
+            for ( radius_count = 0; radius_count < vbox_w; radius_count++ ) {
+                for ( p = 0; p < 720; p++ ) {
 
                      /* quick hack convert from tens of degrees to
                      * radians should be (p)( ( 2 x pi )/360 ) */
 
                     angle = pi2 * ( (1.0 * p) / 2.0 ) / 360.0;
-                    some_x = radius * cos(angle);
-                    some_y = radius * sin(angle);
+                    some_x = radius_count * cos(angle);
+                    some_y = radius_count * sin(angle);
 
                     whatever.pixel = ( ( (unsigned long)p & 0xff ) << 16 )
-                                     + ( ( (unsigned long)radius ) << 8 );
+                                     + ( ( (unsigned long)radius_count ) << 8 );
 
                     XSetForeground(dsp, gc, whatever.pixel);
 

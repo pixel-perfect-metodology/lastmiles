@@ -425,12 +425,24 @@ int main ( int argc, char **argv)
 
     /* try a degenerate line plane intercept case where the line
      * is in the plane. */
+    printf("INFO : degenerate line plane intercept with line in the plane\n");
+
     cplex_vec_set( &line_point, 3.0, 0.0, 3.0, 0.0, 1.0, 0.0 );
     cplex_vec_set( &line_direction, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     cplex_vec_set( &plane_point, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0);
     cplex_vec_set( &plane_normal, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
     cplex_vec_zero(&plane_u);
     cplex_vec_zero(&plane_v);
+
+    printf("     :    line_point = < %g, %g, %g >\n",
+            line_point.x.r, line_point.y.r, line_point.z.r);
+    printf("     :      line_dir = < %g, %g, %g >\n",
+            line_direction.x.r, line_direction.y.r, line_direction.z.r);
+    printf("     :   plane_point = < %g, %g, %g >\n",
+            plane_point.x.r, plane_point.y.r, plane_point.z.r);
+    printf("     : &plane_normal = < %g, %g, %g >\n",
+            plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
+
 
     lp_status = line_plane_icept( &lp_intercept_point,
                                   &plane_u_norm, &plane_v_norm,

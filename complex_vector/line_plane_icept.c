@@ -72,12 +72,12 @@ int line_plane_icept( vec_type *icept_pt,
     if ( ( lp0 == NULL ) 
        ||( lpr == NULL )
        ||( pl0 == NULL )
-       ||( pn  == NULL ) ) return ( return_value );
+       ||( pn  == NULL ) ) return return_value;
 
     /* need vectors of a reasonable length to work with */
     if (  ( cplex_vec_mag( lpr ) < RT_EPSILON ) 
        || ( cplex_vec_mag( pn  ) < RT_EPSILON ) )
-                           return ( return_value );
+                           return return_value;
 
     /* There are a few degenerate cases to check for. Firstly the
      * point on the line lp0 may be the same as the point in the
@@ -122,7 +122,7 @@ int line_plane_icept( vec_type *icept_pt,
     cplex_vec_dot( ctmp, &lpr_norm, &pn_norm);
 
     if ( check_dot( ctmp ) == EXIT_FAILURE )
-        return ( return_value );
+        return return_value;
 
     /* Since the dot product of two normalized vectors results in the
      * cosine of the angle between them we can just check for a zero
@@ -156,7 +156,13 @@ int line_plane_icept( vec_type *icept_pt,
 
             /* This really is a non-issue. We have an infinite number
              * of intercept points to choose from and we shall deal
-             * with this below. */
+             * with this below.
+             *
+             * Long overdue is to deal with this. 
+             *
+             * Shall we simple take the point nearest to the plane
+             * point pl0 ?
+             */
 
             line_in_plane = 1;
 
@@ -165,7 +171,7 @@ int line_plane_icept( vec_type *icept_pt,
              * perfectly orthogonal to the plane normal with no
              * possible intercepts. */
             fprintf(stderr,"FAIL : no possible lp intercept\n");
-            return ( return_value );
+            return return_value;
         }
     }
 
@@ -185,7 +191,7 @@ int line_plane_icept( vec_type *icept_pt,
 uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
 
         if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
-            return ( return_value );
+            return return_value;
 
         /* if cosine(theta) is equal to either positive one or
          * negative one then we have perfect linear alignment
@@ -195,7 +201,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
             /* we need to use j_hat instead */
             cplex_vec_dot( ctmp+1, &pn_norm, &j_hat);
             if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
-                return ( return_value );
+                return return_value;
 
             cplex_vec_copy( tmp+2, &j_hat);
 
@@ -223,18 +229,18 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
             if ( plu == NULL ) {
                 /* check if plv is actually in the plane */
                 if ( cplex_vec_mag( plv ) < RT_EPSILON )
-                    return ( return_value );
+                    return return_value;
 
                 cplex_vec_normalize( plvn, plv );
                 cplex_vec_dot( ctmp, &pn_norm, plvn );
 
                 if ( check_dot( ctmp ) == EXIT_FAILURE )
-                    return ( return_value );
+                    return return_value;
 
                 /* If plv is orthogonal to the plane normal then the
                  * cosine of the angle will be zero. */
                 if ( fabs(ctmp->r) > RT_EPSILON )
-                    return ( return_value );
+                    return return_value;
 
                 /* compute plu */
                 cplex_vec_cross( tmp, &pn_norm, plvn );
@@ -242,18 +248,18 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
             } else {
                 /* check if plu is actually in the plane */
                 if ( cplex_vec_mag( plu ) < RT_EPSILON )
-                    return ( return_value );
+                    return return_value;
 
                 cplex_vec_normalize( plun, plu );
                 cplex_vec_dot( ctmp, &pn_norm, plun );
 
                 if ( check_dot( ctmp ) == EXIT_FAILURE )
-                    return ( return_value );
+                    return return_value;
 
                 /* If plu is orthogonal to the plane normal then 
                  * the cosine of the angle will be zero. */
                 if ( fabs(ctmp->r) > RT_EPSILON )
-                    return ( return_value );
+                    return return_value;
 
                 /* compute plv */
                 cplex_vec_cross( tmp, &pn_norm, plun );
@@ -298,7 +304,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
 
                         cplex_vec_dot( ctmp, &pn_norm, plvn );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return ( return_value );
+                            return return_value;
 
                         if ( ctmp->r != 0.0 ) goto uv;
 
@@ -323,7 +329,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                         /* check if plun is orthogonal to pn. */
                         cplex_vec_dot( ctmp, &pn_norm, plun );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return ( return_value );
+                            return return_value;
 
                         if ( ctmp->r != 0.0 ) goto uv;
 
@@ -351,7 +357,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                         /* check if plvn is orthogonal to pn. */
                         cplex_vec_dot( ctmp, &pn_norm, plvn );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return ( return_value );
+                            return return_value;
 
                         if ( fabs(ctmp->r) > RT_EPSILON )
                             goto uv;
@@ -366,7 +372,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                         cplex_vec_normalize( plun, plu );
                         cplex_vec_dot( ctmp, &pn_norm, plun );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return ( return_value );
+                            return return_value;
 
                         if ( fabs(ctmp->r) > RT_EPSILON )
                             goto uv;
@@ -386,7 +392,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                  * of u and v will NOT be 1 or -1. */
                 cplex_vec_dot( ctmp, plv, plu );
                 if ( check_dot( ctmp ) == EXIT_FAILURE )
-                    return ( return_value );
+                    return return_value;
 
                 if ( fabs(fabs( ctmp->r ) - 1.0) < RT_EPSILON ) {
                     /* the u and v vectors are so close to linear that
@@ -419,8 +425,16 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
          *     kst->x.i = 0.0;
          */
 
-        /* For now lets just bail out */
-        return ( return_value );
+        /* TODO : sort this shit out. This is not a valid 
+         *        response to the conditions. We need to compute
+         *        the nearest point on the line and the plane
+         *        point pl0 */
+
+
+
+
+
+        return return_value;
 
     }
 
@@ -530,7 +544,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
 
     cplex_vec_copy( icept_pt, tmp+6);
 
-    return ( return_value );
+    return return_value;
 
 }
 
