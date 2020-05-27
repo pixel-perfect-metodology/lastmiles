@@ -91,25 +91,16 @@ int line_plane_icept( vec_type *icept_pt,
      *
      * Another possible situation is that the line may actually be
      * in the plane. In such a situation there are an infinite number
-     * of intercepts however the reasonable solution is simply the point
-     * on the line that is closest to the plane point pl0. This gives
-     * us value for k wherein the line and point pl0 are closest.
-     *
-     * need to verify that the vectors u and v are sane. However some
-     * minimal non-zero k will certainly result in non-zero s and t.
+     * of intercepts however the "reasonable" solution is simply the point
+     * on the line that is closest to the plane point pl0.
      *
      * To be more clear we could argue that a line in a plane has
      * an infinite number of intercept solutions and that if one
      * were to select a single intercept point then it "should" be
      * the point on the line which is nearest to the provided
      * plane point pl0. While that may make sense from a geometric
-     * perspective it does not help with ray tracing. We therefore
-     * merely accept that the line parameter k is zero and thus the
-     * intercept is the point lp0 provided for the line and we 
-     *
-     *
-     *
-     * */ 
+     * perspective it does not help with ray tracing.
+     */ 
 
     /* we will need a direction vector from the plane point pl0 to the
      * line point lp0 below. We create this vector in pl0_lp0_dir. */
