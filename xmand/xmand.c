@@ -1174,7 +1174,7 @@ int main(int argc, char*argv[])
                          * actually get a replot at the selected center and with
                          * the magnify_factor * whatever the current magnify is */
 
-                        mouse_x = 518;   /* try to be dead center */
+                        mouse_x = 506;   /* try to be dead center */
                         mouse_y = 518;   /* after a hokey adjustment */
 
                         magnify *= magnify_factor;
