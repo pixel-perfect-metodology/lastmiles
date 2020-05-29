@@ -23,7 +23,7 @@
 
 /* Given that this is a Ray Trace prototype we may limit
  * ourselves to an epsilon for zero testing wherein anything
- * smaller than 10^-12 is essentially zero. */
+ * smaller than 10^(-12) is essentially zero. */
 #define RT_EPSILON 1.0e-12
 
 /* It may be senseless to consider angles that are near
@@ -33,7 +33,7 @@
 /* There may be a situation where we test for nearly
  * orthogonal angles in which case the deviation from
  * perfect cos(theta) = 1 may be a truely small amount
- * that cooincides with RT_ANGLE_EPSILON variation */
+ * that coincides with RT_ANGLE_EPSILON variation */
 #define RT_ANGLE_COS_EPSILON 1.776356839400809e-15
 
 typedef struct cplex {

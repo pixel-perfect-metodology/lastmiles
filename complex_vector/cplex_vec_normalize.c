@@ -25,12 +25,11 @@ int cplex_vec_normalize( vec_type *res, vec_type *op1 )
 
     cplex_vec_copy( &tmp, op1);
     magnitude = cplex_vec_mag( &tmp );
-    /* let the calling routine be responsible for checking if the
-     * magnitude is a problem 
-     *    if ( magnitude < RT_EPSILON ) {
-     *        return ( EXIT_FAILURE );
-     *    }
-     */
+    if ( magnitude < RT_EPSILON ) {
+        /* we may have a zero magnitude vector.
+         */
+        return EXIT_FAILURE;
+    }
     res->x.r = tmp.x.r / magnitude; res->x.i = tmp.x.i / magnitude;
     res->y.r = tmp.y.r / magnitude; res->y.i = tmp.y.i / magnitude;
     res->z.r = tmp.z.r / magnitude; res->z.i = tmp.z.i / magnitude;

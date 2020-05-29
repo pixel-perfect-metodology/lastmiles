@@ -56,10 +56,13 @@ int line_plane_icept( vec_type *icept_pt,
                       vec_type *pl0, vec_type *pn,
                       vec_type *plu, vec_type *plv) 
 {
-    int status, line_in_plane, return_value = 0;
+    int status;
+    int line_in_plane = 0;
+    int return_value = 0;
     cplex_type ctmp[12];
     vec_type i_hat, j_hat, lpr_norm, pn_norm,
-             pl0_lp0_dir, pl0_lp0_dirn, tmp[12];
+             pl0_lp0_dir, pl0_lp0_dirn, tmp[14];
+
     double lpr_pn_theta, u_mag, v_mag;
 
     /* rh_col is right hand column for Cramer call with
@@ -76,9 +79,40 @@ int line_plane_icept( vec_type *icept_pt,
         return return_value;
     }
 
-    /* need vectors of a reasonable length to work with */
-    if (  ( cplex_vec_mag( lpr ) < RT_EPSILON ) 
-       || ( cplex_vec_mag( pn  ) < RT_EPSILON ) ) {
+    /* TODO check up front that we are not dealing with zero
+     * magnitude vectors
+     */
+    if (    ( fabs(lpr->x.r) < RT_EPSILON ) 
+         && ( fabs(lpr->y.r) < RT_EPSILON )  
+         && ( fabs(lpr->z.r) < RT_EPSILON )  ) {
+
+        fprintf(stderr,"FAIL : line direction vector too small\n");
+
+        if ( ( lpr->x.r == 0.0 ) && ( lpr->y.r == 0.0 ) && ( lpr->z.r == 0.0 ) ) {
+            fprintf(stderr,"     : in fact it is zero magnitude\n");
+        }
+        return return_value;
+    }
+
+    if (    ( fabs(pn->x.r) < RT_EPSILON ) 
+         && ( fabs(pn->y.r) < RT_EPSILON )  
+         && ( fabs(pn->z.r) < RT_EPSILON )  ) {
+
+        fprintf(stderr,"FAIL : plane normal vector too small\n");
+
+        if ( ( pn->x.r == 0.0 ) && ( pn->y.r == 0.0 ) && ( pn->z.r == 0.0 ) ) {
+            fprintf(stderr,"     : in fact it is zero magnitude\n");
+        }
+        return return_value;
+    }
+
+    if ( cplex_vec_mag( lpr ) < RT_EPSILON ) {
+        fprintf(stderr,"FAIL : line direction vector too small\n");
+        return return_value;
+    }
+
+    if ( cplex_vec_mag( pn ) < RT_EPSILON ) {
+        fprintf(stderr,"FAIL : plane normal vector too small\n");
         return return_value;
     }
 
@@ -102,6 +136,20 @@ int line_plane_icept( vec_type *icept_pt,
      * perspective it does not help with ray tracing.
      */ 
 
+    /* we will also need the i and j basis vectors */
+    cplex_vec_set ( &i_hat, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    cplex_vec_set ( &j_hat, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
+
+    if ( cplex_vec_normalize( &lpr_norm, lpr ) == EXIT_FAILURE ) {
+        fprintf(stderr,"FAIL : impossible to normalize vec lpr\n");
+        return return_value;
+    }
+
+    if ( cplex_vec_normalize( &pn_norm, pn ) == EXIT_FAILURE ) {
+        fprintf(stderr,"FAIL : impossible to normalize vec pn\n");
+        return return_value;
+    }
+
     /* we will need a direction vector from the plane point pl0 to the
      * line point lp0 below. We create this vector in pl0_lp0_dir. */
     pl0_lp0_dir.x.r = lp0->x.r - pl0->x.r;
@@ -110,22 +158,32 @@ int line_plane_icept( vec_type *icept_pt,
     pl0_lp0_dir.y.i = lp0->y.i - pl0->y.i;
     pl0_lp0_dir.z.r = lp0->z.r - pl0->z.r;
     pl0_lp0_dir.z.i = lp0->z.i - pl0->z.i;
-    /* normalize that into pl0_lp0_dirn */
+
+    /* TODO reasonable to check if we have a zero magnitude here on pl0_lp0_dir */
+    if ( ( fabs(pl0_lp0_dir.x.r) < RT_EPSILON ) &&
+         ( fabs(pl0_lp0_dir.y.r) < RT_EPSILON ) &&
+         ( fabs(pl0_lp0_dir.z.r) < RT_EPSILON ) ) {
+
+        fprintf(stderr,"WARN : plane point and line point may be the same\n");
+        /* degenerate trap here, we have KST == zero everywhere */
+        kst->x.r = 0.0; kst->x.i = 0.0;
+        kst->y.r = 0.0; kst->y.i = 0.0;
+        kst->z.r = 0.0; kst->z.i = 0.0;
+
+        /* now we need u and v vectors somehow */
+        goto uv;
+
+    }
+
+    /* if we ever got here then normalize that into pl0_lp0_dirn */
     cplex_vec_normalize( &pl0_lp0_dirn, &pl0_lp0_dir );
 
-    /* we will also need the i and j basis vectors */
-    cplex_vec_set ( &i_hat, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    cplex_vec_set ( &j_hat, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
-
-    /* check if the line and the plane normal are orthogonal */
-    cplex_vec_normalize( &lpr_norm, lpr );
-
-    cplex_vec_normalize( &pn_norm, pn );
-
-    cplex_vec_dot( ctmp, &lpr_norm, &pn_norm);
-
-    if ( check_dot( ctmp ) == EXIT_FAILURE )
+    if ( cplex_vec_dot( ctmp, &lpr_norm, &pn_norm) == EXIT_FAILURE ) {
+        /* we must consider that this is so wrong that any
+         * computation from here on is likely even more wrong. */
+        fprintf(stderr,"FAIL : dot(lpr_norm, pn_norm) returned complex\n");
         return return_value;
+    }
 
     /* Since the dot product of two normalized vectors results in the
      * cosine of the angle between them we can just check for a zero
@@ -133,23 +191,42 @@ int line_plane_icept( vec_type *icept_pt,
      * be orthogonal for all integer n and cosine(theta) is zero in
      * such cases. */
 
-    line_in_plane = 0;
     if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
 
-        /*
-        fprintf(stderr,"WARN : lpr and pn are orthogonal.\n");
-        */
+        fprintf(stderr,"WARN : lpr and pn are ");
+        if ( fabs(ctmp[0].r) == 0.0 ) {
+            fprintf(stderr,"perfectly");
+        } else {
+            fprintf(stderr,"nearly");
+        }
+        fprintf(stderr," orthogonal\n");
 
-        /* Since the line is perfectly orthogonal to the plane normal
-         * we need to check if the line is actually in the plane. Here
-         * we check if the direction vector from the plane point pl0 to
-         * the line point lp0 is also orthogonal to the plane normal.
+        lpr_pn_theta = acos(ctmp[0].r);
+
+        fprintf(stderr,"INFO : lpr and pn angle = %-+18.12e radians\n",
+                                       lpr_pn_theta );
+
+        fprintf(stderr,"INFO : which is %-+18.12e degrees\n",
+                                       lpr_pn_theta * 180.0 / M_PI );
+
+        /* Since the line is nearly ( or perfectly ) orthogonal to the
+         * plane normal we need to check if the line is actually in
+         * the plane. Here we check if the direction vector from the
+         * plane point pl0 to the line point lp0 is also orthogonal to
+         * the plane normal.
+         *
+         * NOTE :     w a r n i n g 
+         *
+         *          This check will not work if the line point lp0
+         *          and the plane point pl0 are both the same.
          *
          * If so then the point lp0 is in the plane and that clearly
          * means that the entire line is in the plane. */
 
         /* dot product of pl0_lp0_dirn and the plane normal */
-        cplex_vec_dot( ctmp, &pn_norm, &pl0_lp0_dirn );
+        if ( cplex_vec_dot( ctmp, &pn_norm, &pl0_lp0_dirn ) == EXIT_FAILURE ) {
+            return return_value;
+        }
 
         if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
 
@@ -158,19 +235,14 @@ int line_plane_icept( vec_type *icept_pt,
             /* This really is a non-issue. We have an infinite number
              * of intercept points to choose from and we shall deal
              * with this below.
-             *
-             * Long overdue is to deal with this. 
-             *
-             * Shall we simple take the point nearest to the plane
-             * point pl0 ?
              */
 
             line_in_plane = 1;
 
         } else {
-            /* This really is an impossible situation. The line is
-             * perfectly orthogonal to the plane normal with no
-             * possible intercepts. */
+            /* The line is perfectly orthogonal to the plane normal
+             * with no possible intercepts. The line is parallel to 
+             * the plane in this case. */
             fprintf(stderr,"FAIL : no possible lp intercept\n");
             return return_value;
         }
@@ -391,14 +463,14 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
                  * The first task should be to determine that they 
                  * are linearly independant and thus the dot product
                  * of u and v will NOT be 1 or -1. */
-                cplex_vec_dot( ctmp, plv, plu );
-                if ( check_dot( ctmp ) == EXIT_FAILURE )
+                if ( cplex_vec_dot( ctmp, plv, plu ) == EXIT_FAILURE ) {
                     return return_value;
+                }
 
                 if ( fabs(fabs( ctmp->r ) - 1.0) < RT_EPSILON ) {
                     /* the u and v vectors are so close to linear that
                      * we shall call them useless */
-                    fprintf(stderr,"WARN : u and v are linear.\n");
+                    fprintf(stderr,"WARN : u and v are near linear.\n");
                     goto uv;
                 }
             }
@@ -415,25 +487,56 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     */
 
     if ( line_in_plane ) {
-        /* we have the line in the plane and thus the parameter
-         * k for the line equation is zero. We are left to determine
-         * the scalar parameters for s and t with respect to the
-         * plane basis vectors plun and plvn. */
-        printf("INFO : the line is in the plane. k is zero.\n");
-        /* this would set the kst vector component for k to zero
+        fprintf(stderr,"WARN : line is in the plane\n");
+        /* degenerate trap here, we have KST == zero everywhere */
+        kst->x.r = 0.0; kst->x.i = 0.0;
+        kst->y.r = 0.0; kst->y.i = 0.0;
+        kst->z.r = 0.0; kst->z.i = 0.0;
+
+        /* What do we know at this point? 
          *
-         *     kst->x.r = 0.0;
-         *     kst->x.i = 0.0;
+         * we have : lpr_norm = line direction normalized 
+         *            pn_norm = plan normal and yes it is normalized
+         *
+         *                lp0 = the point given to us in the plane
+         *                pl0 = the point given to us on the line
+         *
+         *        pl0_lp0_dir = vector Lp0 - Pl0 = vector g in diagram
          */
 
-        /* TODO : sort this shit out. This is not a valid 
-         *        response to the conditions. We need to compute
-         *        the nearest point on the line and the plane
-         *        point pl0 */
+        printf("dbug : pl0_lp0_dir = %+-16.9e", pl0_lp0_dir.x.r);
+        printf("    %+-16.9e", pl0_lp0_dir.y.r);
+        printf("    %+-16.9e\n", pl0_lp0_dir.z.r);
+        printf("     : this is Lp0 - Pl0 which is g in our diagram\n\n");
 
+        printf("dbug : lpr_norm = %+-16.9e", lpr_norm.x.r);
+        printf("    %+-16.9e", lpr_norm.y.r);
+        printf("    %+-16.9e\n", lpr_norm.z.r);
+        printf("     : this is n_hat\n\n");
 
+        if ( cplex_vec_dot( ctmp, &pl0_lp0_dir, &lpr_norm ) == EXIT_FAILURE ) {
+                    return return_value;
+        }
+        printf("dbug : g dot n = %+-16.9e\n", ctmp[0].r );
 
+        /* scale lpr_norm by the factor from the dot product */
+        cplex_vec_scale( tmp+11, &lpr_norm, ctmp[0].r);
 
+        printf("dbug : (g dot n) * n_hat = %+-16.9e", tmp[11].x.r);
+        printf("    %+-16.9e", tmp[11].y.r);
+        printf("    %+-16.9e\n", tmp[11].z.r );
+
+        /* okay negate that and then add to ( Lp0 - Pl0 ) */
+        tmp[13].x.r = pl0_lp0_dir.x.r - tmp[11].x.r;
+        tmp[13].y.r = pl0_lp0_dir.y.r - tmp[11].y.r;
+        tmp[13].z.r = pl0_lp0_dir.z.r - tmp[11].z.r;
+
+        printf("dbug : g - ( (g dot n) * n_hat ) = %+-16.9e", tmp[13].x.r);
+        printf("    %+-16.9e", tmp[13].y.r);
+        printf("    %+-16.9e\n\n", tmp[13].z.r );
+
+        printf("dbug : minimal distance to line should be %+-16.9e\n\n",
+                          cplex_vec_mag(tmp+13) );
 
         return return_value;
 
@@ -482,7 +585,9 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
 
     cplex_det( ctmp+2, &v[0], &v[1], &v[2] ); 
     if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) != 0 ) {
-        printf("dbug : There is no valid solution.\n");
+        fprintf(stderr,"dbug : cplex_cramer reports no valid solution\n");
+        fprintf(stderr,"     : %s at %d\n", __FILE__, __LINE__ );
+
     } else {
         if (    ( fabs(res_vec.x.i) > RT_EPSILON )
              || ( fabs(res_vec.y.i) > RT_EPSILON )
