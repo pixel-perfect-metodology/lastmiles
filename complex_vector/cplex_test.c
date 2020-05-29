@@ -83,31 +83,48 @@ int main ( int argc, char **argv)
     printf("     : op2 = ( %g, %g )\n", op2.r, op2.i);
     check_status( cplex_div( &opr, &op1, &op2 ) );
     printf("dbug : opr = op1 / op2 = ( %g, %g )\n", opr.r, opr.i);
-    printf("     :     should be -0.325 + 0.225i\n\n");
+    printf("     :         should be ( -0.325, 0.225 )\n\n");
 
+
+    /* these next two angles can be confirmed with a trivial atan()
+     *
+     * a( 0.5 )
+     * .46364760900080611621
+     * a( 0.75 )
+     * .64350110879328438680
+     */
     op1.r = 2.0;
     op1.i = 1.0;
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
-    printf("     :     theta = %16.12e\n\n", cplex_theta( &op1 ) );
+    printf("     :     theta = %16.12e\n", cplex_theta( &op1 ) );
+    printf("     : should be   4.6364760900080611621e-01\n\n");
+
 
     op1.r = 4.0;
     op1.i = 3.0;
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
     printf("     :     theta = %16.12e\n", cplex_theta( &op1 ) );
+    printf("     : should be   6.4350110879328438680e-01\n\n");
 
+    /*
+     * a(24/7)
+     * 1.28700221758656877360
+     */
     check_status( cplex_sq( &opr, &op1 ) );
     printf("     : opr = op1^2 = ( %g, %g )\n", opr.r, opr.i);
     printf("     :     should be 7 + 24i\n");
     printf("     :     magnitude is %g\n", cplex_mag(&opr));
     printf("     :     theta = %16.12e\n", cplex_theta( &opr));
+    printf("     : should be   1.28700221758656877360\n\n");
+
 
     printf("     : now we take the square root(s) of opr\n");
     op1.r = opr.r;
     op1.i = opr.i;
     check_status( cplex_sqrt( opr2, &op1 ) );
-    printf("root : 1 is ( %16.12e, %16.12e )\n", opr2[0].r, opr2[0].i);
-    printf("root : 2 is ( %16.12e, %16.12e )\n", opr2[1].r, opr2[1].i);
-    printf("     : we should get back ( 4, 3i ) and ( -4, -3i ).\n\n");
+    printf("root : 1 is ( %g, %g )\n", opr2[0].r, opr2[0].i);
+    printf("root : 2 is ( %g, %g )\n", opr2[1].r, opr2[1].i);
+    printf("     : should be ( 4, 3i ) and ( -4, -3i ).\n\n");
 
     /* square root of ( 0, 1 ) */
     printf("dbug : square root test\n");
@@ -120,7 +137,18 @@ int main ( int argc, char **argv)
     printf("root : 1 = ( %16.12e, %16.12e )\n", opr2[0].r, opr2[0].i);
     printf("root : 2 = ( %16.12e, %16.12e )\n\n", opr2[1].r, opr2[1].i);
 
-    /* cube roots of ( -11 + 2i ) */
+
+    /* cube roots of ( -11 + 2i )
+     *
+     *  sqrt(5) e^(1/3 i ( pi - tan^(-1)(2/11)))
+     *  =  1.23205080756888 + 1.86602540378444 i (principal root)
+     *
+     *  sqrt(5) e^(1/3 i ( 3*pi - tan^(-1)(2/11)))
+     *  = -2.23205080756888 + 0.133974596215561 i
+     *
+     *  sqrt(5) e^(i (-2 * pi + 1/3 (5*pi - tan^(-1)(2/11))))
+     *  =  1.00000000000000 -2.00000000000000 i
+     */
     printf("dbug : cube root test\n");
     op1.r = -11.0;
     op1.i = 2.0;
@@ -130,8 +158,12 @@ int main ( int argc, char **argv)
 
     check_status( cplex_cbrt( opr2, &op1 ) );
     printf("root : 1 = ( %16.12e, %16.12e )\n", opr2[0].r, opr2[0].i);
+    printf("           ( 1.23205080756888,   1.86602540378444 )\n");
     printf("root : 2 = ( %16.12e, %16.12e )\n", opr2[1].r, opr2[1].i);
-    printf("root : 3 = ( %16.12e, %16.12e )\n\n", opr2[2].r, opr2[2].i);
+    printf("           ( -2.23205080756888,   1.33974596215561e-01 )\n");
+    printf("root : 3 = ( %16.12e, %16.12e )\n", opr2[2].r, opr2[2].i);
+    printf("           (  1, -2 )\n\n");
+
 
     printf("\nTest the complex vector magnitude\n");
     /* Test with < (1 + 1i), (2 + 2i), (3+3i) >
@@ -145,8 +177,8 @@ int main ( int argc, char **argv)
             v[0].x.r, v[0].x.i,
             v[0].y.r, v[0].y.i,
             v[0].z.r, v[0].z.i );
-    printf("     : |v1| = %16.12e\n", cplex_vec_mag( v ));
-    printf("     : Should be 5.2915026221291\n\n");
+    printf("     :    |v1| = %16.12e\n", cplex_vec_mag( v ));
+    printf("     : Should be 5.2915026221291e+00\n\n");
 
 
     /* second vector is <( -1 - 1i), ( -2 -2i), ( 3 - 3i ) > */
@@ -169,7 +201,8 @@ int main ( int argc, char **argv)
 
     printf("Lets test vector dot product\n");
     check_status( cplex_vec_dot( &opr, v, v+1) );
-    printf("     : dot product = ( %g, %g )\n\n", opr.r, opr.i);
+    printf("     : dot product = ( %g, %g )\n", opr.r, opr.i);
+    printf("     : should be ( 18, -10i )\n\n");
 
 
     /*  Now let us test the vector cross product of v[0] X v[1]
@@ -181,7 +214,8 @@ int main ( int argc, char **argv)
      * where again thankfully we have traviss on irc and tw0st3p
      * with julia to confirm output as the vector 
      *
-     * < 12 + 12im, -6 - 6im, 0 + 0im > */
+     * < 12 + 12im, -6 - 6im, 0 + 0im > 
+     */
     printf("Lets test vector cross product\n");
     check_status( cplex_vec_cross( v+2, v, v+1 ) );
     printf("     : v1 X v2 = < ( %g, %g ), ( %g, %g ), ( %g, %g ) >\n",
@@ -211,11 +245,11 @@ int main ( int argc, char **argv)
 
     printf("    : |v[0]| = ");
     printf(" < ( %16.12e, %16.12e ),\n", v[3].x.r, v[3].x.i );
-    printf("   ( %16.12e, %16.12e ),\n", v[3].y.r, v[3].y.i );
-    printf("   ( %16.12e, %16.12e ) >\n", v[3].z.r, v[3].z.i );
-    printf("Should be < ( 0.1889822365046 + 0.1889822365046 i ),\n");
-    printf("            ( 0.3779644730092 + 0.3779644730092 i ),\n");
-    printf("            ( 0.5669467095138 + 0.5669467095138 i )>\n\n");
+    printf("                  ( %16.12e, %16.12e ),\n", v[3].y.r, v[3].y.i );
+    printf("                  ( %16.12e, %16.12e ) >\n", v[3].z.r, v[3].z.i );
+    printf("      Should be < ( 0.1889822365046 + 0.1889822365046 i ),\n");
+    printf("                  ( 0.3779644730092 + 0.3779644730092 i ),\n");
+    printf("                  ( 0.5669467095138 + 0.5669467095138 i )>\n\n");
 
 
     /* We shall now test the solution to a complex quadratic polynomial.
@@ -254,11 +288,10 @@ int main ( int argc, char **argv)
 
 
     /* Wed Oct 23 2019 via IRC we have traviss who catches a bug here 
-     *
-     * see https://www.wolframalpha.com/input/?i=solve+for+x+where+x%5E2+-+5+*+x+%2B+14+%3D+0+
-     *
+     * 
+     * https://www.wolframalpha.com/input/?i=solve+for+x+where+x%5E2+-+5+*+x+%2B+14+%3D+0+
      * roots should be x = 1/2 * ( 5 +- sqrt(31)*i )
-     *
+     * x = 2.50000000000000 - 2.78388218141501 i
      */
     printf("Quadratic x^2 - 5 * x + 14 = 0\n");
     op1.r = 1.0; op1.i = 0.0;
@@ -268,18 +301,13 @@ int main ( int argc, char **argv)
     printf("Real root count = %i\n", real_root_count );
     printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("          result 2 = ( %16.12e, %16.12e )\n\n",
+    printf("                     ( 2.5, -2.78388218141501 )\n");
+    printf("          result 2 = ( %16.12e, %16.12e )\n",
                                           quad_res[1].r, quad_res[1].i);
+    printf("                     ( 2.5,  2.78388218141501 )\n\n");
 
-    /*
-    printf("DBUG : ***********************************************\n\n");
-    printf("DBUG : 20191023141932 traviss catches error here where the\n");
-    printf("DBUG : results should be x = 1/2 * ( 5 +- sqrt(31)*i )\n");
-    printf("DBUG : ***********************************************\n\n");
-    */
-    printf("\n\n");
 
-    printf("Quadratic 2 * x^2 - 5 * x - 1 = 0\n");
+    printf("\nQuadratic 2 * x^2 - 5 * x - 1 = 0\n");
     op1.r = 2.0;  op1.i = 0.0;
     op2.r = -5.0; op2.i = 0.0;
     op3.r = -1.0; op3.i = 0.0;
@@ -287,9 +315,8 @@ int main ( int argc, char **argv)
     printf("Real root count = %i\n", real_root_count );
     printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("          result 2 = ( %16.12e, %16.12e )\n\n",
+    printf("          result 2 = ( %16.12e, %16.12e )\n",
                                           quad_res[1].r, quad_res[1].i);
-
 
     printf("DBUG : ***********************************************\n\n");
     printf("DBUG : 201920191111020747\n");
