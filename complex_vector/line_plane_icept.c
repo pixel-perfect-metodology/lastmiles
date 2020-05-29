@@ -61,9 +61,13 @@ int line_plane_icept( vec_type *icept_pt,
     int return_value = 0;
     cplex_type ctmp[12];
     vec_type i_hat, j_hat, lpr_norm, pn_norm,
-             pl0_lp0_dir, pl0_lp0_dirn, tmp[14];
+             pl0_lp0_dir, pl0_lp0_dirn, tmp[15];
 
     double lpr_pn_theta, u_mag, v_mag;
+
+    /* vars we may need for a line plane minimal distance
+     * calculation */
+    double min_dist_e, hypoteneuse, base_length;
 
     /* rh_col is right hand column for Cramer call with
      * res_vec as the result if it exists */
@@ -507,7 +511,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         printf("dbug : pl0_lp0_dir = %+-16.9e", pl0_lp0_dir.x.r);
         printf("    %+-16.9e", pl0_lp0_dir.y.r);
         printf("    %+-16.9e\n", pl0_lp0_dir.z.r);
-        printf("     : this is Lp0 - Pl0 which is g in our diagram\n\n");
+        printf("     : this is Lp0 - Pl0 which is g vector in diagram\n\n");
 
         printf("dbug : lpr_norm = %+-16.9e", lpr_norm.x.r);
         printf("    %+-16.9e", lpr_norm.y.r);
@@ -515,7 +519,8 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         printf("     : this is n_hat\n\n");
 
         if ( cplex_vec_dot( ctmp, &pl0_lp0_dir, &lpr_norm ) == EXIT_FAILURE ) {
-                    return return_value;
+            fprintf(stderr,"FAIL : dot(pl0_lp0_dir,lpr_norm) returned complex\n");
+            return return_value;
         }
         printf("dbug : g dot n = %+-16.9e\n", ctmp[0].r );
 
@@ -535,8 +540,36 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         printf("    %+-16.9e", tmp[13].y.r);
         printf("    %+-16.9e\n\n", tmp[13].z.r );
 
+        min_dist_e = cplex_vec_mag(tmp+13);
         printf("dbug : minimal distance to line should be %+-16.9e\n\n",
-                          cplex_vec_mag(tmp+13) );
+                          min_dist_e );
+
+        hypoteneuse = sqrt( ( pl0_lp0_dir.x.r * pl0_lp0_dir.x.r )
+                          + ( pl0_lp0_dir.y.r * pl0_lp0_dir.y.r )
+                          + ( pl0_lp0_dir.z.r * pl0_lp0_dir.z.r ) );
+
+        printf("dbug : hypoteneuse = %+-16.9e\n", hypoteneuse );
+
+        base_length = sqrt ( ( hypoteneuse * hypoteneuse ) 
+                           - ( min_dist_e * min_dist_e ) );
+
+        printf("dbug : base_length = %+-16.9e\n", base_length );
+
+        /* the intercept point on the line that is nearest to the plane
+         * point should be 
+         *
+         *      J = base_length * lpr_norm + lp0
+         *
+         * we shall use tmp[14] for the point J for now
+         */
+
+        tmp[14].x.r = base_length * lpr_norm.x.r + lp0->x.r;
+        tmp[14].y.r = base_length * lpr_norm.y.r + lp0->y.r;
+        tmp[14].z.r = base_length * lpr_norm.z.r + lp0->z.r;
+
+        /* stupid ? */
+        printf("dbug : intercept J at < %+-16.9e, %+-16.9e, %+-16.9e >\n",
+                tmp[14].x.r, tmp[14].y.r, tmp[14].z.r );
 
         return return_value;
 
