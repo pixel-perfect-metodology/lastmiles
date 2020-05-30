@@ -46,6 +46,8 @@
  *
  *                        icept_pt = pl0 + s * plun
  *                                       + t * plvn
+ *
+ * See v.h for MATH_OP_SUCCESS and MATH_OP_FAIL
  */
 
 int line_plane_icept( vec_type *icept_pt,
@@ -80,7 +82,7 @@ int line_plane_icept( vec_type *icept_pt,
        ||( lpr == NULL )
        ||( pl0 == NULL )
        ||( pn  == NULL ) ) {
-        return return_value;
+        return MATH_OP_FAIL;
     }
 
     /* TODO check up front that we are not dealing with zero
@@ -95,7 +97,7 @@ int line_plane_icept( vec_type *icept_pt,
         if ( ( lpr->x.r == 0.0 ) && ( lpr->y.r == 0.0 ) && ( lpr->z.r == 0.0 ) ) {
             fprintf(stderr,"     : in fact it is zero magnitude\n");
         }
-        return return_value;
+        return MATH_OP_FAIL;
     }
 
     if (    ( fabs(pn->x.r) < RT_EPSILON ) 
@@ -107,17 +109,17 @@ int line_plane_icept( vec_type *icept_pt,
         if ( ( pn->x.r == 0.0 ) && ( pn->y.r == 0.0 ) && ( pn->z.r == 0.0 ) ) {
             fprintf(stderr,"     : in fact it is zero magnitude\n");
         }
-        return return_value;
+        return MATH_OP_FAIL;
     }
 
     if ( cplex_vec_mag( lpr ) < RT_EPSILON ) {
         fprintf(stderr,"FAIL : line direction vector too small\n");
-        return return_value;
+        return MATH_OP_FAIL;
     }
 
     if ( cplex_vec_mag( pn ) < RT_EPSILON ) {
         fprintf(stderr,"FAIL : plane normal vector too small\n");
-        return return_value;
+        return MATH_OP_FAIL;
     }
 
     /* There are a few degenerate cases to check for. Firstly the
@@ -146,12 +148,12 @@ int line_plane_icept( vec_type *icept_pt,
 
     if ( cplex_vec_normalize( &lpr_norm, lpr ) == EXIT_FAILURE ) {
         fprintf(stderr,"FAIL : impossible to normalize vec lpr\n");
-        return return_value;
+        return MATH_OP_FAIL;
     }
 
     if ( cplex_vec_normalize( &pn_norm, pn ) == EXIT_FAILURE ) {
         fprintf(stderr,"FAIL : impossible to normalize vec pn\n");
-        return return_value;
+        return MATH_OP_FAIL;
     }
 
     /* we will need a direction vector from the plane point pl0 to the
@@ -168,13 +170,21 @@ int line_plane_icept( vec_type *icept_pt,
          ( fabs(pl0_lp0_dir.y.r) < RT_EPSILON ) &&
          ( fabs(pl0_lp0_dir.z.r) < RT_EPSILON ) ) {
 
-        fprintf(stderr,"WARN : plane point and line point may be the same\n");
+        fprintf(stderr,"WARN : plane point and line point are");
+        if ( ( pl0_lp0_dir.x.r == 0.0 ) &&
+             ( pl0_lp0_dir.y.r == 0.0 ) &&
+             ( pl0_lp0_dir.z.r == 0.0 ) ) {
+            fprintf(stderr,"the exact same point\n");
+        } else {
+            fprintf(stderr,"nearly the same\n");
+        }
+
         /* degenerate trap here, we have KST == zero everywhere */
         kst->x.r = 0.0; kst->x.i = 0.0;
         kst->y.r = 0.0; kst->y.i = 0.0;
         kst->z.r = 0.0; kst->z.i = 0.0;
 
-        /* now we need u and v vectors somehow */
+        /* regardless we still need u and v vectors */
         goto uv;
 
     }

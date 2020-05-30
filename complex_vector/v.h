@@ -16,6 +16,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+/* Calls to math operations should return a status
+ * and if something truely horrible happens we should
+ * return EXIT_FAILURE and then actually exit. */
+#define MATH_OP_SUCCESS 1
+#define MATH_OP_FAIL 0
+
 #define PI_L  3.141592653589793238462643383279502884L
 
 /* for cube roots and deMoivre's Theorem we need 2pi / 3 */
