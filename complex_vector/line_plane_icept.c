@@ -60,13 +60,16 @@ int line_plane_icept( vec_type *icept_pt,
                       vec_type *plu, vec_type *plv)
 {
     int line_in_plane = 0;
-    int return_value = 0;
+
+    /* we assume failure until proven otherwise */
+    int return_value = MATH_OP_FAIL;
+
     cplex_type ctmp[12];
     vec_type i_hat, j_hat, lpr_norm, pn_norm,
              pl0_lp0_dir, pl0_lp0_dirn, tmp[15];
 
 
-    /* be careful of uninitialized memory on the stack */
+    /* deal with uninitialized memory on the stack */
     memset( &ctmp, 0x00, (size_t)(12)*sizeof(cplex_type));
     memset( &tmp, 0x00, (size_t)(15)*sizeof(vec_type));
 
@@ -83,37 +86,47 @@ int line_plane_icept( vec_type *icept_pt,
     /* It seems reasonable to check if the input data is
      * sane. At the very least we must ask if the data even
      * exists first. */
-    if ( ( lp0 == NULL )
-       ||( lpr == NULL )
-       ||( pl0 == NULL )
-       ||( pn  == NULL ) ) {
+    if (    ( lp0 == NULL ) || ( lpr == NULL )
+         || ( pl0 == NULL ) || ( pn  == NULL ) ) {
         return MATH_OP_FAIL;
     }
 
     /* check up front that we are not dealing with zero
      * magnitude vectors */
-    if (    ( fabs(lpr->x.r) < RT_EPSILON )
-         && ( fabs(lpr->y.r) < RT_EPSILON )
-         && ( fabs(lpr->z.r) < RT_EPSILON )  ) {
+    if ( ( fabs(lpr->x.r) < RT_EPSILON ) &&
+         ( fabs(lpr->y.r) < RT_EPSILON ) &&
+         ( fabs(lpr->z.r) < RT_EPSILON )  ) {
 
         fprintf(stderr,"FAIL : line direction vector too small\n");
 
-        if ( ( lpr->x.r == 0.0 ) && ( lpr->y.r == 0.0 ) && ( lpr->z.r == 0.0 ) ) {
+        if ( ( lpr->x.r == 0.0 ) &&
+             ( lpr->y.r == 0.0 ) &&
+             ( lpr->z.r == 0.0 ) ) {
+
             fprintf(stderr,"     : in fact it is zero magnitude\n");
+
         }
+
         return MATH_OP_FAIL;
+
     }
 
-    if (    ( fabs(pn->x.r) < RT_EPSILON )
-         && ( fabs(pn->y.r) < RT_EPSILON )
-         && ( fabs(pn->z.r) < RT_EPSILON )  ) {
+    if ( ( fabs(pn->x.r) < RT_EPSILON ) &&
+         ( fabs(pn->y.r) < RT_EPSILON ) &&
+         ( fabs(pn->z.r) < RT_EPSILON )  ) {
 
         fprintf(stderr,"FAIL : plane normal vector too small\n");
 
-        if ( ( pn->x.r == 0.0 ) && ( pn->y.r == 0.0 ) && ( pn->z.r == 0.0 ) ) {
+        if ( ( pn->x.r == 0.0 ) &&
+             ( pn->y.r == 0.0 ) &&
+             ( pn->z.r == 0.0 ) ) {
+
             fprintf(stderr,"     : in fact it is zero magnitude\n");
+
         }
+
         return MATH_OP_FAIL;
+
     }
 
     if ( cplex_vec_mag( lpr ) < RT_EPSILON ) {
@@ -150,6 +163,8 @@ int line_plane_icept( vec_type *icept_pt,
     cplex_vec_set ( &i_hat, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     cplex_vec_set ( &j_hat, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0);
 
+    /* should be impossible for the normalized lpr or pn to cause
+     * a problem at this point */
     if ( cplex_vec_normalize( &lpr_norm, lpr ) == EXIT_FAILURE ) {
         fprintf(stderr,"FAIL : impossible to normalize vec lpr\n");
         return MATH_OP_FAIL;
@@ -169,7 +184,9 @@ int line_plane_icept( vec_type *icept_pt,
     pl0_lp0_dir.z.r = lp0->z.r - pl0->z.r;
     pl0_lp0_dir.z.i = lp0->z.i - pl0->z.i;
 
-    /* check if we have a zero magnitude here on pl0_lp0_dir */
+    /* check if we have a zero magnitude here on pl0_lp0_dir
+     * which says that the plane point pl0 and the line point lp0
+     * are the same */
     if ( ( fabs(pl0_lp0_dir.x.r) < RT_EPSILON ) &&
          ( fabs(pl0_lp0_dir.y.r) < RT_EPSILON ) &&
          ( fabs(pl0_lp0_dir.z.r) < RT_EPSILON ) ) {
@@ -183,7 +200,7 @@ int line_plane_icept( vec_type *icept_pt,
             fprintf(stderr,"nearly the same\n");
         }
 
-        /* degenerate trap here, we have KST == zero everywhere */
+        /* column vector KST == zero everywhere */
         kst->x.r = 0.0; kst->x.i = 0.0;
         kst->y.r = 0.0; kst->y.i = 0.0;
         kst->z.r = 0.0; kst->z.i = 0.0;
@@ -216,6 +233,7 @@ int line_plane_icept( vec_type *icept_pt,
                                            lpr_pn_theta * 180.0 / M_PI );
 
             line_in_plane = 1;
+
         }
 
     } else {
@@ -275,6 +293,7 @@ int line_plane_icept( vec_type *icept_pt,
             }
 
             if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
+
                 fprintf(stderr,"WARN : line is in the plane\n");
 
                 /* This really is a non-issue. We have an infinite number
@@ -283,11 +302,13 @@ int line_plane_icept( vec_type *icept_pt,
                 line_in_plane = 1;
 
             } else {
+
                 /* The line is perfectly orthogonal to the plane normal
                  * with no possible intercepts. The line is parallel to
                  * the plane in this case. */
                 fprintf(stderr,"FAIL : no possible intercept\n");
                 return MATH_OP_FAIL;
+
             }
         }
     }
@@ -302,6 +323,8 @@ int line_plane_icept( vec_type *icept_pt,
      *
      * Even worse we need to verify that the supplied u and v
      * vectors are actually in the plane and they are orthogonal.
+     *
+     * TODO : consider the possibility that u and v are non-orthogonal
      *
      * NOTE : the restriction on orthogonal basic vectors u and v
      *        will mean we may never use a skew system in the
@@ -333,9 +356,12 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
             /* we have sufficient angle between i_hat and the plane
              * normal to continue. */
             cplex_vec_copy( tmp+2, &j_hat);
+
         } else {
+
             /* use i_hat as the reference basis vector */
             cplex_vec_copy( tmp+2, &i_hat);
+
         }
 
         /* create an orthogonal vector plu in tmp+3 */
@@ -361,6 +387,9 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                     /* we have a plv vector that is too small to
                      * work with and thus we need to generate u and v
                      * ourselves */
+
+                    fprintf(stderr,"WARN : plane u is a NULL pointer and v is too small\n");
+
                     goto uv;
                 }
 
@@ -381,7 +410,9 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                 /* compute plu */
                 cplex_vec_cross( tmp, &pn_norm, plvn );
                 cplex_vec_normalize( plun, tmp );
+
             } else {
+
                 /* check that plu is zero magnitude */
                 if ( ( fabs(plu->x.r) < RT_EPSILON ) &&
                      ( fabs(plu->y.r) < RT_EPSILON ) &&
@@ -411,8 +442,11 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                 /* compute plv */
                 cplex_vec_cross( tmp, &pn_norm, plun );
                 cplex_vec_normalize( plvn, tmp );
+
             }
+
         } else {
+
             /* Both are non-null pointers.
              * Do we have a reasonable magnitude? */
             u_mag = cplex_vec_mag( plu );
@@ -437,8 +471,15 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                         /* u vector is zero so lets ask about v and
                          * see if it is reasonable. Otherwise just
                          * compute them both as above. */
-                        if (( v_mag == 0.0 ) || ( v_mag < RT_EPSILON ))
+                        if (( v_mag == 0.0 ) || ( v_mag < RT_EPSILON )) {
+                            fprintf(stderr,"WARN : plane v is ");
+                            if ( v_mag == 0.0 ) {
+                                fprintf(stderr,"zero magnitude\n");
+                            } else {
+                                fprintf(stderr,"too small to use\n");
+                            }
                             goto uv;
+                        }
 
                         /* normalize plv */
                         cplex_vec_normalize( plvn, plv );
@@ -449,11 +490,16 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                          * thus we must use tmp[1] from above which is
                          * the plane normal actually normalized. */
 
-                        cplex_vec_dot( ctmp, &pn_norm, plvn );
-                        if ( check_dot( ctmp ) == EXIT_FAILURE )
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == EXIT_FAILURE ) {
+                            fprintf(stderr,"FAIL : dot(pn_norm, plvn) returned complex\n");
                             return MATH_OP_FAIL;
+                        }
 
-                        if ( ctmp->r != 0.0 ) goto uv;
+                        /* should we be so precise here ? */
+                        if ( ctmp->r != 0.0 ) {
+                            fprintf(stderr,"WARN : plane v is not precisely in the plane\n");
+                            goto uv;
+                        }
 
                         /* we have a valid plvn and may compute plu with
                          * a cross product of pn and plvn */
@@ -467,18 +513,30 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                          * we need to check u vector and then decide
                          * if we need to abandon the compute here and
                          * merely re-compute both u and v vectors. */
-                        if (( u_mag == 0.0 ) || ( u_mag < RT_EPSILON ))
+                        if (( u_mag == 0.0 ) || ( u_mag < RT_EPSILON )) {
+                            fprintf(stderr,"WARN : plane u is ");
+                            if ( u_mag == 0.0 ) {
+                                fprintf(stderr,"zero magnitude\n");
+                            } else {
+                                fprintf(stderr,"too small to use\n");
+                            }
                             goto uv;
+                        }
 
                         /* normalize plu  */
                         cplex_vec_normalize( plun, plu );
 
                         /* check if plun is orthogonal to pn. */
-                        cplex_vec_dot( ctmp, &pn_norm, plun );
-                        if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return return_value;
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                            fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
+                            return MATH_OP_FAIL;
+                        }
 
-                        if ( ctmp->r != 0.0 ) goto uv;
+                        /* same problem as above wherein we are being precise */
+                        if ( ctmp->r != 0.0 ) {
+                            fprintf(stderr,"WARN : plane u is not precisely in the plane\n");
+                            goto uv;
+                        }
 
                         /* we have a valid plun and may compute plv
                          * with a cross product of pn and plun */
@@ -493,7 +551,9 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                         goto uv;
 
                     }
+
                 } else {
+
                     /* Neither u nor v is zero in size but at least
                      * one of them is smaller than RT_EPSILON. */
                     if ( u_mag < RT_EPSILON ) {
@@ -502,12 +562,15 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                         cplex_vec_normalize( plvn, plv );
 
                         /* check if plvn is orthogonal to pn. */
-                        cplex_vec_dot( ctmp, &pn_norm, plvn );
-                        if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return return_value;
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == EXIT_FAILURE ) {
+                            fprintf(stderr,"FAIL : dot(pn_norm, plvn) returned complex\n");
+                            return MATH_OP_FAIL;
+                        }
 
-                        if ( fabs(ctmp->r) > RT_EPSILON )
+                        if ( fabs(ctmp->r) > RT_EPSILON ) {
+                            fprintf(stderr,"WARN : plane v not precisely in the plane\n");
                             goto uv;
+                        }
 
                         /* compute plu with a cross product of pn and plvn */
                         cplex_vec_cross( tmp+3, pn, plvn );
@@ -517,12 +580,15 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                     } else {
                         /* here we know that v_mag < RT_EPSILON */
                         cplex_vec_normalize( plun, plu );
-                        cplex_vec_dot( ctmp, &pn_norm, plun );
-                        if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return return_value;
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                            fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
+                            return MATH_OP_FAIL;
+                        }
 
-                        if ( fabs(ctmp->r) > RT_EPSILON )
+                        if ( fabs(ctmp->r) > RT_EPSILON ) {
+                            fprintf(stderr,"WARN : plane u not precisely in the plane\n");
                             goto uv;
+                        }
 
                         cplex_vec_cross( tmp+3, pn, plun );
                         cplex_vec_normalize( plvn, tmp+3 );
@@ -538,7 +604,8 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                  * are linearly independant and thus the dot product
                  * of u and v will NOT be 1 or -1. */
                 if ( cplex_vec_dot( ctmp, plv, plu ) == EXIT_FAILURE ) {
-                    return return_value;
+                    fprintf(stderr,"FAIL : dot(plv, plu) returned complex\n");
+                    return MATH_OP_FAIL;
                 }
 
                 if ( fabs(fabs( ctmp->r ) - 1.0) < RT_EPSILON ) {
@@ -563,7 +630,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
 
     if ( line_in_plane ) {
         fprintf(stderr,"WARN : line is in the plane\n");
-        /* degenerate trap here, we have KST == zero everywhere */
+        /* degenerate KST == zero everywhere */
         kst->x.r = 0.0; kst->x.i = 0.0;
         kst->y.r = 0.0; kst->y.i = 0.0;
         kst->z.r = 0.0; kst->z.i = 0.0;
@@ -571,7 +638,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
         /* What do we know at this point?
          *
          * we have : lpr_norm = line direction normalized
-         *            pn_norm = plan normal and yes it is normalized
+         *            pn_norm = plan normal normalized
          *
          *                lp0 = the point given to us in the plane
          *                pl0 = the point given to us on the line
@@ -591,7 +658,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
 
         if ( cplex_vec_dot( ctmp, &pl0_lp0_dir, &lpr_norm ) == EXIT_FAILURE ) {
             fprintf(stderr,"FAIL : dot(pl0_lp0_dir,lpr_norm) returned complex\n");
-            return return_value;
+            return MATH_OP_FAIL;
         }
         printf("dbug : g dot n = %+-16.9e\n", ctmp[0].r );
 
@@ -686,44 +753,42 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
     cplex_det( ctmp+2, &v[0], &v[1], &v[2] );
     printf("     :   det =    %+-16.9e + %+-16.9e i\n", ctmp[2].r, ctmp[2].i);
 
-    /* TODO remove this hack sometime as it was never really needed.
-     *        The real problem was uninitialized data on the stack
-     *        in ctmp and tmp arrays.
-     *
-     * check if the determinant is so very close to zero that it
-     * may be merely noise. In fact check if it is smaller than
-     * the square of RT_EPSILON
-    if ( ( fabs(ctmp[2].r) < ( RT_EPSILON * RT_EPSILON ) )
-            && ( ctmp[2].r != 0.0 ) ) {
-        printf("     :   det is microscopic noise\n");
-        ctmp[2].r = 0.0;
-        ctmp[2].i = 0.0;
-        printf("     :   det dropped to zero\n");
-    }
-    */
-
     printf("\nSolve for line plane intercept with Cramers rule.\n\n");
     if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) != 0 ) {
+        /* TODO : do we even need this ? 
+         *
+         * w a r n i n g
+         *
+         *            this should be impossible after all the checks 
+         *            done above 
+         */
         fprintf(stderr,"dbug : cplex_cramer reports no valid solution\n");
         fprintf(stderr,"     : %s at %d\n", __FILE__, __LINE__ );
+
     } else {
-        if (    ( fabs(res_vec.x.i) > RT_EPSILON )
-             || ( fabs(res_vec.y.i) > RT_EPSILON )
-             || ( fabs(res_vec.z.i) > RT_EPSILON ) ) {
+
+        /* TODO here we have another impossible situation */
+        if ( ( fabs(res_vec.x.i) > RT_EPSILON ) ||
+             ( fabs(res_vec.y.i) > RT_EPSILON ) ||
+             ( fabs(res_vec.z.i) > RT_EPSILON ) ) {
+
             printf("dbug : complex solution?\n");
+
         } else {
+
             /* the result will be  k , -s, -t */
             printf("    k = %+-20.16e\n", res_vec.x.r );
             printf("    s = %+-20.16e\n", -1.0 * res_vec.y.r );
             printf("    t = %+-20.16e\n\n", -1.0 * res_vec.z.r );
+
         }
+
     }
 
     /* copy the result data into rst */
     cplex_vec_set ( kst, res_vec.x.r, res_vec.x.i,
-                         -1.0 * res_vec.y.r, res_vec.y.i,
-                         -1.0 * res_vec.z.r, res_vec.z.i);
-
+                  -1.0 * res_vec.y.r, res_vec.y.i,
+                  -1.0 * res_vec.z.r, res_vec.z.i);
 
     /* We can compute the actual intercept point two ways :
      *
@@ -748,37 +813,6 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
     /* multiply     k * norm[ lpr ]     */
     cplex_vec_scale( tmp+5, &lpr_norm, kst->x.r);
     cplex_vec_add( tmp+6, lp0, tmp+5 );
-
-
-    /* TODO remove this hack sometime as it was never really needed.
-     *        The real problem was uninitialized data on the stack
-     *        in ctmp and tmp arrays.
-     *
-     * Since tmp[6] is used as the final result to be returned as
-     * the intercept point and thus it can be slightly cleaned
-     * of noisey very very small values.
-     *
-     * Check for values much less than RT_EPSILON and cull them
-     * to zero.
-    if ( ( fabs(tmp[6].x.r) < RT_EPSILON ) ||
-         ( fabs(tmp[6].y.r) < RT_EPSILON ) ||
-         ( fabs(tmp[6].z.r) < RT_EPSILON ) ) {
-        fprintf(stderr,"dbug : cull below RT_EPSILON values\n");
-        fprintf(stderr,"     : %s at %d\n", __FILE__, __LINE__ );
-        if ( fabs(tmp[6].x.r) < RT_EPSILON ) {
-            fprintf(stderr,"     : x dropped from %-+16.9e to zero\n", tmp[6].x.r);
-            tmp[6].x.r = 0.0;
-        }
-        if ( fabs(tmp[6].y.r) < RT_EPSILON ) {
-            fprintf(stderr,"     : y dropped from %-+16.9e to zero\n", tmp[6].y.r);
-            tmp[6].y.r = 0.0;
-        }
-        if ( fabs(tmp[6].z.r) < RT_EPSILON ) {
-            fprintf(stderr,"     : z dropped from %-+16.9e to zero\n", tmp[6].z.r);
-            tmp[6].z.r = 0.0;
-        }
-    }
-    */
 
     printf("\n    icept_pt = lp0 + k * norm[ lpr ]\n");
     printf("             = < %+-16.9e, %+-16.9e, %+-16.9e >\n",
