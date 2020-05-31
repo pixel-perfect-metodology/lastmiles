@@ -64,6 +64,11 @@ int line_plane_icept( vec_type *icept_pt,
     vec_type i_hat, j_hat, lpr_norm, pn_norm,
              pl0_lp0_dir, pl0_lp0_dirn, tmp[15];
 
+
+    /* be careful of uninitialized memory on the stack */
+    memset( &ctmp, 0x00, (size_t)(12)*sizeof(cplex_type));
+    memset( &tmp, 0x00, (size_t)(15)*sizeof(vec_type));
+
     double lpr_pn_theta, u_mag, v_mag;
 
     /* vars we may need for a line plane minimal distance
@@ -84,7 +89,7 @@ int line_plane_icept( vec_type *icept_pt,
         return MATH_OP_FAIL;
     }
 
-    /* TODO check up front that we are not dealing with zero
+    /* check up front that we are not dealing with zero
      * magnitude vectors */
     if (    ( fabs(lpr->x.r) < RT_EPSILON ) 
          && ( fabs(lpr->y.r) < RT_EPSILON )  
@@ -602,9 +607,11 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
         tmp[14].y.r = base_length * lpr_norm.y.r + lp0->y.r;
         tmp[14].z.r = base_length * lpr_norm.z.r + lp0->z.r;
 
-        /* stupid ? */
         printf("dbug : intercept J at < %+-16.9e, %+-16.9e, %+-16.9e >\n",
                 tmp[14].x.r, tmp[14].y.r, tmp[14].z.r );
+
+        /* save the result back into the supplied vec_type pointer */
+        cplex_vec_copy( icept_pt, tmp+14);
 
         return MATH_OP_SUCCESS;
 
