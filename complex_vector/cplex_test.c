@@ -583,6 +583,9 @@ int main ( int argc, char **argv)
 
     printf("\n\n--------------------------------------------------\n");
 
+    return EXIT_SUCCESS;
+
+
     /* analytic test data for the line plane intercept
      * compliments of halirutan on twitch 
      *
