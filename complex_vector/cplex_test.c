@@ -415,6 +415,17 @@ int main ( int argc, char **argv)
     printf("    ( 0.5 - i ) * A  - 2 * B - 3 * C = ( 1 + 0.5i ),\n");
     printf("    4 * A + 5 * B + 6 * C = ( 2 + 0.75i ),\n");
     printf("    7 * A + ( -2 + 4i ) * B + 9 * C = ( 3 -0.25i ).\n");
+    /* solutions are : 
+     * alpha $ echo '18k 823 1405 / p 1533 2810 / pq' | dc
+     * .585765124555160142
+     * .545551601423487544
+     * alpha $ echo '18k _28 1405 / p 1089 5620 / pq' | dc
+     * -.019928825622775800
+     * .193772241992882562
+     * alpha $ echo '18k _57 1405 / p _2249 5620 / pq' | dc
+     * -.040569395017793594
+     * -.400177935943060498
+     */
 
     v[0].x.r =  0.5; v[0].x.i = -1.0;
     v[0].y.r = -2.0; v[0].y.i =  0.0;
@@ -443,6 +454,9 @@ int main ( int argc, char **argv)
         printf("                      ( %+-16.12e, %+-16.12e ) >\n\n",
                     res_vec.z.r, res_vec.z.i);
     }
+    printf("     : should be  (  5.85765124555160142e-01 ,  5.45551601423487544e-01 )\n");
+    printf("     :            ( -1.9928825622775800e-02  ,  1.93772241992882562e-01 )\n");
+    printf("     :            ( -4.0569395017793594e-02  , -4.00177935943060498e-01 )\n");
 
     printf("\n-----------------------------------------------------\n");
     printf("---------- line and plane intercept testing ---------\n\n");
@@ -496,6 +510,7 @@ int main ( int argc, char **argv)
     /* try a degenerate line plane intercept case where the line
      * is in the plane. */
     printf("INFO : degenerate line plane intercept with line in the plane\n");
+    printf("     : plane point and line point are identical\n");
 
     /* distance becomes zero */
     cplex_vec_set( &line_point, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0 );
@@ -582,9 +597,6 @@ int main ( int argc, char **argv)
     printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
-
-    return EXIT_SUCCESS;
-
 
     /* analytic test data for the line plane intercept
      * compliments of halirutan on twitch 
