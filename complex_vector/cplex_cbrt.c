@@ -38,12 +38,14 @@ int cplex_cbrt( cplex_type res[3], cplex_type *op1 )
     /* primary root */
     res[0].r = cbrt_mag * cos( theta / 3.0 );
     res[0].i = cbrt_mag * sin( theta / 3.0 );
-    /* Thanks to Euler we go around the circle 2pi/3 radians */
-    res[1].r = cbrt_mag * cos( PI3_L + theta / 3.0 );
-    res[1].i = cbrt_mag * sin( PI3_L + theta / 3.0 );
 
-    res[2].r = cbrt_mag * cos( 2.0L * PI3_L + theta / 3.0 );
-    res[2].i = cbrt_mag * sin( 2.0L * PI3_L + theta / 3.0 );
+    /* Thanks to Euler we go around the circle 2pi/3 radians */
+    res[1].r = cbrt_mag * cos( 2.0*M_PI/3.0 + theta / 3.0 );
+    res[1].i = cbrt_mag * sin( 2.0*M_PI/3.0 + theta / 3.0 );
+
+    /* next third of the circle to get the last cube root */
+    res[2].r = cbrt_mag * cos( 4.0*M_PI/3.0 + theta / 3.0 );
+    res[2].i = cbrt_mag * sin( 4.0*M_PI/3.0 + theta / 3.0 );
 
     return ( 0 );
 

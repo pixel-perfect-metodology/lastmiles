@@ -134,9 +134,12 @@ int cplex_quadratic( cplex_type res[2],
         /* Thanks to the IEEE754-2008 zero equality rules we know
          * that we have two real roots. */
         real_root_count = 2;
-        /* TODO perhaps use an epsilon check here */
-        if ( res[0].r == res[1].r ) {
+        if ( fabs( res[0].r - res[1].r ) < RT_EPSILON ) {
             real_root_count = 1;
+            if ( ( res[0].r - res[1].r ) != 0.0 ) {
+                /* not perfect fit */
+                fprintf(stderr,"WARN : the quadratic roots are RT_EPSILON close\n");
+            } 
         }
     } else {
         if ( ( res[0].i == 0.0 ) || ( res[1].i == 0.0 ) ) {
@@ -145,24 +148,6 @@ int cplex_quadratic( cplex_type res[2],
             real_root_count = 0;
         }
     }
-
-    /* we had this stuff using the fabs call a lot and we do not
-     * need it anymore
-     *
-     *
-     *  if ( ( fabs( res[0].i ) > 0.0 ) && ( fabs( res[1].i ) > 0.0 ) ) {
-     *      real_root_count = 0;
-     *  } else if ( ( fabs( res[0].i ) == 0.0 ) && ( fabs( res[1].i ) == 0.0 ) ) {
-     *      real_root_count = 2;
-     *      * well we had better check these are unique *
-     *      if ( ( res[0].r == res[1].r ) && ( res[0].i == res[1].i ) ) {
-     *          real_root_count = 1;
-     *          * throw away the second root ? *
-     *      }
-     *  } else {
-     *      real_root_count = 1;
-     *  }
-     */
 
     return ( real_root_count );
 

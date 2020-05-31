@@ -301,10 +301,10 @@ int main ( int argc, char **argv)
     printf("Real root count = %i\n", real_root_count );
     printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("                     ( 2.5, -2.78388218141501 )\n");
+    printf("                     ( 2.5,  2.78388218141501 )\n");
     printf("          result 2 = ( %16.12e, %16.12e )\n",
                                           quad_res[1].r, quad_res[1].i);
-    printf("                     ( 2.5,  2.78388218141501 )\n\n");
+    printf("                     ( 2.5, -2.78388218141501 )\n\n");
 
 
     printf("\nQuadratic 2 * x^2 - 5 * x - 1 = 0\n");

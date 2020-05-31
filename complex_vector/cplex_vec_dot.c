@@ -36,6 +36,7 @@ int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 )
      * in the complex space.
      */
 
+    /* NOTE : we can not use the RT_EPSILON check here */
     if ( ( op1->x.i == 0 ) && ( op2->x.i == 0 )
             &&
          ( op1->y.i == 0 ) && ( op2->y.i == 0 )
@@ -48,12 +49,14 @@ int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 )
             return ( 0 );
         } else {
             /* there must not be any imaginary component */
+            /* TODO switch this to MATH_OP_FAIL and all calls
+             *         must be checked */
             return ( EXIT_FAILURE );
         }
 
     }
 
-    /* the result is whatever it is */
+    /* TODO fix this shit. fuk. the result is whatever it is */
     return ( 0 );
 
 }

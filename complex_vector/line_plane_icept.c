@@ -58,7 +58,6 @@ int line_plane_icept( vec_type *icept_pt,
                       vec_type *pl0, vec_type *pn,
                       vec_type *plu, vec_type *plv) 
 {
-    int status;
     int line_in_plane = 0;
     int return_value = 0;
     cplex_type ctmp[12];
@@ -86,8 +85,7 @@ int line_plane_icept( vec_type *icept_pt,
     }
 
     /* TODO check up front that we are not dealing with zero
-     * magnitude vectors
-     */
+     * magnitude vectors */
     if (    ( fabs(lpr->x.r) < RT_EPSILON ) 
          && ( fabs(lpr->y.r) < RT_EPSILON )  
          && ( fabs(lpr->z.r) < RT_EPSILON )  ) {
@@ -165,7 +163,7 @@ int line_plane_icept( vec_type *icept_pt,
     pl0_lp0_dir.z.r = lp0->z.r - pl0->z.r;
     pl0_lp0_dir.z.i = lp0->z.i - pl0->z.i;
 
-    /* TODO reasonable to check if we have a zero magnitude here on pl0_lp0_dir */
+    /* check if we have a zero magnitude here on pl0_lp0_dir */
     if ( ( fabs(pl0_lp0_dir.x.r) < RT_EPSILON ) &&
          ( fabs(pl0_lp0_dir.y.r) < RT_EPSILON ) &&
          ( fabs(pl0_lp0_dir.z.r) < RT_EPSILON ) ) {
@@ -184,81 +182,77 @@ int line_plane_icept( vec_type *icept_pt,
         kst->y.r = 0.0; kst->y.i = 0.0;
         kst->z.r = 0.0; kst->z.i = 0.0;
 
-        /* regardless we still need u and v vectors */
-        goto uv;
+    } else {
 
-    }
-
-    /* if we ever got here then normalize that into pl0_lp0_dirn */
-    cplex_vec_normalize( &pl0_lp0_dirn, &pl0_lp0_dir );
-
-    if ( cplex_vec_dot( ctmp, &lpr_norm, &pn_norm) == EXIT_FAILURE ) {
-        /* we must consider that this is so wrong that any
-         * computation from here on is likely even more wrong. */
-        fprintf(stderr,"FAIL : dot(lpr_norm, pn_norm) returned complex\n");
-        return return_value;
-    }
-
-    /* Since the dot product of two normalized vectors results in the
-     * cosine of the angle between them we can just check for a zero
-     * result.  We know that any angle theta = pi/2 + 2 * n * pi will
-     * be orthogonal for all integer n and cosine(theta) is zero in
-     * such cases. */
-
-    if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
-
-        fprintf(stderr,"WARN : lpr and pn are ");
-        if ( fabs(ctmp[0].r) == 0.0 ) {
-            fprintf(stderr,"perfectly");
-        } else {
-            fprintf(stderr,"nearly");
+        /* if we made it past the above sanity checks then
+         * we normalize that into pl0_lp0_dirn */
+        cplex_vec_normalize( &pl0_lp0_dirn, &pl0_lp0_dir );
+    
+        if ( cplex_vec_dot( ctmp, &lpr_norm, &pn_norm) == EXIT_FAILURE ) {
+            /* The only way this can happen is if the dot product
+             * result has a imaginary component. */
+            fprintf(stderr,"FAIL : dot(lpr_norm, pn_norm) returned complex\n");
+            return MATH_OP_FAIL;
         }
-        fprintf(stderr," orthogonal\n");
-
-        lpr_pn_theta = acos(ctmp[0].r);
-
-        fprintf(stderr,"INFO : lpr and pn angle = %-+18.12e radians\n",
-                                       lpr_pn_theta );
-
-        fprintf(stderr,"INFO : which is %-+18.12e degrees\n",
-                                       lpr_pn_theta * 180.0 / M_PI );
-
-        /* Since the line is nearly ( or perfectly ) orthogonal to the
-         * plane normal we need to check if the line is actually in
-         * the plane. Here we check if the direction vector from the
-         * plane point pl0 to the line point lp0 is also orthogonal to
-         * the plane normal.
-         *
-         * NOTE :     w a r n i n g 
-         *
-         *          This check will not work if the line point lp0
-         *          and the plane point pl0 are both the same.
-         *
-         * If so then the point lp0 is in the plane and that clearly
-         * means that the entire line is in the plane. */
-
-        /* dot product of pl0_lp0_dirn and the plane normal */
-        if ( cplex_vec_dot( ctmp, &pn_norm, &pl0_lp0_dirn ) == EXIT_FAILURE ) {
-            return return_value;
-        }
-
-        if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
-
-            fprintf(stderr,"WARN : line is in the plane\n");
-
-            /* This really is a non-issue. We have an infinite number
-             * of intercept points to choose from and we shall deal
-             * with this below.
+    
+        /* Since the dot product of two normalized vectors results in the
+         * cosine of the angle between them we can just check for a zero
+         * result.  We know that any angle theta = pi/2 + 2 * n * pi will
+         * be orthogonal for all integer n and cosine(theta) is zero in
+         * such cases. We shall check for an orthogonal condition to
+         * within a millionth of a degree with RT_ANGLE_COS_EPSILON */
+    
+        if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) {
+    
+            fprintf(stderr,"WARN : lpr and pn are ");
+            if ( fabs(ctmp[0].r) == 0.0 ) {
+                fprintf(stderr,"perfectly");
+            } else {
+                fprintf(stderr,"nearly");
+            }
+            fprintf(stderr," orthogonal\n");
+    
+            lpr_pn_theta = acos(ctmp[0].r);
+    
+            fprintf(stderr,"INFO : lpr and pn angle = %-+18.12e radians\n",
+                                           lpr_pn_theta );
+    
+            fprintf(stderr,"INFO : which is %-+18.12e degrees\n",
+                                           lpr_pn_theta * 180.0 / M_PI );
+    
+            /* Since the line is nearly ( or perfectly ) orthogonal to the
+             * plane normal we need to check if the line is actually in
+             * the plane. Here we check if the direction vector from the
+             * plane point pl0 to the line point lp0 is also orthogonal to
+             * the plane normal. If so then the point lp0 is in the plane
+             * and that clearly means that the entire line is in the plane.
+             *
+             * NOTE :     w a r n i n g 
+             *
+             *          This check will not work if the line point lp0
+             *          and the plane point pl0 are both the same. However
+             *          we trapped for this condition above.
              */
-
-            line_in_plane = 1;
-
-        } else {
-            /* The line is perfectly orthogonal to the plane normal
-             * with no possible intercepts. The line is parallel to 
-             * the plane in this case. */
-            fprintf(stderr,"FAIL : no possible lp intercept\n");
-            return return_value;
+            if ( cplex_vec_dot( ctmp, &pn_norm, &pl0_lp0_dirn ) == EXIT_FAILURE ) {
+                fprintf(stderr,"FAIL : dot(pn_norm, pl0_lp0_dirn) returned complex\n");
+                return MATH_OP_FAIL;
+            }
+    
+            if ( fabs(ctmp[0].r) < RT_ANGLE_COS_EPSILON ) { 
+                fprintf(stderr,"WARN : line is in the plane\n");
+    
+                /* This really is a non-issue. We have an infinite number
+                 * of intercept points to choose from and we shall deal
+                 * with this below.  */
+                line_in_plane = 1;
+    
+            } else {
+                /* The line is perfectly orthogonal to the plane normal
+                 * with no possible intercepts. The line is parallel to 
+                 * the plane in this case. */
+                fprintf(stderr,"FAIL : no possible intercept\n");
+                return MATH_OP_FAIL;
+            }
         }
     }
 
@@ -269,16 +263,25 @@ int line_plane_icept( vec_type *icept_pt,
      * vectors i_hat and j_hat. We may also have the situation
      * where only one of them exists and we must compute the
      * other.
+     *
+     * Even worse we need to verify that the supplied u and v
+     * vectors are actually in the plane and they are orthogonal.
+     *
+     * NOTE : the restriction on orthogonal basic vectors u and v
+     *        will mean we may never use a skew system in the 
+     *        plane.
      */
 
     if ( ( plu == NULL ) && ( plv == NULL ) ) {
         /* We must compute both the plu and plv where the
-         * i_hat or j_hat basis vectors are used. */
-
-uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
-
-        if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
-            return return_value;
+         * i_hat or j_hat basis vectors are used.
+         *
+         * This is used as an entry point if we need to
+         * reject the supplied u and v vectors. */
+uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
+            fprintf(stderr,"FAIL : dot(pn_norm, i_hat) returned complex\n");
+            return MATH_OP_FAIL;
+        }
 
         /* if cosine(theta) is equal to either positive one or
          * negative one then we have perfect linear alignment
@@ -286,14 +289,15 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
          * and test with j_hat basis vector. */
         if ( fabs(fabs(ctmp[1].r) - 1.0) < RT_EPSILON ) {
             /* we need to use j_hat instead */
-            cplex_vec_dot( ctmp+1, &pn_norm, &j_hat);
-            if ( check_dot( ctmp+1 ) == EXIT_FAILURE )
-                return return_value;
+            if ( cplex_vec_dot( ctmp+1, &pn_norm, &j_hat) == EXIT_FAILURE ) {
+                fprintf(stderr,"FAIL : dot(pn_norm, j_hat) returned complex\n");
+                return MATH_OP_FAIL;
+            }
 
+            /* we have sufficient angle between i_hat and the plane
+             * normal to continue. */
             cplex_vec_copy( tmp+2, &j_hat);
-
         } else {
-
             /* use i_hat as the reference basis vector */
             cplex_vec_copy( tmp+2, &i_hat);
         }
@@ -314,39 +318,59 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         if ( ( plu == NULL ) || ( plv == NULL ) ) {
             /* we only have one of them */
             if ( plu == NULL ) {
+                /* check that plv is zero magnitude */
+                if ( ( fabs(plv->x.r) < RT_EPSILON ) &&
+                     ( fabs(plv->y.r) < RT_EPSILON ) &&
+                     ( fabs(plv->z.r) < RT_EPSILON ) ) {
+                    /* we have a plv vector that is too small to
+                     * work with and thus we need to generate u and v
+                     * ourselves */
+                    goto uv;
+                }
+
                 /* check if plv is actually in the plane */
-                if ( cplex_vec_mag( plv ) < RT_EPSILON )
-                    return return_value;
-
                 cplex_vec_normalize( plvn, plv );
-                cplex_vec_dot( ctmp, &pn_norm, plvn );
-
-                if ( check_dot( ctmp ) == EXIT_FAILURE )
-                    return return_value;
+                if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == EXIT_FAILURE ) {
+                    fprintf(stderr,"FAIL : dot(pn_norm, plvn) returned complex\n");
+                    return MATH_OP_FAIL;
+                }
 
                 /* If plv is orthogonal to the plane normal then the
                  * cosine of the angle will be zero. */
-                if ( fabs(ctmp->r) > RT_EPSILON )
-                    return return_value;
+                if ( fabs(ctmp->r) > RT_EPSILON ) {
+                    fprintf(stderr,"WARN : v vector not in the plane.\n");
+                    goto uv;
+                }
 
                 /* compute plu */
                 cplex_vec_cross( tmp, &pn_norm, plvn );
                 cplex_vec_normalize( plun, tmp );
             } else {
+                /* check that plu is zero magnitude */
+                if ( ( fabs(plu->x.r) < RT_EPSILON ) &&
+                     ( fabs(plu->y.r) < RT_EPSILON ) &&
+                     ( fabs(plu->z.r) < RT_EPSILON ) ) {
+                    goto uv;
+                }
+
                 /* check if plu is actually in the plane */
-                if ( cplex_vec_mag( plu ) < RT_EPSILON )
-                    return return_value;
-
                 cplex_vec_normalize( plun, plu );
-                cplex_vec_dot( ctmp, &pn_norm, plun );
+                if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                    fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
+                    return MATH_OP_FAIL;
+                }
 
-                if ( check_dot( ctmp ) == EXIT_FAILURE )
-                    return return_value;
+                if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                    fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
+                    return MATH_OP_FAIL;
+                }
 
                 /* If plu is orthogonal to the plane normal then 
                  * the cosine of the angle will be zero. */
-                if ( fabs(ctmp->r) > RT_EPSILON )
-                    return return_value;
+                if ( fabs(ctmp->r) > RT_EPSILON ) {
+                    fprintf(stderr,"WARN : u vector not in the plane.\n");
+                    goto uv;
+                }
 
                 /* compute plv */
                 cplex_vec_cross( tmp, &pn_norm, plun );
@@ -391,7 +415,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
 
                         cplex_vec_dot( ctmp, &pn_norm, plvn );
                         if ( check_dot( ctmp ) == EXIT_FAILURE )
-                            return return_value;
+                            return MATH_OP_FAIL;
 
                         if ( ctmp->r != 0.0 ) goto uv;
 
@@ -491,14 +515,15 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         }
     }
 
-    /*
-    printf("dbug : u_hat = %+-16.9e", plun->x.r);
+    printf("dbug : end of uv vector computation %s:%d\n",
+                                           __FILE__, __LINE__);
+
+    printf("     : u_hat = %+-16.9e", plun->x.r);
     printf("    %+-16.9e", plun->y.r);
     printf("    %+-16.9e\n", plun->z.r );
-    printf("dbug : v_hat = %+-16.9e", plvn->x.r);
+    printf("     : v_hat = %+-16.9e", plvn->x.r);
     printf("    %+-16.9e", plvn->y.r);
     printf("    %+-16.9e\n", plvn->z.r );
-    */
 
     if ( line_in_plane ) {
         fprintf(stderr,"WARN : line is in the plane\n");
@@ -581,7 +606,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
         printf("dbug : intercept J at < %+-16.9e, %+-16.9e, %+-16.9e >\n",
                 tmp[14].x.r, tmp[14].y.r, tmp[14].z.r );
 
-        return return_value;
+        return MATH_OP_SUCCESS;
 
     }
 
@@ -606,7 +631,6 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     v[2].y.r = plun->z.r;         v[2].y.i = plun->z.i;
     v[2].z.r = plvn->z.r;         v[2].z.i = plvn->z.i;
 
-    /*
     printf("Matrix with line plane intercept data.\n");
     printf("dbug : row 1 =    %+-16.9e    %+-16.9e    %+-16.9e\n",
             v[0].x.r, v[0].y.r, v[0].z.r );
@@ -621,16 +645,24 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
     printf("%+-16.9e    %+-16.9e    %+-16.9e\n\n",
                  rh_col.x.r, rh_col.y.r, rh_col.z.r);
 
-    printf("     :   det =    %+-16.9e\n", ctmp[2].r);
+    cplex_det( ctmp+2, &v[0], &v[1], &v[2] ); 
+    printf("     :   det =    %+-16.9e + %+-16.9e i\n", ctmp[2].r, ctmp[2].i);
+
+    /* check if the determinant is so very close to zero that it
+     * may be merely noise. In fact check if it is smaller than
+     * the square of RT_EPSILON */
+    if ( ( fabs(ctmp[2].r) < ( RT_EPSILON * RT_EPSILON ) ) 
+            && ( ctmp[2].r != 0.0 ) ) {
+        printf("     :   det is microscopic noise\n");
+        ctmp[2].r = 0.0;
+        ctmp[2].i = 0.0;
+        printf("     :   det dropped to zero\n");
+    }
 
     printf("\nSolve for line plane intercept with Cramers rule.\n\n");
-    */
-
-    cplex_det( ctmp+2, &v[0], &v[1], &v[2] ); 
     if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) != 0 ) {
         fprintf(stderr,"dbug : cplex_cramer reports no valid solution\n");
         fprintf(stderr,"     : %s at %d\n", __FILE__, __LINE__ );
-
     } else {
         if (    ( fabs(res_vec.x.i) > RT_EPSILON )
              || ( fabs(res_vec.y.i) > RT_EPSILON )
@@ -662,9 +694,44 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
      * other.
      */
 
+    fprintf(stderr,"dbug : kst->x.r == k is %-+16.9e\n", kst->x.r);
+    fprintf(stderr,"     : %s at %d\n", __FILE__, __LINE__ );
+    /* check if k is very much smaller than RT_EPSILON */
+    if ( ( kst->x.r != 0.0 ) && ( fabs(kst->x.r) < ( RT_EPSILON * RT_EPSILON ) ) ) {
+        fprintf(stderr,"     : kst->x.r == k is microscopic noise\n");
+        kst->x.r = 0.0;
+        fprintf(stderr,"     : kst->x.r == k has been dropped to zero\n");
+    }
     /* multiply     k * norm[ lpr ]     */
     cplex_vec_scale( tmp+5, &lpr_norm, kst->x.r);
     cplex_vec_add( tmp+6, lp0, tmp+5 );
+
+
+    /* Since tmp[6] is used as the final result to be returned as
+     * the intercept point and thus it can be slightly cleaned
+     * of noisey very very small values.
+     *
+     * Check for values much less than RT_EPSILON and cull them
+     * to zero. */
+    if ( ( fabs(tmp[6].x.r) < RT_EPSILON ) ||
+         ( fabs(tmp[6].y.r) < RT_EPSILON ) ||
+         ( fabs(tmp[6].z.r) < RT_EPSILON ) ) {
+        fprintf(stderr,"dbug : cull below RT_EPSILON values\n");
+        fprintf(stderr,"     : %s at %d\n", __FILE__, __LINE__ );
+        if ( fabs(tmp[6].x.r) < RT_EPSILON ) {
+            fprintf(stderr,"     : x dropped from %-+16.9e to zero\n", tmp[6].x.r);
+            tmp[6].x.r = 0.0;
+        }
+        if ( fabs(tmp[6].y.r) < RT_EPSILON ) {
+            fprintf(stderr,"     : y dropped from %-+16.9e to zero\n", tmp[6].y.r);
+            tmp[6].y.r = 0.0;
+        }
+        if ( fabs(tmp[6].z.r) < RT_EPSILON ) {
+            fprintf(stderr,"     : z dropped from %-+16.9e to zero\n", tmp[6].z.r);
+            tmp[6].z.r = 0.0;
+        }
+    }
+
     printf("\n    icept_pt = lp0 + k * norm[ lpr ]\n");
     printf("             = < %+-16.9e, %+-16.9e, %+-16.9e >\n",
                           tmp[6].x.r, tmp[6].y.r, tmp[6].z.r );
@@ -687,7 +754,7 @@ uv:     cplex_vec_dot( ctmp+1, &pn_norm, &i_hat);
             ||
          ( fabs( tmp[6].z.r - tmp[10].z.r ) < RT_EPSILON ) ) {
 
-        return_value = 1;
+        return_value = MATH_OP_SUCCESS;
 
     }
 
