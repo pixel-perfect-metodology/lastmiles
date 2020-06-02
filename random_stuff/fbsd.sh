@@ -68,15 +68,16 @@ export CC
 LD_FLAGS=\-Wl,-rpath=/home/dclarke/local/lib:/usr/local/lib\ \-L/home/dclarke/local/lib\ \-L/usr/local/lib
 export LD_FLAGS
 
-CFLAGS=\-m64\ \-std=c99\ \-Werror\ \-fno-builtin\ \-O0\ \-g\ \
-\-no-integrated-as\ \-fno-fast-math\ \
+CFLAGS=\-m64\ \-std=c99\ \-fno-builtin\ \-O0\ \-g\ \
+\-no-integrated-as\ \-fno-fast-math\ \-Weverything\ \
 \-fdiagnostics-format=vi\ \-fno-color-diagnostics
 export CFLAGS 
 
 CPPFLAGS=\-D_TS_ERRNO\ \-D_POSIX_PTHREAD_SEMANTICS\ \
-\-D_LARGEFILE64_SOURCE
+\-D_LARGEFILE64_SOURCE\ \-D_XOPEN_SOURCE=600
 export CPPFLAGS
 
+rm -f ent.o iso8859.o randtest.o chisq.o ent
 $CC $CFLAGS $CPPFLAGS -c ent.c -o ent.o
 $CC $CFLAGS $CPPFLAGS -c iso8859.c -o iso8859.o
 $CC $CFLAGS $CPPFLAGS -c randtest.c -o randtest.o
