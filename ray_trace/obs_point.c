@@ -98,14 +98,15 @@ int main ( int argc, char **argv)
     printf("< %-+18.12e, %-+18.12e, %-+18.12e >\n",
        y_prime_hat_vec.x.r, y_prime_hat_vec.y.r, y_prime_hat_vec.z.r );
 
-    /* TODO point to begin with on the observation plane.
-     *
-     *   x_prime = 1.7;
-     *   y_prime = -2.0;
-     */
+    /* point to begin with on the observation plane. */
+    x_prime = 1.7;
+    y_prime = -2.0;
 
-    x_prime =  0.54772255750516611345 + 0.1;
+    /* these are manually calculated to be sqrt(0.5) distance
+     * from the center of the sphere in the yz-plane 
+    x_prime =  0.54772255750516611345;
     y_prime = -0.44721359549995793928;
+    */
 
     printf("INFO : initial x' and y' : ( %-+18.12e, %-+18.12e )\n\n",
                                                     x_prime, y_prime );
@@ -171,8 +172,7 @@ int main ( int argc, char **argv)
     cplex_vec_set( &object_location, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
     /* Again the diagrams we used had a=5, b=2 and c=6 */
-    /* TODO test with a perfect sphere of radius 1 */
-    cplex_vec_set( &semi_major_axi, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0);
+    cplex_vec_set( &semi_major_axi, 5.0, 0.0, 2.0, 0.0, 5.0, 0.0);
 
     /* Note that the ray direction must be normalized */
     if ( cplex_vec_normalize( &ray_direct, &obs_normal ) == MATH_OP_FAIL ) {
