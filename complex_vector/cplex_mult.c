@@ -24,26 +24,18 @@ int cplex_mult( cplex_type *res, cplex_type *op1, cplex_type *op2 )
      * theddmage (x+i*y)*(a+i*b) == ax + i*bx + i*ya -1(by)
      */
 
-    int status = cplex_check(op1);
-    if ( status != 0 ) return status;
-    status = cplex_check(op2);
-    if ( status != 0 ) return status;
+    if ( (cplex_check(op1) == MATH_OP_FAIL)
+         ||
+         (cplex_check(op2) == MATH_OP_FAIL) ) {
 
-    /*  Quick hack change from Travis to test the addition of 0.0
-     *  on a possible negative zero value 
-     */
-    op1->r = op1->r + 0.0;
-    op1->i = op1->i + 0.0;
-    op2->r = op2->r + 0.0;
-    op2->i = op2->i + 0.0;
+        return MATH_OP_FAIL;
+
+    }
 
     res->r = op1->r * op2->r - ( op1->i * op2->i );
     res->i = op1->r * op2->i + ( op2->r * op1->i );
 
-    res->r = res->r + 0.0;
-    res->i = res->i + 0.0;
-
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 

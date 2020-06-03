@@ -18,6 +18,13 @@
 /* return the magnitude of op1 */
 double cplex_mag( cplex_type *op1 )
 {
+    /* TODO we need to change this to a two parameter function
+     *      wherein the return value of the magnitude is in
+     *      a point to a double whereas the function itself
+     *      returns a math status MATH_OP_SUCCESS.
+     *
+     *      Is this even a sane idea ? 
+     */
 
     double hyp = op1->r * op1->r + op1->i * op1->i;
     return sqrt( hyp );

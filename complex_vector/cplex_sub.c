@@ -18,15 +18,18 @@
 int cplex_sub( cplex_type *res, cplex_type *op1, cplex_type *op2 )
 {
 
-    int status = cplex_check(op1);
-    if ( status != 0 ) return status;
-    status = cplex_check(op2);
-    if ( status != 0 ) return status;
+    if ( ( cplex_check(op1) == MATH_OP_FAIL ) 
+         ||
+         ( cplex_check(op2) == MATH_OP_FAIL ) ) {
+
+        return MATH_OP_FAIL;
+
+    }
 
     res->r = op1->r - op2->r;
     res->i = op1->i - op2->i;
 
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 

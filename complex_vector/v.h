@@ -12,7 +12,6 @@
  *********************************************************************/
 #define _XOPEN_SOURCE 600
 
-#include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -83,7 +82,8 @@ int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 );
 int cplex_vec_cross( vec_type *res, vec_type *op1, vec_type *op2 );
 int cplex_vec_normalize( vec_type *res, vec_type *op1 );
 
-int cplex_quadratic( cplex_type res[4],
+int cplex_quadratic( cplex_type res[2],
+                     int *real_root_count,
                      cplex_type *op1,
                      cplex_type *op2,
                      cplex_type *op3 );
@@ -106,6 +106,7 @@ double cplex_vec_mag( vec_type *op1 );
 
 /* return the solutions to the complex coefficient quadratic */
 int icept( cplex_type res[2],
+           int *intercept_count,
            vec_type *sign,
            vec_type *loc,
            vec_type *axi,
@@ -136,6 +137,9 @@ int gradient( vec_type *res,
               vec_type *intercept );
 
 int cplex_check( cplex_type *op );
+int cplex_vec_check( vec_type *op );
+
+/* TODO possibly just cruft follows */
 int check_dot(cplex_type *dat);
 size_t tohex( char **ret, const void *addr, const size_t n );
 int double_cmp( double *a, double *b, size_t n);

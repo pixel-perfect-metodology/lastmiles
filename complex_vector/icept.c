@@ -12,10 +12,10 @@
  *********************************************************************/
 #define _XOPEN_SOURCE 600
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <unistd.h>
 #include <math.h>
 
@@ -26,10 +26,9 @@
  *
  * We shall get the solutions to a complex quadratic polynomial.
  * see https://en.wikipedia.org/wiki/Complex_quadratic_polynomial
- *
- * return an integer count of the real solutions.
  */
 int icept( cplex_type res[2],
+           int *intercept_count,
            vec_type *sign,
            vec_type *loc,
            vec_type *axi,
@@ -40,6 +39,10 @@ int icept( cplex_type res[2],
     int soln_count;
     vec_type tmp[9];
     cplex_type c_tmp[18];
+
+    memset( &tmp, 0x00, (size_t)(9)*sizeof(vec_type));
+    memset( &c_tmp, 0x00, (size_t)(18)*sizeof(cplex_type));
+
     cplex_type quad_res[2];
 
     /* we shall form the complex cooefficients of a quadratic */
@@ -51,10 +54,6 @@ int icept( cplex_type res[2],
      *     < b^2 * c^2, a^2 * c^2, a^2 * b^2 >
      *
      * */
-    tmp[0].x.i = 0.0;
-    tmp[0].y.i = 0.0;
-    tmp[0].z.i = 0.0;
-
     tmp[0].x.r = axi->y.r * axi->y.r * axi->z.r * axi->z.r;
     tmp[0].y.r = axi->x.r * axi->x.r * axi->z.r * axi->z.r;
     tmp[0].z.r = axi->x.r * axi->x.r * axi->y.r * axi->y.r;
@@ -62,15 +61,14 @@ int icept( cplex_type res[2],
     /* product of the sign data with the intermediate axi vector
      * in tmp[0] to form a factor of our complex cooefficient A */
 
-    tmp[1].x.i = 0.0;
-    tmp[1].y.i = 0.0;
-    tmp[1].z.i = 0.0;
     tmp[1].x.r = sign->x.r * tmp[0].x.r;
     tmp[1].y.r = sign->y.r * tmp[0].y.r;
     tmp[1].z.r = sign->z.r * tmp[0].z.r;
 
     /* another factor of A is the complex components of the ray
      * direction squared. */
+
+    /* TODO we need to check the MATH_OP_foo value for all of this */
     cplex_mult( &((tmp+2)->x), &(obs_v->x), &(obs_v->x) );
     cplex_mult( &((tmp+2)->y), &(obs_v->y), &(obs_v->y) );
     cplex_mult( &((tmp+2)->z), &(obs_v->z), &(obs_v->z) );
@@ -126,7 +124,13 @@ int icept( cplex_type res[2],
 
     cplex_sub( &C, c_tmp+11, c_tmp+16);
 
-    soln_count = cplex_quadratic( quad_res, &A, &B, &C );
+    /* TODO why even bother with res[] as separate from quad_res[] */
+    if ( cplex_quadratic( quad_res, &soln_count,
+                          &A, &B, &C ) == MATH_OP_FAIL ) {
+
+        return MATH_OP_FAIL;
+
+    }
 
     res[0].r = quad_res[0].r;
     res[0].i = quad_res[0].i;
@@ -134,17 +138,20 @@ int icept( cplex_type res[2],
     res[1].r = quad_res[1].r;
     res[1].i = quad_res[1].i;
 
-    /***************************************************************
-    printf ("\n---------- in intercept we see roots ----------\n");
-    printf ("   0 : res[0] = ( %-38.34e, %-38.34e )\n",
+    *intercept_count = soln_count;
+
+    /***************************************************************/
+    printf ("\n---------- in icept.c we see roots ----------\n");
+    printf ("     : intercept_count = %i\n", soln_count);
+    printf ("   0 : res[0] = ( %-+18.12e, %-+18.12e )\n",
                                                res[0].r, res[0].i);
 
-    printf ("   1 : res[1] = ( %-38.34e, %-38.34e )\n",
+    printf ("   1 : res[1] = ( %-+18.12e, %-+18.12e )\n",
                                                res[1].r, res[1].i);
     printf ("-----------------------------------------------\n");
-    ****************************************************************/
+    /****************************************************************/
 
-    return ( soln_count );
+    return MATH_OP_SUCCESS;
 
 }
 

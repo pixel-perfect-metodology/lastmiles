@@ -12,7 +12,6 @@
  *********************************************************************/
 #define _XOPEN_SOURCE 600
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -21,8 +20,6 @@
 #include <complex.h>
 
 #include "v.h"
-
-void check_status( int status );
 
 int main ( int argc, char **argv)
 {
@@ -45,7 +42,7 @@ int main ( int argc, char **argv)
     op2.i = 1.0; op2.r = 0.0;
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
     printf("     : op2 = ( %g, %g )\n", op2.r, op2.i);
-    check_status( cplex_mult( &opr, &op1, &op2 ) );
+    cplex_mult(&opr, &op1, &op2);
     printf("     : opr = op1 * op2 = ( %g, %g )\n", opr.r, opr.i);
     printf("     :     should be i^2 = -1\n\n");
 
@@ -54,7 +51,7 @@ int main ( int argc, char **argv)
     op1.i = 0.0;
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
     printf("     : op2 = ( %g, %g )\n", op2.r, op2.i);
-    check_status( cplex_mult( &opr, &op1, &op2 ) );
+    cplex_mult(&opr, &op1, &op2);
 
     printf("     : opr = op1 * op2 = ( %g, %g )\n", opr.r, opr.i);
     printf("     :     should be 1i\n\n");
@@ -63,7 +60,7 @@ int main ( int argc, char **argv)
     op2.r = 0.0; op2.i = 0.0;
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
     printf("     : op2 = ( %g, %g )\n", op2.r, op2.i);
-    check_status( cplex_mult( &opr, &op1, &op2 ) );
+    cplex_mult(&opr, &op1, &op2);
     printf("     : opr = op1 * op2 = ( %g, %g )\n", opr.r, opr.i);
     printf("     :     should be just zero.\n\n");
 
@@ -73,7 +70,7 @@ int main ( int argc, char **argv)
     op2.i = -1.0;
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
     printf("     : op2 = ( %g, %g )\n", op2.r, op2.i);
-    check_status( cplex_div( &opr, &op1, &op2 ) );
+    cplex_div(&opr, &op1, &op2);
     printf("dbug : opr = op1 / op2 = ( %g, %g )\n", opr.r, opr.i);
     printf("     :     should be 1 + 2i\n\n");
 
@@ -81,7 +78,7 @@ int main ( int argc, char **argv)
     op2.i = -12.0;
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
     printf("     : op2 = ( %g, %g )\n", op2.r, op2.i);
-    check_status( cplex_div( &opr, &op1, &op2 ) );
+    cplex_div(&opr, &op1, &op2);
     printf("dbug : opr = op1 / op2 = ( %g, %g )\n", opr.r, opr.i);
     printf("     :         should be ( -0.325, 0.225 )\n\n");
 
@@ -110,7 +107,7 @@ int main ( int argc, char **argv)
      * a(24/7)
      * 1.28700221758656877360
      */
-    check_status( cplex_sq( &opr, &op1 ) );
+    cplex_sq(&opr, &op1);
     printf("     : opr = op1^2 = ( %g, %g )\n", opr.r, opr.i);
     printf("     :     should be 7 + 24i\n");
     printf("     :     magnitude is %g\n", cplex_mag(&opr));
@@ -121,7 +118,7 @@ int main ( int argc, char **argv)
     printf("     : now we take the square root(s) of opr\n");
     op1.r = opr.r;
     op1.i = opr.i;
-    check_status( cplex_sqrt( opr2, &op1 ) );
+    cplex_sqrt(opr2, &op1);
     printf("root : 1 is ( %g, %g )\n", opr2[0].r, opr2[0].i);
     printf("root : 2 is ( %g, %g )\n", opr2[1].r, opr2[1].i);
     printf("     : should be ( 4, 3i ) and ( -4, -3i ).\n\n");
@@ -133,7 +130,7 @@ int main ( int argc, char **argv)
     printf("dbug : op1 = ( %g, %g )\n", op1.r, op1.i);
     printf("     :     theta = %16.12e\n", cplex_theta(&op1) );
     printf("     :     magnitude is %g\n", cplex_mag(&op1));
-    check_status( cplex_sqrt( opr2, &op1 ) );
+    cplex_sqrt(opr2, &op1);
     printf("root : 1 = ( %16.12e, %16.12e )\n", opr2[0].r, opr2[0].i);
     printf("root : 2 = ( %16.12e, %16.12e )\n\n", opr2[1].r, opr2[1].i);
 
@@ -156,7 +153,7 @@ int main ( int argc, char **argv)
     printf("     :     theta = %16.12e\n", cplex_theta(&op1) );
     printf("     :     magnitude is %g\n", cplex_mag(&op1));
 
-    check_status( cplex_cbrt( opr2, &op1 ) );
+    cplex_cbrt(opr2, &op1);
     printf("root : 1 = ( %16.12e, %16.12e )\n", opr2[0].r, opr2[0].i);
     printf("           ( 1.23205080756888,   1.86602540378444 )\n");
     printf("root : 2 = ( %16.12e, %16.12e )\n", opr2[1].r, opr2[1].i);
@@ -200,7 +197,7 @@ int main ( int argc, char **argv)
      * result should be ( 18, -10i ) */
 
     printf("Lets test vector dot product\n");
-    check_status( cplex_vec_dot( &opr, v, v+1) );
+    cplex_vec_dot(&opr, v, v+1);
     printf("     : dot product = ( %g, %g )\n", opr.r, opr.i);
     printf("     : should be ( 18, -10i )\n\n");
 
@@ -217,7 +214,7 @@ int main ( int argc, char **argv)
      * < 12 + 12im, -6 - 6im, 0 + 0im > 
      */
     printf("Lets test vector cross product\n");
-    check_status( cplex_vec_cross( v+2, v, v+1 ) );
+    cplex_vec_cross(v+2, v, v+1);
     printf("     : v1 X v2 = < ( %g, %g ), ( %g, %g ), ( %g, %g ) >\n",
             v[2].x.r, v[2].x.i,
             v[2].y.r, v[2].y.i,
@@ -234,11 +231,11 @@ int main ( int argc, char **argv)
      *   ( 0.3779644730092272 + 0.3779644730092272im ),
      *   ( 0.5669467095138407 + 0.5669467095138407im ) >
      */
-    status = cplex_vec_normalize( (v+3), v );
-    if ( status == EXIT_FAILURE ) {
-        printf("FAIL : cplex_vec_normalize() returns EXIT_FAILURE\n");
-        return ( EXIT_FAILURE );
+    if ( cplex_vec_normalize( (v+3), v ) == MATH_OP_FAIL ) {
+        printf("FAIL : cplex_vec_normalize() returns MATH_OP_FAIL\n");
+        return EXIT_FAILURE;
     }
+
     printf("Lets test vector normalization of v[0] as described.\n");
     printf("    : function call cplex_vec_normalize() returns %i\n",
                                                              status );
@@ -268,23 +265,41 @@ int main ( int argc, char **argv)
     op1.r = 1.0; op1.i = 0.0;
     op2.r = -9.0; op2.i = 0.0;
     op3.r = 14.0; op3.i = 0.0;
-    real_root_count = cplex_quadratic( quad_res, &op1, &op2, &op3 );
-    printf("Real root count = %i\n", real_root_count );
-    printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
+
+    if ( cplex_quadratic( quad_res, &real_root_count,
+                          &op1, &op2, &op3 ) == MATH_OP_FAIL ) {
+
+        fprintf(stderr,"WARN : cplex_quadratic returns MATH_OP_FAIL\n");
+
+    } else {
+
+        printf("Real root count = %i\n", real_root_count );
+        printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("          result 2 = ( %16.12e, %16.12e )\n\n",
+        printf("          result 2 = ( %16.12e, %16.12e )\n\n",
                                           quad_res[1].r, quad_res[1].i);
+
+    }
 
     printf("Quadratic x^2 + 5 * x - 14 = 0\n");
     op1.r = 1.0; op1.i = 0.0;
     op2.r = 5.0; op2.i = 0.0;
     op3.r = -14.0; op3.i = 0.0;
-    real_root_count = cplex_quadratic( quad_res, &op1, &op2, &op3 );
-    printf("Real root count = %i\n", real_root_count );
-    printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
+
+    if ( cplex_quadratic( quad_res, &real_root_count,
+                          &op1, &op2, &op3 ) == MATH_OP_FAIL ) {
+
+        fprintf(stderr,"WARN : cplex_quadratic returns MATH_OP_FAIL\n");
+
+    } else {
+
+        printf("Real root count = %i\n", real_root_count );
+        printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("          result 2 = ( %16.12e, %16.12e )\n\n",
+        printf("          result 2 = ( %16.12e, %16.12e )\n\n",
                                           quad_res[1].r, quad_res[1].i);
+
+    }
 
 
     /* Wed Oct 23 2019 via IRC we have traviss who catches a bug here 
@@ -297,13 +312,23 @@ int main ( int argc, char **argv)
     op1.r = 1.0; op1.i = 0.0;
     op2.r = -5.0; op2.i = 0.0;
     op3.r = 14.0; op3.i = 0.0;
-    real_root_count = cplex_quadratic( quad_res, &op1, &op2, &op3 );
-    printf("Real root count = %i\n", real_root_count );
-    printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
+
+    if ( cplex_quadratic( quad_res, &real_root_count,
+                          &op1, &op2, &op3 ) == MATH_OP_FAIL ) {
+
+        fprintf(stderr,"WARN : cplex_quadratic returns MATH_OP_FAIL\n");
+
+    } else {
+
+        printf("Real root count = %i\n", real_root_count );
+        printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("                     ( 2.5,  2.78388218141501 )\n");
-    printf("          result 2 = ( %16.12e, %16.12e )\n",
+        printf("          result 2 = ( %16.12e, %16.12e )\n\n",
                                           quad_res[1].r, quad_res[1].i);
+
+    }
+
+    printf("                     ( 2.5,  2.78388218141501 )\n");
     printf("                     ( 2.5, -2.78388218141501 )\n\n");
 
 
@@ -311,12 +336,30 @@ int main ( int argc, char **argv)
     op1.r = 2.0;  op1.i = 0.0;
     op2.r = -5.0; op2.i = 0.0;
     op3.r = -1.0; op3.i = 0.0;
-    real_root_count = cplex_quadratic( quad_res, &op1, &op2, &op3 );
-    printf("Real root count = %i\n", real_root_count );
-    printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
+    /* styx$ echo '18k 0.25 5 33v + * pq' | dc 
+     * 2.686140661634507164
+     * styx$ echo '18k 0.25 5 33v - * pq' | dc 
+     * -.186140661634507164
+     */
+
+    if ( cplex_quadratic( quad_res, &real_root_count,
+                          &op1, &op2, &op3 ) == MATH_OP_FAIL ) {
+
+        fprintf(stderr,"WARN : cplex_quadratic returns MATH_OP_FAIL\n");
+
+    } else {
+
+        printf("Real root count = %i\n", real_root_count );
+        printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("          result 2 = ( %16.12e, %16.12e )\n",
+        printf("          result 2 = ( %16.12e, %16.12e )\n\n",
                                           quad_res[1].r, quad_res[1].i);
+
+    }
+    printf("                     ( 2.686140661634507164e+00, 0.0 )\n");
+    printf("                     ( -1.86140661634507164e-01, 0.0 )\n\n");
+
+
 
     printf("DBUG : ***********************************************\n\n");
     printf("DBUG : 201920191111020747\n");
@@ -328,12 +371,22 @@ int main ( int argc, char **argv)
     op1.r = 1.0;  op1.i = 1.0;
     op2.r = -2.0; op2.i = -1.0;
     op3.r = 1.0; op3.i = 0.0;
-    real_root_count = cplex_quadratic( quad_res, &op1, &op2, &op3 );
-    printf("Real root count = %i\n", real_root_count );
-    printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
+
+    if ( cplex_quadratic( quad_res, &real_root_count,
+                          &op1, &op2, &op3 ) == MATH_OP_FAIL ) {
+
+        fprintf(stderr,"WARN : cplex_quadratic returns MATH_OP_FAIL\n");
+
+    } else {
+
+        printf("Real root count = %i\n", real_root_count );
+        printf("Quadratic result 1 = ( %16.12e, %16.12e )\n",
                                           quad_res[0].r, quad_res[0].i);
-    printf("          result 2 = ( %16.12e, %16.12e )\n\n",
+        printf("          result 2 = ( %16.12e, %16.12e )\n\n",
                                           quad_res[1].r, quad_res[1].i);
+
+    }
+    printf("      should be ( 1, 0 ) and ( 0.5, -0.5 )\n\n");
 
 
     printf("\n-----------------------------------------------------\n");
@@ -366,7 +419,7 @@ int main ( int argc, char **argv)
             v[2].y.r, v[2].y.i,
             v[2].z.r, v[2].z.i );
 
-    check_status( cplex_det( &opr, &v[0], &v[1], &v[2] ) ); 
+    cplex_det(&opr, &v[0], &v[1], &v[2]); 
     printf("     : det = ( %g, %g )\n", opr.r, opr.i);
 
     printf("\n-----------------------------------------------------\n");
@@ -387,7 +440,7 @@ int main ( int argc, char **argv)
             v[2].y.r, v[2].y.i,
             v[2].z.r, v[2].z.i );
 
-    check_status( cplex_det( &opr, &v[0], &v[1], &v[2] ) ); 
+    cplex_det(&opr, &v[0], &v[1], &v[2]); 
     printf("     : det = ( %g, %g )\n", opr.r, opr.i);
 
     printf("\n-----------------------------------------------------\n");
@@ -407,7 +460,7 @@ int main ( int argc, char **argv)
             v[2].y.r, v[2].y.i,
             v[2].z.r, v[2].z.i );
 
-    check_status( cplex_det( &opr, &v[0], &v[1], &v[2] ) ); 
+    cplex_det(&opr, &v[0], &v[1], &v[2]); 
     printf("     : det = ( %g, %g )\n", opr.r, opr.i);
 
     printf("\n-----------------------------------------------------\n");
@@ -443,8 +496,7 @@ int main ( int argc, char **argv)
     rh_col.y.r = 2.0; rh_col.y.i = 0.75;
     rh_col.z.r = 3.0; rh_col.z.i = -0.25;
 
-    status = cplex_cramer( &res_vec, &v[0], &v[1], &v[2], &rh_col );
-    if ( status != 0 ) {
+    if ( cplex_cramer( &res_vec, &v[0], &v[1], &v[2], &rh_col ) == MATH_OP_FAIL ) {
         printf("dbug : There is no valid solution.\n");
     } else {
         printf("     : result col = < ( %+-16.12e, %+-16.12e ),\n",
@@ -482,28 +534,29 @@ int main ( int argc, char **argv)
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u,&plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("INFO : line_plane_icept() returns %i\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
-    }
 
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
+    } else {
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
+    }
 
     printf("\n\n--------------------------------------------------\n");
 
@@ -530,28 +583,30 @@ int main ( int argc, char **argv)
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u,&plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("INFO : line_plane_icept() returns %i\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
+    } else {
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     printf("INFO : test the line point and plane point are same\n");
@@ -573,28 +628,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  (vec_type*)(NULL),(vec_type*)(NULL));
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("INFO : line_plane_icept() returns %i\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
+    } else {
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
 
@@ -634,29 +691,30 @@ int main ( int argc, char **argv)
     printf("     : u = NULL pointer\n");
     printf("     : v = NULL pointer\n");
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  (vec_type*)(NULL),(vec_type*)(NULL));
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("INFO : line_plane_icept() returns %i\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
+    } else {
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* try again with a zero magnitude u and v vectors */
@@ -682,29 +740,30 @@ int main ( int argc, char **argv)
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
+    } else {
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* try again with a microscopic v vector where we know a 
@@ -736,29 +795,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
+    } else {
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* use a microscopic v vector that is NOT in the plane */
@@ -787,31 +847,30 @@ int main ( int argc, char **argv)
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
     
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* use a microscopic u vector that is valid as well as v vector
@@ -842,31 +901,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* use a microscopic u vector that is NOT in the plane
@@ -899,31 +957,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* Neither u nor v is zero in size but v vector magnitude
@@ -956,31 +1013,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* provide both u and v as normalized and perfectly orthogonal
@@ -1027,31 +1083,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     cplex_vec_set( &plane_u, 0.0, 0.0,
@@ -1081,32 +1136,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     cplex_vec_set( &plane_u, 0.0, 0.0,
@@ -1136,32 +1189,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     cplex_vec_set( &plane_u, 0.0, 0.0,
@@ -1185,31 +1236,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  &plane_u, (vec_type*)(NULL));
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     cplex_vec_set( &plane_v, -13.0, 0.0,
@@ -1233,32 +1283,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  (vec_type*)(NULL), &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     printf("\n\nINFO : line_plane_icept()\n");
@@ -1279,31 +1327,30 @@ int main ( int argc, char **argv)
     printf("     : &plane_normal = < %g, %g, %g >\n",
             plane_normal.x.r, plane_normal.y.r, plane_normal.z.r);
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  (vec_type*)(NULL), (vec_type*)(NULL));
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* now a completely trivial situation */
@@ -1329,32 +1376,30 @@ int main ( int argc, char **argv)
     printf("    %+-16.9e", plane_v.y.r);
     printf("    %+-16.9e\n", plane_v.z.r );
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  (vec_type*)(NULL), &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
     /* also trivial situation */
@@ -1380,31 +1425,30 @@ int main ( int argc, char **argv)
     printf("    %+-16.9e", plane_v.y.r);
     printf("    %+-16.9e\n", plane_v.z.r );
 
-    lp_status = line_plane_icept( &lp_intercept_point,
-                                  &plane_u_norm, &plane_v_norm,
-                                  &lp_intercept_param,
-                                  &line_point, &line_direction,
-                                  &plane_point, &plane_normal,
-                                  (vec_type*)(NULL), &plane_v);
+    if ( line_plane_icept( &lp_intercept_point,
+                           &plane_u_norm, &plane_v_norm,
+                           &lp_intercept_param,
+                           &line_point, &line_direction,
+                           &plane_point, &plane_normal,
+                           &plane_u,&plane_v) == MATH_OP_SUCCESS ) {
 
-    printf("     : line_plane_icept() returns %i\n\n", lp_status);
-
-    if ( lp_status != 0 ) {
         printf("     : intercept = ( %-+16.9e, %-+16.9e, %-+16.9e )\n",
                                  lp_intercept_point.x.r,
                                  lp_intercept_point.y.r,
                                  lp_intercept_point.z.r);
+
+        printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
+        printf("    %+-16.9e", plane_u_norm.y.r);
+        printf("    %+-16.9e\n", plane_u_norm.z.r );
+
+        printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
+        printf("    %+-16.9e", plane_v_norm.y.r);
+        printf("    %+-16.9e\n\n", plane_v_norm.z.r );
+
     } else {
-        printf("\nWARN : no valid solution found.\n");\
+        printf("INFO : line_plane_icept() returns MATH_OP_FAIL\n");
     }
 
-
-    printf("     : u_hat = %+-16.9e", plane_u_norm.x.r);
-    printf("    %+-16.9e", plane_u_norm.y.r);
-    printf("    %+-16.9e\n", plane_u_norm.z.r );
-    printf("     : v_hat = %+-16.9e", plane_v_norm.x.r);
-    printf("    %+-16.9e", plane_v_norm.y.r);
-    printf("    %+-16.9e\n\n", plane_v_norm.z.r );
 
     printf("\n\n--------------------------------------------------\n");
 

@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include "v.h"
 
-/* return op1 / op2 */
 int cplex_div( cplex_type *res, cplex_type *op1, cplex_type *op2 )
 {
 
@@ -42,19 +41,22 @@ int cplex_div( cplex_type *res, cplex_type *op1, cplex_type *op2 )
      *
      */
 
-    int status = cplex_check(op1);
-    if ( status != 0 ) return status;
-    status = cplex_check(op2);
-    if ( status != 0 ) return status;
+    if ( (cplex_check(op1) == MATH_OP_FAIL)
+         ||
+         (cplex_check(op2) == MATH_OP_FAIL) ) {
+
+        return MATH_OP_FAIL;
+
+    }
 
     denom = op2->r * op2->r + op2->i * op2->i;
 
-    if ( denom == 0.0 ) return 1;
+    if ( denom == 0.0 ) return MATH_OP_FAIL;
 
     res->r = (op1->r * op2->r + op1->i * op2->i) / denom;
     res->i = (op1->i * op2->r - op1->r * op2->i) / denom;
 
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 

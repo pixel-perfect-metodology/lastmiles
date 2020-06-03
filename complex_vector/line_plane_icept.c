@@ -165,12 +165,12 @@ int line_plane_icept( vec_type *icept_pt,
 
     /* should be impossible for the normalized lpr or pn to cause
      * a problem at this point */
-    if ( cplex_vec_normalize( &lpr_norm, lpr ) == EXIT_FAILURE ) {
+    if ( cplex_vec_normalize( &lpr_norm, lpr ) == MATH_OP_FAIL ) {
         fprintf(stderr,"FAIL : impossible to normalize vec lpr\n");
         return MATH_OP_FAIL;
     }
 
-    if ( cplex_vec_normalize( &pn_norm, pn ) == EXIT_FAILURE ) {
+    if ( cplex_vec_normalize( &pn_norm, pn ) == MATH_OP_FAIL ) {
         fprintf(stderr,"FAIL : impossible to normalize vec pn\n");
         return MATH_OP_FAIL;
     }
@@ -207,7 +207,7 @@ int line_plane_icept( vec_type *icept_pt,
 
         /* we may have a line that is in the plane and also the plane
          * point is the same as the line point data */
-        if ( cplex_vec_dot( ctmp, &lpr_norm, &pn_norm) == EXIT_FAILURE ) {
+        if ( cplex_vec_dot( ctmp, &lpr_norm, &pn_norm) == MATH_OP_FAIL ) {
             /* The only way this can happen is if the dot product
              * result has a imaginary component. */
             fprintf(stderr,"FAIL : dot(lpr_norm, pn_norm) returned complex\n");
@@ -242,7 +242,7 @@ int line_plane_icept( vec_type *icept_pt,
          * we normalize that into pl0_lp0_dirn */
         cplex_vec_normalize( &pl0_lp0_dirn, &pl0_lp0_dir );
 
-        if ( cplex_vec_dot( ctmp, &lpr_norm, &pn_norm) == EXIT_FAILURE ) {
+        if ( cplex_vec_dot( ctmp, &lpr_norm, &pn_norm) == MATH_OP_FAIL ) {
             /* The only way this can happen is if the dot product
              * result has a imaginary component. */
             fprintf(stderr,"FAIL : dot(lpr_norm, pn_norm) returned complex\n");
@@ -287,7 +287,7 @@ int line_plane_icept( vec_type *icept_pt,
              *          and the plane point pl0 are both the same. However
              *          we trapped for this condition above.
              */
-            if ( cplex_vec_dot( ctmp, &pn_norm, &pl0_lp0_dirn ) == EXIT_FAILURE ) {
+            if ( cplex_vec_dot( ctmp, &pn_norm, &pl0_lp0_dirn ) == MATH_OP_FAIL ) {
                 fprintf(stderr,"FAIL : dot(pn_norm, pl0_lp0_dirn) returned complex\n");
                 return MATH_OP_FAIL;
             }
@@ -337,7 +337,7 @@ int line_plane_icept( vec_type *icept_pt,
          *
          * This is used as an entry point if we need to
          * reject the supplied u and v vectors. */
-uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
+uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == MATH_OP_FAIL ) {
             fprintf(stderr,"FAIL : dot(pn_norm, i_hat) returned complex\n");
             return MATH_OP_FAIL;
         }
@@ -348,7 +348,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
          * and test with j_hat basis vector. */
         if ( fabs(fabs(ctmp[1].r) - 1.0) < RT_EPSILON ) {
             /* we need to use j_hat instead */
-            if ( cplex_vec_dot( ctmp+1, &pn_norm, &j_hat) == EXIT_FAILURE ) {
+            if ( cplex_vec_dot( ctmp+1, &pn_norm, &j_hat) == MATH_OP_FAIL ) {
                 fprintf(stderr,"FAIL : dot(pn_norm, j_hat) returned complex\n");
                 return MATH_OP_FAIL;
             }
@@ -395,7 +395,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
 
                 /* check if plv is actually in the plane */
                 cplex_vec_normalize( plvn, plv );
-                if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == EXIT_FAILURE ) {
+                if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == MATH_OP_FAIL ) {
                     fprintf(stderr,"FAIL : dot(pn_norm, plvn) returned complex\n");
                     return MATH_OP_FAIL;
                 }
@@ -422,12 +422,12 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
 
                 /* check if plu is actually in the plane */
                 cplex_vec_normalize( plun, plu );
-                if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == MATH_OP_FAIL ) {
                     fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
                     return MATH_OP_FAIL;
                 }
 
-                if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == MATH_OP_FAIL ) {
                     fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
                     return MATH_OP_FAIL;
                 }
@@ -490,7 +490,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                          * thus we must use tmp[1] from above which is
                          * the plane normal actually normalized. */
 
-                        if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == EXIT_FAILURE ) {
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == MATH_OP_FAIL ) {
                             fprintf(stderr,"FAIL : dot(pn_norm, plvn) returned complex\n");
                             return MATH_OP_FAIL;
                         }
@@ -527,7 +527,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                         cplex_vec_normalize( plun, plu );
 
                         /* check if plun is orthogonal to pn. */
-                        if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == MATH_OP_FAIL ) {
                             fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
                             return MATH_OP_FAIL;
                         }
@@ -562,7 +562,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                         cplex_vec_normalize( plvn, plv );
 
                         /* check if plvn is orthogonal to pn. */
-                        if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == EXIT_FAILURE ) {
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plvn ) == MATH_OP_FAIL ) {
                             fprintf(stderr,"FAIL : dot(pn_norm, plvn) returned complex\n");
                             return MATH_OP_FAIL;
                         }
@@ -580,7 +580,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                     } else {
                         /* here we know that v_mag < RT_EPSILON */
                         cplex_vec_normalize( plun, plu );
-                        if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == EXIT_FAILURE ) {
+                        if ( cplex_vec_dot( ctmp, &pn_norm, plun ) == MATH_OP_FAIL ) {
                             fprintf(stderr,"FAIL : dot(pn_norm, plun) returned complex\n");
                             return MATH_OP_FAIL;
                         }
@@ -603,7 +603,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
                  * The first task should be to determine that they
                  * are linearly independant and thus the dot product
                  * of u and v will NOT be 1 or -1. */
-                if ( cplex_vec_dot( ctmp, plv, plu ) == EXIT_FAILURE ) {
+                if ( cplex_vec_dot( ctmp, plv, plu ) == MATH_OP_FAIL ) {
                     fprintf(stderr,"FAIL : dot(plv, plu) returned complex\n");
                     return MATH_OP_FAIL;
                 }
@@ -656,7 +656,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
         printf("    %+-16.9e\n", lpr_norm.z.r);
         printf("     : this is n_hat\n\n");
 
-        if ( cplex_vec_dot( ctmp, &pl0_lp0_dir, &lpr_norm ) == EXIT_FAILURE ) {
+        if ( cplex_vec_dot( ctmp, &pl0_lp0_dir, &lpr_norm ) == MATH_OP_FAIL ) {
             fprintf(stderr,"FAIL : dot(pl0_lp0_dir,lpr_norm) returned complex\n");
             return MATH_OP_FAIL;
         }
@@ -754,7 +754,7 @@ uv:     if ( cplex_vec_dot( ctmp+1, &pn_norm, &i_hat) == EXIT_FAILURE ) {
     printf("     :   det =    %+-16.9e + %+-16.9e i\n", ctmp[2].r, ctmp[2].i);
 
     printf("\nSolve for line plane intercept with Cramers rule.\n\n");
-    if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) != 0 ) {
+    if ( cplex_cramer(&res_vec, &v[0], &v[1], &v[2], &rh_col) == MATH_OP_FAIL ) {
         /* TODO : do we even need this ? 
          *
          * w a r n i n g

@@ -13,6 +13,8 @@
 #define _XOPEN_SOURCE 600
 
 #include <stdlib.h>
+#include <string.h>
+
 #include "v.h"
 
 int cplex_det( cplex_type *res,
@@ -21,7 +23,19 @@ int cplex_det( cplex_type *res,
                vec_type *r3 )
 {
 
+    if ( ( cplex_vec_check(r1) == MATH_OP_FAIL )
+         ||
+         ( cplex_vec_check(r2) == MATH_OP_FAIL )
+         ||
+         ( cplex_vec_check(r3) == MATH_OP_FAIL ) ) {
+
+        return MATH_OP_FAIL;
+
+    }
+
     cplex_type cross[12], tmp[5];
+    memset( &cross, 0x00, (size_t)(12)*sizeof(cplex_type));
+    memset( &tmp, 0x00, (size_t)(5)*sizeof(cplex_type));
 
     /* the determinant of a 3x3 matrix with rows r1, r2, r3 :
      *
@@ -43,34 +57,68 @@ int cplex_det( cplex_type *res,
      *
      */
 
-    cplex_mult( &cross[0], &r1->x, &r2->y );
-    cplex_mult( &cross[1], &cross[0], &r3->z );
+    if ( cplex_mult( &cross[0], &r1->x, &r2->y ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_mult( &cross[1], &cross[0], &r3->z ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    cplex_mult( &cross[2], &r1->y, &r2->z );
-    cplex_mult( &cross[3], &cross[2], &r3->x );
+    if ( cplex_mult( &cross[2], &r1->y, &r2->z ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_mult( &cross[3], &cross[2], &r3->x ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
     
-    cplex_mult( &cross[4], &r1->z, &r2->x );
-    cplex_mult( &cross[5], &cross[4], &r3->y );
+    if ( cplex_mult( &cross[4], &r1->z, &r2->x ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_mult( &cross[5], &cross[4], &r3->y ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    cplex_mult( &cross[6], &r3->x, &r2->y );
-    cplex_mult( &cross[7], &cross[6], &r1->z );
+    if ( cplex_mult( &cross[6], &r3->x, &r2->y ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_mult( &cross[7], &cross[6], &r1->z ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    cplex_mult( &cross[8], &r3->y, &r2->z );
-    cplex_mult( &cross[9], &cross[8], &r1->x );
+    if ( cplex_mult( &cross[8], &r3->y, &r2->z ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_mult( &cross[9], &cross[8], &r1->x ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    cplex_mult( &cross[10], &r3->z, &r2->x );
-    cplex_mult( &cross[11], &cross[10], &r1->y );
+    if ( cplex_mult( &cross[10], &r3->z, &r2->x ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_mult( &cross[11], &cross[10], &r1->y ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    cplex_add( &tmp[0], &cross[1], &cross[3] );
-    cplex_add( &tmp[1], &tmp[0], &cross[5] );
-    cplex_sub( &tmp[2], &tmp[1], &cross[7] );
-    cplex_sub( &tmp[3], &tmp[2], &cross[9] );
-    cplex_sub( &tmp[4], &tmp[3], &cross[11] );
+    if ( cplex_add( &tmp[0], &cross[1], &cross[3] ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_add( &tmp[1], &tmp[0], &cross[5] ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_sub( &tmp[2], &tmp[1], &cross[7] ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_sub( &tmp[3], &tmp[2], &cross[9] ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+    if ( cplex_sub( &tmp[4], &tmp[3], &cross[11] ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
     res->r = tmp[4].r;
     res->i = tmp[4].i;
 
-    return ( EXIT_SUCCESS );
+    return MATH_OP_SUCCESS;
 
 }
 

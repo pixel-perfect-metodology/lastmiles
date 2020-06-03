@@ -18,6 +18,14 @@
 int cplex_vec_add( vec_type *res, vec_type *op1, vec_type *op2 )
 {
 
+    if ( (cplex_vec_check(op1) == MATH_OP_FAIL)
+         ||
+         (cplex_vec_check(op2) == MATH_OP_FAIL) ) {
+
+        return MATH_OP_FAIL;
+
+    }
+
     res->x.r = op1->x.r + op2->x.r + 0.0;
     res->x.i = op1->x.i + op2->x.i + 0.0;
 
@@ -27,7 +35,7 @@ int cplex_vec_add( vec_type *res, vec_type *op1, vec_type *op2 )
     res->z.r = op1->z.r + op2->z.r + 0.0;
     res->z.i = op1->z.i + op2->z.i + 0.0;
 
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 

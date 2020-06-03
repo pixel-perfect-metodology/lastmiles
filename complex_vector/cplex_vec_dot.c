@@ -15,14 +15,35 @@
 #include <stdlib.h>
 #include "v.h"
 
+/* NOTE we need to avoid any attempt to handle hermitian angles
+ *      in complex C3 space and thus an imaginary component
+ *      will result in a MATH_OP_FAIL */
+
 int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 )
 {
 
+    if ( (cplex_vec_check(op1) == MATH_OP_FAIL)
+         ||
+         (cplex_vec_check(op2) == MATH_OP_FAIL) ) {
+
+        return MATH_OP_FAIL;
+
+    }
+
     cplex_type tmp[3];
 
-    cplex_mult( &tmp[0], &op1->x, &op2->x );
-    cplex_mult( &tmp[1], &op1->y, &op2->y );
-    cplex_mult( &tmp[2], &op1->z, &op2->z );
+    if ( cplex_mult( &tmp[0], &op1->x, &op2->x ) == MATH_OP_FAIL) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_mult( &tmp[1], &op1->y, &op2->y ) == MATH_OP_FAIL) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_mult( &tmp[2], &op1->z, &op2->z ) == MATH_OP_FAIL) {
+        return MATH_OP_FAIL;
+    }
+
 
     res->r = tmp[0].r + tmp[1].r + tmp[2].r;
     res->i = tmp[0].i + tmp[1].i + tmp[2].i;
@@ -46,18 +67,15 @@ int cplex_vec_dot( cplex_type *res, vec_type *op1, vec_type *op2 )
         /* we have pure real space vector inputs
          * and this we check the result for a pure real space */
         if ( res->i == 0.0 ) {
-            return ( 0 );
+            return MATH_OP_SUCCESS;
         } else {
             /* there must not be any imaginary component */
-            /* TODO switch this to MATH_OP_FAIL and all calls
-             *         must be checked */
-            return ( EXIT_FAILURE );
+            return MATH_OP_FAIL;
         }
 
     }
 
-    /* TODO fix this shit. fuk. the result is whatever it is */
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 

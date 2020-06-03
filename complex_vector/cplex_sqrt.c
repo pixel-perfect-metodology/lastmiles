@@ -19,8 +19,9 @@
 int cplex_sqrt( cplex_type res[2], cplex_type *op1 )
 {
 
-    int status = cplex_check(op1);
-    if ( status != 0 ) return status;
+    if ( cplex_check(op1) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
     double theta = cplex_theta( op1 );
     double sqrt_mag = sqrt(cplex_mag( op1 ));
@@ -59,11 +60,11 @@ int cplex_sqrt( cplex_type res[2], cplex_type *op1 )
     } else {
         res[0].r = sqrt_mag * cos( theta / 2.0 );
         res[0].i = sqrt_mag * sin( theta / 2.0 );
-        res[1].r = sqrt_mag * cos( (double)PI_L + theta / 2.0 );
-        res[1].i = sqrt_mag * sin( (double)PI_L + theta / 2.0 );
+        res[1].r = sqrt_mag * cos( M_PI + theta / 2.0 );
+        res[1].i = sqrt_mag * sin( M_PI + theta / 2.0 );
     }
 
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 

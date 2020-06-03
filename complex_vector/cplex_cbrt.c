@@ -19,9 +19,10 @@
 int cplex_cbrt( cplex_type res[3], cplex_type *op1 )
 {
 
-    int status = cplex_check(op1);
-    if ( status != 0 ) return status;
-    
+    if ( cplex_check(op1) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
     double theta = cplex_theta( op1 );
     double cbrt_mag = cbrt(cplex_mag( op1 ));
 
@@ -47,7 +48,7 @@ int cplex_cbrt( cplex_type res[3], cplex_type *op1 )
     res[2].r = cbrt_mag * cos( 4.0*M_PI/3.0 + theta / 3.0 );
     res[2].i = cbrt_mag * sin( 4.0*M_PI/3.0 + theta / 3.0 );
 
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 

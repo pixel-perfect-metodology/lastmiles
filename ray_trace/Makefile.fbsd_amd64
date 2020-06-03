@@ -16,9 +16,9 @@ SRCS = obs_point.c \
 	../complex_vector/icept.c \
 	../complex_vector/surface_icept_pt.c \
 	../complex_vector/gradient.c \
-	../complex_vector/check_status.c \
 	../complex_vector/cplex_add.c \
 	../complex_vector/cplex_check.c \
+	../complex_vector/cplex_vec_check.c \
 	../complex_vector/cplex_div.c \
 	../complex_vector/cplex_mag.c \
 	../complex_vector/cplex_mult.c \
@@ -43,9 +43,9 @@ OBJS = obs_point.o \
 	../complex_vector/icept.o \
 	../complex_vector/surface_icept_pt.o \
 	../complex_vector/gradient.o \
-	../complex_vector/check_status.o \
 	../complex_vector/cplex_add.o \
 	../complex_vector/cplex_check.o \
+	../complex_vector/cplex_vec_check.o \
 	../complex_vector/cplex_div.o \
 	../complex_vector/cplex_mag.o \
 	../complex_vector/cplex_mult.o \

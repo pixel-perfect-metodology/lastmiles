@@ -24,8 +24,8 @@
  * complex coefficient quadratic then we may now compute the
  * actual hit point H and return it in pt. If there is no valid
  * forward looking points from the perspective of the observation
- * plane and ray_direction then return a null vector and integer
- * value -1.  Otherwise we return a zero integer value along with
+ * plane and ray_direction then return a null vector and the status
+ * MATH_OP_FAIL. Otherwise we return a MATH_OP_SUCCESS along with
  * the point of interception in pt */
 int surface_icept_pt( vec_type *pt,
                       int intercept_cnt,
@@ -34,12 +34,12 @@ int surface_icept_pt( vec_type *pt,
                       vec_type *ray_direction)
 {
     vec_type tmp;
-    int return_value; 
+    int return_value = MATH_OP_FAIL; 
 
     /* given that we only care about a real root that is forward
      * looking from the observation plane then we need a double
      * value for the root k */
-    double k_root;
+    double k_root = 0.0;
 
     /* If we actually do get an intercept then we need to determine
      * the closest forward looking point which is our actual point
@@ -115,9 +115,8 @@ int surface_icept_pt( vec_type *pt,
 
         if ( intercept_cnt > 0 ) {
             /* We can finally say that we did get an intercept
-             * point and thus the integer value for this whole
-             * task is a nice silent zero to indicate all is well */
-            return_value = 0;
+             * point.  */
+            return_value = MATH_OP_SUCCESS;
 
             cplex_vec_scale( &tmp, ray_direction, k_root );
             cplex_vec_add( &hit_point, obs_point, &tmp);
@@ -133,13 +132,13 @@ int surface_icept_pt( vec_type *pt,
         } else {
 
             /* we have nothing to return */
-            return_value = -1;
+            return_value = MATH_OP_FAIL;
 
         }
 
     }
 
-    return ( return_value );
+    return return_value;
 
 }
 

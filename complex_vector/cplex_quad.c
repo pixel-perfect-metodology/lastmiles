@@ -12,15 +12,13 @@
  *********************************************************************/
 #define _XOPEN_SOURCE 600
 
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "v.h"
 
-void check_status( int status );
-
 int cplex_quadratic( cplex_type res[2],
+                     int *real_root_count,
                      cplex_type *op1,
                      cplex_type *op2,
                      cplex_type *op3 )
@@ -60,7 +58,7 @@ int cplex_quadratic( cplex_type res[2],
      * real roots.
      ****************************************************************/
 
-    int status, real_root_count;
+    int count;
     cplex_type neg_one, two, four, denom, radicand;
     cplex_type tmp0, tmp1, tmp2;
     cplex_type full_res[4], roots[2];
@@ -68,23 +66,43 @@ int cplex_quadratic( cplex_type res[2],
     four.r = 4.0; four.i = 0.0;
     neg_one.r = -1.0; neg_one.i = 0.0;
 
-    status = cplex_check(op1);
-    if ( status != 0 ) return status;
+    if ( (cplex_check(op1) == MATH_OP_FAIL)
+         ||
+         (cplex_check(op2) == MATH_OP_FAIL)
+         ||
+         (cplex_check(op3) == MATH_OP_FAIL) ) {
 
-    status = cplex_check(op2);
-    if ( status != 0 ) return status;
+        return MATH_OP_FAIL;
 
-    status = cplex_check(op3);
-    if ( status != 0 ) return status;
+    }
 
-    check_status( cplex_mult( &denom, &two, op1 ) );
-    check_status( cplex_sq( &tmp0, op2 ) );
-    check_status( cplex_mult( &tmp1, &four, op1 ) );
-    check_status( cplex_mult( &tmp2, &tmp1, op3 ) );
-    check_status( cplex_sub( &radicand, &tmp0, &tmp2 ) );
+    if ( cplex_mult( &denom, &two, op1 ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    check_status( cplex_sqrt( roots, &radicand ) );
-    check_status( cplex_mult( &tmp1, &neg_one, op2 ) );
+    if ( cplex_sq( &tmp0, op2 ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_mult( &tmp1, &four, op1 ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_mult( &tmp2, &tmp1, op3 ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_sub( &radicand, &tmp0, &tmp2 ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_sqrt( roots, &radicand ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_mult( &tmp1, &neg_one, op2 ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
     /* we are collecting all four possible results internally :
      *     full_res[0] = ( -1 * op2 + roots[0] ) / 2 * op1
@@ -95,17 +113,37 @@ int cplex_quadratic( cplex_type res[2],
      * However we only need full_res[0] and full_res[2].
      */
 
-    check_status( cplex_add( &tmp0, &tmp1, roots ) );
-    check_status( cplex_div( &full_res[0], &tmp0, &denom ) );
+    if ( cplex_add( &tmp0, &tmp1, roots ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    check_status( cplex_add( &tmp0, &tmp1, (roots+1) ) );
-    check_status( cplex_div( &full_res[1], &tmp0, &denom ) );
+    if ( cplex_div( &full_res[0], &tmp0, &denom ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    check_status( cplex_sub( &tmp0, &tmp1, roots ) );
-    check_status( cplex_div( &full_res[2], &tmp0, &denom ) );
+    if ( cplex_add( &tmp0, &tmp1, (roots+1) ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
-    check_status( cplex_sub( &tmp0, &tmp1, (roots+1) ) );
-    check_status( cplex_div( &full_res[3], &tmp0, &denom ) );
+    if ( cplex_div( &full_res[1], &tmp0, &denom ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_sub( &tmp0, &tmp1, roots ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_div( &full_res[2], &tmp0, &denom ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_sub( &tmp0, &tmp1, (roots+1) ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
+
+    if ( cplex_div( &full_res[3], &tmp0, &denom ) == MATH_OP_FAIL ) {
+        return MATH_OP_FAIL;
+    }
 
     /* we have already checked all this with deMoivre's theorem *
      * for (j=0; j<4; j++ ) {
@@ -133,9 +171,9 @@ int cplex_quadratic( cplex_type res[2],
     if ( ( res[0].i == 0.0 ) && ( res[1].i == 0.0 ) ) {
         /* Thanks to the IEEE754-2008 zero equality rules we know
          * that we have two real roots. */
-        real_root_count = 2;
+        count = 2;
         if ( fabs( res[0].r - res[1].r ) < RT_EPSILON ) {
-            real_root_count = 1;
+            count = 1;
             if ( ( res[0].r - res[1].r ) != 0.0 ) {
                 /* not perfect fit */
                 fprintf(stderr,"WARN : the quadratic roots are RT_EPSILON close\n");
@@ -143,13 +181,15 @@ int cplex_quadratic( cplex_type res[2],
         }
     } else {
         if ( ( res[0].i == 0.0 ) || ( res[1].i == 0.0 ) ) {
-            real_root_count = 1;
+            count = 1;
         } else {
-            real_root_count = 0;
+            count = 0;
         }
     }
 
-    return ( real_root_count );
+    *real_root_count = count;
+
+    return MATH_OP_SUCCESS;
 
 }
 

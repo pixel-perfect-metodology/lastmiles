@@ -20,6 +20,12 @@
 int cplex_vec_normalize( vec_type *res, vec_type *op1 )
 {
 
+    if ( cplex_vec_check(op1) == MATH_OP_FAIL ) {
+
+        return MATH_OP_FAIL;
+
+    }
+
     double magnitude;
     vec_type tmp;
 
@@ -28,13 +34,13 @@ int cplex_vec_normalize( vec_type *res, vec_type *op1 )
     if ( magnitude < RT_EPSILON ) {
         /* we may have a zero magnitude vector.
          */
-        return EXIT_FAILURE;
+        return MATH_OP_FAIL;
     }
     res->x.r = tmp.x.r / magnitude; res->x.i = tmp.x.i / magnitude;
     res->y.r = tmp.y.r / magnitude; res->y.i = tmp.y.i / magnitude;
     res->z.r = tmp.z.r / magnitude; res->z.i = tmp.z.i / magnitude;
 
-    return ( 0 );
+    return MATH_OP_SUCCESS;
 
 }
 
