@@ -40,8 +40,8 @@ int gradient( vec_type *res,
     fprintf(stderr, "grad : icept = %g, %g, %g\n", intercept->x.r, intercept->y.r, intercept->z.r);
 
     /* deal with just the x axis component first */
-    c_tmp[0].r = intercept->x.r;
-    c_tmp[0].i = intercept->x.i;
+    c_tmp[0].r = intercept->x.r - loc->x.r;
+    c_tmp[0].i = intercept->x.i - loc->x.i;
     /* we need to square the semi-major axi */
     c_tmp[1].r = axi->x.r;
     c_tmp[1].i = axi->x.i;
@@ -56,8 +56,8 @@ int gradient( vec_type *res,
     c_tmp[3].i *= 2.0;
 
     /* now the y axis component */
-    c_tmp[4].r = intercept->y.r;
-    c_tmp[4].i = intercept->y.i;
+    c_tmp[4].r = intercept->y.r - loc->y.r;
+    c_tmp[4].i = intercept->y.i - loc->y.i;
     c_tmp[5].r = axi->y.r;
     c_tmp[5].i = axi->y.i;
     cplex_sq( c_tmp+6, c_tmp+5 );
@@ -68,8 +68,8 @@ int gradient( vec_type *res,
     c_tmp[7].i *= 2.0;
 
     /* z axis component */
-    c_tmp[8].r = intercept->z.r;
-    c_tmp[8].i = intercept->z.i;
+    c_tmp[8].r = intercept->z.r - loc->z.r;
+    c_tmp[8].i = intercept->z.i - loc->z.i;
     c_tmp[9].r = axi->z.r;
     c_tmp[9].i = axi->z.i;
     cplex_sq( c_tmp+10, c_tmp+9 );

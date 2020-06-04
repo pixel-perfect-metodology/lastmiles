@@ -1,5 +1,7 @@
+
 /*
- * s_example.c sierpinski carpet code taken from carpetrosettacode.org
+ * s.c sierpinski carpet code taken from carpetrosettacode.org
+ * Modified by Dennis Clarke to remove the horrific CaMeLCAse crap
  *
  * Content is available under GNU Free Documentation License 1.2
  *
@@ -33,23 +35,18 @@
  */
 #define _XOPEN_SOURCE 600
 
-/*
- * this define may not be needed at all
- * #define __STDC_FORMAT_MACROS
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
  
-typedef struct sCarpet {
-    int dim;      // dimension
-    char *data;   // character data
-    char **rows;  // pointers to data rows
-} *Carpet;
+typedef struct s_carpet {
+    int dim;      /* dimension             */
+    char *data;   /* character data        */
+    char **rows;  /* pointers to data rows */
+} *carp;
  
 /* Clones a tile into larger carpet, or blank if center */
-void TileCarpet( Carpet d, int r, int c, Carpet tile )
+void tile_carpet( carp d, int r, int c, carp tile )
 {
     int y0 = tile->dim*r;
     int x0 = tile->dim*c;
@@ -74,60 +71,65 @@ void TileCarpet( Carpet d, int r, int c, Carpet tile )
 /* define a 1x1 starting carpet */
 static char s1[]= "#";
 static char *r1[] = {s1};
-static struct sCarpet single = { 1, s1, r1};
+static struct s_carpet single = { 1, s1, r1};
  
-Carpet Sierpinski( int n )
+carp sierpinski( int n )
 {
-   Carpet carpet;
-   Carpet subCarpet;
+   carp carpet;
+   carp subcarpet;
    int row,col, rb;
    int spc_rqrd;
  
-   subCarpet = (n > 1) ? Sierpinski(n-1) : &single;
+   subcarpet = (n > 1) ? sierpinski(n-1) : &single;
  
-   carpet = malloc(sizeof(struct sCarpet));
-   carpet->dim = 3*subCarpet->dim;
-   spc_rqrd = (2*subCarpet->dim) * (carpet->dim);
-   carpet->data = malloc(spc_rqrd*sizeof(char));
-   carpet->rows = malloc( carpet->dim*sizeof(char *));
-   for (row=0; row<subCarpet->dim; row++) {
-       carpet->rows[row] = carpet->data + row*carpet->dim;
-       rb = row+subCarpet->dim;
-       carpet->rows[rb] = carpet->data + rb*carpet->dim;
-       rb = row+2*subCarpet->dim;
-       carpet->rows[rb] = carpet->data + row*carpet->dim;
+   carpet = malloc(sizeof(struct s_carpet));
+   carpet->dim = 3 * subcarpet->dim;
+   spc_rqrd = (2 * subcarpet->dim) * (carpet->dim);
+   carpet->data = malloc(spc_rqrd * sizeof(char));
+   carpet->rows = malloc(carpet->dim * sizeof(char *));
+
+   for (row=0; row<subcarpet->dim; row++) {
+       carpet->rows[row] = carpet->data + row * carpet->dim;
+       rb = row+subcarpet->dim;
+       carpet->rows[rb] = carpet->data + rb * carpet->dim;
+       rb = row + 2 * subcarpet->dim;
+       carpet->rows[rb] = carpet->data + row * carpet->dim;
    }
  
-    for (col=0; col < 3; col++) {
-      /* 2 rows of tiles to copy - third group points to same data a first */
-      for (row=0; row < 2; row++)
-         TileCarpet( carpet, row, col, subCarpet );
-    }
-    if (subCarpet != &single ) {
-       free(subCarpet->rows);
-       free(subCarpet->data);
-       free(subCarpet);
-    }
+   for (col=0; col < 3; col++) {
+       /* 2 rows of tiles to copy - third group points to same data a first */
+       for (row=0; row < 2; row++) {
+           tile_carpet( carpet, row, col, subcarpet );
+       }
+   }
+
+   if (subcarpet != &single ) {
+       free(subcarpet->rows);
+       free(subcarpet->data);
+       free(subcarpet);
+   }
  
-    return carpet;
+   return carpet;
+
 }
  
-void CarpetPrint( FILE *fout, Carpet carp)
+void carpet_print( FILE *fout, carp this_carp)
 {
     char obuf[730];
     int row;
-    for (row=0; row < carp->dim; row++) {
-       strncpy(obuf, carp->rows[row], carp->dim);
-       fprintf(fout, "%s\n", obuf);
+    for (row=0; row < this_carp->dim; row++) {
+        strncpy(obuf, this_carp->rows[row], this_carp->dim);
+        fprintf(fout, "%s\n", obuf);
     }
     fprintf(fout,"\n");
 }
  
 int main(int argc, char *argv[])
 {
-//    FILE *f = fopen("sierp.txt","w");
-    CarpetPrint(stdout, Sierpinski(3));
-//    fclose(f);
-    return 0;
+    /*    FILE *f = fopen("sierp.txt","w");   */
+    carpet_print(stdout, sierpinski(3));
+    /*    fclose(f); */
+    return EXIT_SUCCESS;
+
 }
 

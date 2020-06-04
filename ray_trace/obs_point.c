@@ -99,8 +99,11 @@ int main ( int argc, char **argv)
        y_prime_hat_vec.x.r, y_prime_hat_vec.y.r, y_prime_hat_vec.z.r );
 
     /* point to begin with on the observation plane. */
-    x_prime = 1.7;
+    /* x_prime = 1.7;
     y_prime = -2.0;
+    */
+    x_prime = 0.0;
+    y_prime = 0.0;
 
     /* these are manually calculated to be sqrt(0.5) distance
      * from the center of the sphere in the yz-plane 
@@ -169,10 +172,20 @@ int main ( int argc, char **argv)
 
     /* by default we were using an object at the origin but we can
      * shift around for testing purposes. */
-    cplex_vec_set( &object_location, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    cplex_vec_set( &object_location, 0.0, 0.0, -1.7, 0.0, 2.0, 0.0);
+    printf("INFO : object_location = ");
+    printf("< %-+18.12e, %-+18.12e, %-+18.12e >\n",
+                  object_location.x.r,
+                  object_location.y.r,
+                  object_location.z.r );
 
     /* Again the diagrams we used had a=5, b=2 and c=6 */
-    cplex_vec_set( &semi_major_axi, 5.0, 0.0, 2.0, 0.0, 5.0, 0.0);
+    cplex_vec_set( &semi_major_axi, 5.0, 0.0, 2.0, 0.0, 6.0, 0.0);
+    printf("INFO : semi_major_axi = ");
+    printf("< %-+18.12e, %-+18.12e, %-+18.12e >\n",
+                    semi_major_axi.x.r, 
+                    semi_major_axi.y.r,
+                    semi_major_axi.z.r );
 
     /* Note that the ray direction must be normalized */
     if ( cplex_vec_normalize( &ray_direct, &obs_normal ) == MATH_OP_FAIL ) {
@@ -213,6 +226,12 @@ int main ( int argc, char **argv)
             printf("< %-+18.12e, %-+18.12e, %-+18.12e >\n",
                       hit_point.x.r, hit_point.y.r, hit_point.z.r );
             printf("\n");
+
+            printf("DBUG : object_location = ");
+            printf("< %-+18.12e, %-+18.12e, %-+18.12e >\n",
+                          object_location.x.r,
+                          object_location.y.r,
+                          object_location.z.r );
 
             gradient( &grad,
                       &sign_data, &object_location,
@@ -360,17 +379,24 @@ int main ( int argc, char **argv)
                      printf("dbug : There is no valid solution.\n");
                  } else {
 
-                     printf("     : result col = < ( %-+20.14e, %-+20.14e ),\n",
-                                 tmp[10].x.r, tmp[10].x.i );
-                     printf("                      ( %-+20.14e, %-+20.14e ),\n",
-                                 tmp[10].y.r, tmp[10].y.i );
-                     printf("                      ( %-+20.14e, %-+20.14e ) >\n\n",
-                                 tmp[10].z.r, tmp[10].z.i);
+                     if (    ( fabs(tmp[10].x.i) > 0.0 )
+                          || ( fabs(tmp[10].x.i) > 0.0 )
+                          || ( fabs(tmp[10].x.i) > 0.0 ) ) {
 
+                         printf("     : result col = < ( %-+18.12e, %-+18.12e ),\n",
+                                     tmp[10].x.r, tmp[10].x.i );
+                         printf("                      ( %-+18.12e, %-+18.12e ),\n",
+                                     tmp[10].y.r, tmp[10].y.i );
+                         printf("                      ( %-+18.12e, %-+18.12e ) >\n",
+                                     tmp[10].z.r, tmp[10].z.i);
+                         printf("    W A R N I N G : complex vector solution\n\n");
+
+                     } else {
+                         printf("     : result col = < %-+18.12e , %-+18.12e , %-+18.12e >\n\n",
+                                     tmp[10].x.r, tmp[10].y.r, tmp[10].z.r );
+                     }
                  }
-
             }
-
         } else {
             printf("INFO : no intercept point\n");
         }
