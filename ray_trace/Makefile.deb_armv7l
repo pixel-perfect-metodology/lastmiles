@@ -13,12 +13,12 @@ CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 LIBS = -lm
 
 SRCS = obs_point.c \
-	../complex_vector/intercept.c \
-	../complex_vector/intercept_point.c \
+	../complex_vector/icept.c \
+	../complex_vector/surface_icept_pt.c \
 	../complex_vector/gradient.c \
-	../complex_vector/check_status.c \
 	../complex_vector/cplex_add.c \
 	../complex_vector/cplex_check.c \
+	../complex_vector/cplex_vec_check.c \
 	../complex_vector/cplex_div.c \
 	../complex_vector/cplex_mag.c \
 	../complex_vector/cplex_mult.c \
@@ -27,6 +27,7 @@ SRCS = obs_point.c \
 	../complex_vector/cplex_sqrt.c \
 	../complex_vector/cplex_sub.c \
 	../complex_vector/cplex_theta.c \
+	../complex_vector/cplex_det.c \
 	../complex_vector/cplex_vec_add.c \
 	../complex_vector/cplex_vec_copy.c \
 	../complex_vector/cplex_vec_dot.c \
@@ -35,15 +36,16 @@ SRCS = obs_point.c \
 	../complex_vector/cplex_vec_set.c \
 	../complex_vector/cplex_vec_print.c \
 	../complex_vector/cplex_vec_scale.c \
-	../complex_vector/cplex_vec_cross.c
+	../complex_vector/cplex_vec_cross.c \
+	../complex_vector/cplex_cramer.c
 
 OBJS = obs_point.o \
-	../complex_vector/intercept.o \
-	../complex_vector/intercept_point.o \
+	../complex_vector/icept.o \
+	../complex_vector/surface_icept_pt.o \
 	../complex_vector/gradient.o \
-	../complex_vector/check_status.o \
 	../complex_vector/cplex_add.o \
 	../complex_vector/cplex_check.o \
+	../complex_vector/cplex_vec_check.o \
 	../complex_vector/cplex_div.o \
 	../complex_vector/cplex_mag.o \
 	../complex_vector/cplex_mult.o \
@@ -52,6 +54,7 @@ OBJS = obs_point.o \
 	../complex_vector/cplex_sqrt.o \
 	../complex_vector/cplex_sub.o \
 	../complex_vector/cplex_theta.o \
+	../complex_vector/cplex_det.o \
 	../complex_vector/cplex_vec_add.o \
 	../complex_vector/cplex_vec_copy.o \
 	../complex_vector/cplex_vec_dot.o \
@@ -60,7 +63,8 @@ OBJS = obs_point.o \
 	../complex_vector/cplex_vec_set.o \
 	../complex_vector/cplex_vec_print.o \
 	../complex_vector/cplex_vec_scale.o \
-	../complex_vector/cplex_vec_cross.o
+	../complex_vector/cplex_vec_cross.o \
+	../complex_vector/cplex_cramer.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)

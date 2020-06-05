@@ -465,9 +465,9 @@ int main ( int argc, char **argv)
 
     printf("\n-----------------------------------------------------\n");
     printf("Cramers method test where we solve for A,B,C where :\n");
-    printf("    ( 0.5 - i ) * A  - 2 * B - 3 * C = ( 1 + 0.5i ),\n");
-    printf("    4 * A + 5 * B + 6 * C = ( 2 + 0.75i ),\n");
-    printf("    7 * A + ( -2 + 4i ) * B + 9 * C = ( 3 -0.25i ).\n");
+    printf("  ( 0.5 - i ) * A           - 2 * B - 3 * C = ( 1 + 0.5i ),\n");
+    printf("            4 * A           + 5 * B + 6 * C = ( 2 + 0.75i ),\n");
+    printf("            7 * A + ( -2 + 4i ) * B + 9 * C = ( 3 - 0.25i ).\n");
     /* solutions are : 
      * alpha $ echo '18k 823 1405 / p 1533 2810 / pq' | dc
      * .585765124555160142
@@ -506,9 +506,9 @@ int main ( int argc, char **argv)
         printf("                      ( %+-16.12e, %+-16.12e ) >\n\n",
                     res_vec.z.r, res_vec.z.i);
     }
-    printf("     : should be  (  5.85765124555160142e-01 ,  5.45551601423487544e-01 )\n");
-    printf("     :            ( -1.9928825622775800e-02  ,  1.93772241992882562e-01 )\n");
-    printf("     :            ( -4.0569395017793594e-02  , -4.00177935943060498e-01 )\n");
+    printf("     :     should be  (  5.8576512455516014e-01 ,  5.45551601423487544e-01 )\n");
+    printf("     :                ( -1.9928825622775800e-02 ,  1.93772241992882562e-01 )\n");
+    printf("     :                ( -4.0569395017793594e-02 , -4.00177935943060498e-01 )\n");
 
     printf("\n-----------------------------------------------------\n");
     printf("---------- line and plane intercept testing ---------\n\n");
