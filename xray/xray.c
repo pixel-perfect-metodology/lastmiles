@@ -789,8 +789,7 @@ int main(int argc, char*argv[])
                 /* time the computation of the intercepts etc */
                 clock_gettime( CLOCK_MONOTONIC, &soln_t0 );
 
-                intercept_cnt = -1;
-                intercept_cnt = icept ( k_val, &sign_data,
+                icept ( k_val, &intercept_cnt, &sign_data,
                                 &object_location, &semi_major_axi,
                                 &obs_point, &obs_normal );
 

@@ -30,7 +30,7 @@ int main ( int argc, char **argv)
     cplex_type c_tmp[4];
     vec_type grad, grad_norm, reflect;
     double vec_T_mag, theta_i;
-    int status, intercept_cnt = -1;
+    int intercept_cnt = -1;
 
     /* https://github.com/blastwave/lastmiles/blob/master/ray_trace/
      *                                  math_notes/notes_rt_math_006.png
@@ -98,7 +98,7 @@ int main ( int argc, char **argv)
     printf("< %-+18.12e, %-+18.12e, %-+18.12e >\n",
        y_prime_hat_vec.x.r, y_prime_hat_vec.y.r, y_prime_hat_vec.z.r );
 
-    /* point to begin with on the observation plane. */
+    /* TODO point to begin with on the observation plane. */
     /* x_prime = 1.7;
     y_prime = -2.0;
     */
@@ -172,6 +172,7 @@ int main ( int argc, char **argv)
 
     /* by default we were using an object at the origin but we can
      * shift around for testing purposes. */
+    /* TODO reset to standard test coordinates */
     cplex_vec_set( &object_location, 0.0, 0.0, -1.7, 0.0, 2.0, 0.0);
     printf("INFO : object_location = ");
     printf("< %-+18.12e, %-+18.12e, %-+18.12e >\n",

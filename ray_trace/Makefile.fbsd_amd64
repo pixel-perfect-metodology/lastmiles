@@ -73,4 +73,6 @@ obs_point: $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) $(LIBS)
 
 clean:
-	rm -f $(OBJS) obs_point
+	rm -f $(OBJS) obs_point ../complex_vector/cplex_vec_null.o \
+	../complex_vector/cplex_test.o ../complex_vector/cplex_test \
+	../complex_vector/line_plane_icept.o ../complex_vector/cplex_cbrt.o

@@ -199,6 +199,11 @@ int main(int argc, char*argv[])
     uint8_t magnify_jank_in, magnify_jank = 10;
     double magnify_factor = 1.0;
 
+    /* the janky slider for bail_out will be nearly
+     * identical to the magnify except that we will
+     * trap for stupid bail_out values */
+    uint8_t bail_out_jank_in, bail_out_jank = 10;
+
     double candidate_double = 0.0;
     int fpe_raised = 0;
     uint32_t mand_height, mand_bail;
