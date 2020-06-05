@@ -71,7 +71,7 @@ int line_plane_icept( vec_type *icept_pt,
 
     /* deal with uninitialized memory on the stack */
     memset( &ctmp, 0x00, (size_t)(12)*sizeof(cplex_type));
-    memset( &tmp, 0x00, (size_t)(15)*sizeof(vec_type));
+    memset( &tmp,  0x00, (size_t)(15)*sizeof(vec_type));
 
     double lpr_pn_theta, u_mag, v_mag;
 

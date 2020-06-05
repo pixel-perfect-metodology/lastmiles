@@ -36,7 +36,7 @@ int main ( int argc, char **argv)
     vec_type plane_u, plane_v, plane_u_norm, plane_v_norm;
     vec_type lp_intercept_param;
 
-    int status, real_root_count, lp_status;
+    int real_root_count;
 
     op1.i = 1.0; op1.r = 0.0;
     op2.i = 1.0; op2.r = 0.0;
@@ -237,9 +237,6 @@ int main ( int argc, char **argv)
     }
 
     printf("Lets test vector normalization of v[0] as described.\n");
-    printf("    : function call cplex_vec_normalize() returns %i\n",
-                                                             status );
-
     printf("    : |v[0]| = ");
     printf(" < ( %16.12e, %16.12e ),\n", v[3].x.r, v[3].x.i );
     printf("                  ( %16.12e, %16.12e ),\n", v[3].y.r, v[3].y.i );
@@ -421,6 +418,7 @@ int main ( int argc, char **argv)
 
     cplex_det(&opr, &v[0], &v[1], &v[2]); 
     printf("     : det = ( %g, %g )\n", opr.r, opr.i);
+    printf("     :   should be zero\n");
 
     printf("\n-----------------------------------------------------\n");
     printf("New Row data on row1 \n");
@@ -442,6 +440,7 @@ int main ( int argc, char **argv)
 
     cplex_det(&opr, &v[0], &v[1], &v[2]); 
     printf("     : det = ( %g, %g )\n", opr.r, opr.i);
+    printf("     :   should be -33\n");
 
     printf("\n-----------------------------------------------------\n");
     printf("Complex row data in row1 and row 3\n");
@@ -462,6 +461,7 @@ int main ( int argc, char **argv)
 
     cplex_det(&opr, &v[0], &v[1], &v[2]); 
     printf("     : det = ( %g, %g )\n", opr.r, opr.i);
+    printf("     :     = ( 121.5, -117 )\n");
 
     printf("\n-----------------------------------------------------\n");
     printf("Cramers method test where we solve for A,B,C where :\n");
@@ -506,9 +506,9 @@ int main ( int argc, char **argv)
         printf("                      ( %+-16.12e, %+-16.12e ) >\n\n",
                     res_vec.z.r, res_vec.z.i);
     }
-    printf("     :     should be  (  5.8576512455516014e-01 ,  5.45551601423487544e-01 )\n");
-    printf("     :                ( -1.9928825622775800e-02 ,  1.93772241992882562e-01 )\n");
-    printf("     :                ( -4.0569395017793594e-02 , -4.00177935943060498e-01 )\n");
+    printf("     :     should be  (  5.857651245552e-01 ,  5.455516014235e-01 )\n");
+    printf("     :                ( -1.992882562278e-02 ,  1.937722419928e-01 )\n");
+    printf("     :                ( -4.056939501779e-02 , -4.001779359431e-01 )\n");
 
     printf("\n-----------------------------------------------------\n");
     printf("---------- line and plane intercept testing ---------\n\n");

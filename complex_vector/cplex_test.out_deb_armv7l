@@ -1,4 +1,4 @@
-./cplex_test 
+$ ./cplex_test 
 dbug : op1 = ( 0, 1 )
      : op2 = ( 0, 1 )
      : opr = op1 * op2 = ( -1, 0 )
