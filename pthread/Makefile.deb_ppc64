@@ -1,0 +1,29 @@
+
+CC=/usr/bin/gcc
+
+CFLAGS= -std=iso9899:1999 -pedantic -g -O0 -fno-builtin -m64 \
+	-mcpu=970 -mno-altivec -mno-isel -mno-vsx \
+	-mno-crypto -mno-htm -mno-quad-memory-atomic -mfull-toc \
+	-mno-multiple -mupdate -mno-avoid-indexed-addresses \
+	-mno-dlmzb -mno-bit-align -mno-strict-align -mbig -mregnames \
+	-mno-recip -fno-unsafe-math-optimizations -pedantic-errors \
+	-Wall
+
+CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
+	-D_X_OPEN_SOURCE=600
+
+LIBS = -lpthread -lrt -lm
+
+OBJQ = ../sysinfo/sysmem.o \
+	../sysinfo/sysinfo.o \
+	q_work.o enqueue.o dequeue.o q_create.o \
+	q_destroy.o do_work.o fibber.o
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -D_REENTRANT
+
+q_work: $(OBJQ)
+	$(CC) -o $@ $^ -L$(LDIR) $(CFLAGS) $(CPPFLAGS) -D_REENTRANT $(LIBS)
+
+clean:
+	rm -f *.o q_work ../sysinfo/sysmem.o ../sysinfo/sysinfo.o
