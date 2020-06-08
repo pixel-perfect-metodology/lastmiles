@@ -15,6 +15,12 @@ Debian on big endian ppc64 also is perfect
 C_enceladus$ grep '^[0-9][0-9] ' test_data_deb_ppc64.dat | openssl dgst -sha256 -r - 
 be3c494aa0dd218f13545ffe5b5df455ee76bd9d155ce91ed93c892aca814592 *stdin
 
+Debian sid x86_64 seems fine : 
+
+C_nix$ grep '^[0-9][0-9] ' test_data_deb_amd64.dat | openssl dgst -sha256 -r - 
+be3c494aa0dd218f13545ffe5b5df455ee76bd9d155ce91ed93c892aca814592 *stdin
+
+
 
 vesta$ 
 vesta$ /usr/bin/time -p ./xmand 65536 67108864 -1.68856316071470e-01 -8.95722994173412e-01 8
