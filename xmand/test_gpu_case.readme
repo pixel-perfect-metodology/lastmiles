@@ -1,6 +1,7 @@
 
 C_arm7$ grep '^[0-9][0-9] ' test_data_deb_armv7l.dat | openssl dgst -sha256 -r - 
 be3c494aa0dd218f13545ffe5b5df455ee76bd9d155ce91ed93c892aca814592 *stdin
+
 C_arm7$ grep '^[0-9][0-9] ' test_data_fbsd_amd64.dat | openssl dgst -sha256 -r - 
 be3c494aa0dd218f13545ffe5b5df455ee76bd9d155ce91ed93c892aca814592 *stdin
 C_arm7$ 
@@ -20,6 +21,18 @@ Debian sid x86_64 seems fine :
 C_nix$ grep '^[0-9][0-9] ' test_data_deb_amd64.dat | openssl dgst -sha256 -r - 
 be3c494aa0dd218f13545ffe5b5df455ee76bd9d155ce91ed93c892aca814592 *stdin
 
+
+However the 32-bit x86 hardware disagrees.
+
+mars$ 
+mars$ grep '^[0-9][0-9] ' test_data_deb_i686.dat | openssl dgst -sha256 -r - 
+1858c031ebd406b660f23e988d37d20973a29e3c1b927deddc6f5bed1eb0f078 *stdin
+mars$ 
+
+Also the data from the VIA Eden Esther hardware : 
+
+$ xz -dc test_data_deb_i386.dat.xz | grep '^[0-9][0-9] ' |  openssl dgst -sha256 -r - 
+1858c031ebd406b660f23e988d37d20973a29e3c1b927deddc6f5bed1eb0f078 *stdin
 
 
 vesta$ 

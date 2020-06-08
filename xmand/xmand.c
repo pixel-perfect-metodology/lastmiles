@@ -1401,10 +1401,11 @@ replot:
                                         mand_height = mbrot( x_prime, y_prime, mand_bail );
                                         mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix] = mand_height;
                                     }
-                                    /* TODO dump this to a binary file damn it */
+                                    /* TODO dump this to a binary file damn it 
                                     fprintf(stderr,"%02i %02i  %-+22.16e  %-+22.16e  %"PRIu32"\n",
                                                     vbox_x, vbox_y, x_prime, y_prime,
                                                     mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix] );
+                                     */
 
                                     if ( colour_method_flag ) {
 
