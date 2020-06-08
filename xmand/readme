@@ -1,6 +1,66 @@
 
+current test samples for a new colour map 
+
+
+./xmand 16384 65536  -3.003381645104e-01 +6.553186601230e-01 4
+
+./xmand 16384 1048576 -3.00335318388593e-01 +6.55315903408228e-01 4
+
+-----------
 
 A few pretty examples : 
+
+vesta$ 
+vesta$ ./xmand 32768 8388608 -3.003289289773e-01 +6.553147248923e-01 4
+-------------------------------------------------------------
+           system name = FreeBSD
+             node name = vesta
+               release = 12.1-RELEASE-p5
+               version = FreeBSD 12.1-RELEASE-p5 GENERIC
+               machine = amd64
+             page size = 4096
+          avail memory = 10328125440
+                       = 10086060 kB
+                       = 9849 MB
+                endian = little endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+    mand_bail = 32768
+pthread_limit = 4
+    translate = ( -3.00328928977300e-01 , +6.55314724892300e-01 )
+      magnify = +8.388608000000e+06
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 5760 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 007 , 008 ]
+[mand] =   138033986335 nsec   1.380340e+02 sec
+
+click at 514 514 
+vbox  [ 008 , 005 ]
+[mand] =     2999903546 nsec   2.999904e+00 sec
+
+click at 531 663 
+right click
+click at 546 697 
+right click
+
 
 
 C_nix$ ./xmand 4096 4096 -3.004150390625e-01 +6.553039550781e-01 4 

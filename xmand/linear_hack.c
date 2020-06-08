@@ -18,9 +18,9 @@
 #include <unistd.h>
 #include <inttypes.h>
 
-unsigned long linear_inter( uint8_t  in_val,
-                            uint32_t low_col, uint32_t high_col,
-                            uint8_t  low_val, uint8_t upper_val)
+uint64_t linear_hack ( uint32_t mand_height,  uint32_t bail_out,
+                       uint32_t low_col, uint32_t high_col,
+                       uint8_t  low_val, uint8_t upper_val)
 {
     /* in_val is some number that should fall between
      *        the low_val and upper_val. If not then

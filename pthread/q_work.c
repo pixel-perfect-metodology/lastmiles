@@ -59,27 +59,12 @@ int main(int argc, char **argv) {
 
     /* how many elements to calloc into the arrays? */
     size_t req_element_num;
-
     struct timespec now_time;
 
-    pthread_attr_t *attr = calloc( (size_t) 1, (size_t)sizeof(pthread_attr_t) );
-    if ( attr == NULL ) {
-        /* really? possible ENOMEM? */
-        if ( errno == ENOMEM ) {
-            fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
-                    __FILE__, __LINE__ );
-        } else {
-            fprintf(stderr,"FAIL : calloc fails at %s:%d\n",
-                    __FILE__, __LINE__ );
-        }
-        perror("FAIL ");
-        return ( EXIT_FAILURE );
-    }
-
-    /* set up a collection of flags that indicate that a thread
-     * is working or not.
-    memset( &working, 0x00, (size_t)(THREAD_LIMIT) * sizeof( int ) );
-    */
+    /* TODO set up a collection of flags that indicate that a thread
+     *      is working or not.
+     * memset( &working, 0x00, (size_t)(THREAD_LIMIT) * sizeof( int ) );
+     */
 
     setlocale( LC_ALL, "C" );
     sysinfo();
@@ -88,7 +73,7 @@ int main(int argc, char **argv) {
     if ( clock_gettime( CLOCK_REALTIME, &now_time ) == -1 ) {
         /* We could not get the clock. Bail out. */
         fprintf(stderr,"ERROR : could not attain CLOCK_REALTIME\n");
-        return(EXIT_FAILURE);
+        return EXIT_FAILURE;
     } else {
         /* call srand48() with the sub-second time data */
         srand48( (long) now_time.tv_nsec );
@@ -96,9 +81,12 @@ int main(int argc, char **argv) {
 
     if ( argc != 3 ) {
         fprintf(stderr,"FAIL : insufficient arguments provided\n");
-        fprintf(stderr,"     : usage %s num_pthreads, ",argv[0]);
+        fprintf(stderr,"     : usage %s num_pthreads ",argv[0]);
         fprintf(stderr," array_cnt\n");
-        return ( EXIT_FAILURE );
+        fprintf(stderr,"     : num_pthreads number of POSIX threads\n");
+        fprintf(stderr,"     : array_cnt isthe number of elements\n");
+        fprintf(stderr,"     : inside the test arrays.\n");
+        return EXIT_FAILURE;
     } else {
 
         errno = 0;
@@ -106,7 +94,7 @@ int main(int argc, char **argv) {
         if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
             fprintf(stderr,"FAIL : num_pthreads not understood\n");
             perror("     ");
-            return ( EXIT_FAILURE );
+            return EXIT_FAILURE;
         }
         if ( ( candidate_int < 1 ) || ( candidate_int > 256 ) ){
             fprintf(stderr,"WARN : num_pthreads is unreasonable\n");
@@ -122,10 +110,11 @@ int main(int argc, char **argv) {
         if ( ( errno == ERANGE ) || ( errno == EINVAL ) ){
             fprintf(stderr,"FAIL : array_cnt not understood\n");
             perror("     ");
-            return ( EXIT_FAILURE );
+            return EXIT_FAILURE;
         }
         if ( ( candidate_int < 1048576 ) || ( candidate_int > ELEMENT_COUNT_LIMIT ) ){
             fprintf(stderr,"WARN : array_cnt is unreasonable\n");
+            fprintf(stderr,"     : the minimum is 1048576\n");
             fprintf(stderr,"     : we shall assume 1048576 elements and proceed.\n");
             req_element_num = 1048576;
         } else {
@@ -134,14 +123,32 @@ int main(int argc, char **argv) {
         }
     }
 
+    /* we will need to specifiy the thread attributes */
+    pthread_attr_t *attr = calloc( (size_t) 1, (size_t)sizeof(pthread_attr_t) );
+    if ( attr == NULL ) {
+        /* really? possible ENOMEM? */
+        if ( errno == ENOMEM ) {
+            fprintf(stderr,"FAIL : calloc returns ENOMEM at %s:%d\n",
+                    __FILE__, __LINE__ );
+        } else {
+            fprintf(stderr,"FAIL : calloc fails at %s:%d\n",
+                    __FILE__, __LINE__ );
+        }
+        perror("FAIL ");
+        return EXIT_FAILURE;
+    }
+
     /* create our custom queue for holding task information */
     printf ( "INFO : about to call q_create()\n");
     q_type *my_q = q_create();
-    printf ( "DBUG : my_q now exists at %p\n\n", my_q);
+    printf ( "     : my_q now exists at %p\n\n", my_q);
 
     thread_parm_t *make_work;
     /* make plenty of work where the queue has more work elements
      * than consumer threads.
+     *
+     * So here we use twice as many make_work things as there are
+     * threads and then we add on three more just for testing fun
      */
     for ( j=0; j < ( 2 * num_pthreads + 3 ); j++ ) {
         errno = 0;
@@ -158,7 +165,7 @@ int main(int argc, char **argv) {
             perror("FAIL ");
             /* TODO we need a smooth fail where we backout the previous
              * memory calloc calls if this is j>0 */
-            return ( EXIT_FAILURE );
+            return EXIT_FAILURE;
         }
 
         make_work->work_num = (uint32_t)j;
@@ -180,7 +187,7 @@ int main(int argc, char **argv) {
     if ( pthread_attr_init(attr) == ENOMEM ) {
         fprintf(stderr,"FAIL : ENOMEM from pthread_attr_init\n");
         perror("FAIL : ENOMEM");
-        return ( EXIT_FAILURE );
+        return EXIT_FAILURE;
     }
 
     /* system-wide contention or process contention?
@@ -198,7 +205,7 @@ int main(int argc, char **argv) {
 
         fprintf(stderr,"FAIL : pthread_attr_setscope\n");
         perror("FAIL : EINVAL");
-        return ( EXIT_FAILURE );
+        return EXIT_FAILURE;
 
     }
 
@@ -221,7 +228,7 @@ int main(int argc, char **argv) {
 
         fprintf(stderr,"FAIL : pthread_attr_setdetachstate\n");
         perror("FAIL : EINVAL");
-        return ( EXIT_FAILURE );
+        return EXIT_FAILURE;
 
     }
 
@@ -253,15 +260,15 @@ int main(int argc, char **argv) {
         if ( pthread_err == EAGAIN ) {
             fprintf(stderr,"FAIL : EAGAIN system lacked resources\n");
             perror("FAIL : EAGAIN");
-            return ( EXIT_FAILURE );
+            return EXIT_FAILURE;
         } else if ( pthread_err == EINVAL ) {
             fprintf(stderr,"FAIL : EINVAL attr is invalid\n");
             perror("FAIL : EINVAL");
-            return ( EXIT_FAILURE );
+            return EXIT_FAILURE;
         } else if ( pthread_err == EPERM ) {
            fprintf(stderr,"FAIL : EPERM permission denied\n");
            perror("FAIL : EPERM");
-           return ( EXIT_FAILURE );
+           return EXIT_FAILURE;
         }
 
     }

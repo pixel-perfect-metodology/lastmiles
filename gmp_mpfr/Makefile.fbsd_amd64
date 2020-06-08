@@ -14,13 +14,13 @@ LIBS = -lm -lgmp -lmpfr
 
 SRC = mpfr_ver.c \
 	../time_and_date/timediff.c \
-	../pthread/sysinfo.c \
-   	../pthread/sysmem.c
+	../sysinfo/sysinfo.c \
+   	../sysinfo/sysmem.c
 
 OBJ = mpfr_ver.o \
 	  ../time_and_date/timediff.o \
-	  ../pthread/sysinfo.o \
-	  ../pthread/sysmem.o
+	  ../sysinfo/sysinfo.o \
+	  ../sysinfo/sysmem.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I$(IDIR)

@@ -24,6 +24,9 @@
 #include <fenv.h>
 #pragma STDC FENV_ACCESS ON
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include <locale.h>
 #include <unistd.h>
 #include <math.h>
@@ -203,6 +206,7 @@ int main(int argc, char*argv[])
      * identical to the magnify except that we will
      * trap for stupid bail_out values */
     uint8_t bail_out_jank_in, bail_out_jank = 10;
+    double bail_out_factor = 1.0;
 
     double candidate_double = 0.0;
     int fpe_raised = 0;
@@ -416,11 +420,11 @@ int main(int argc, char*argv[])
     printf("      magnify = %-+18.12e\n\n", magnify );
 
     /* TODO allow adjustment of these values */
-    gamma = 1.5;
-    hue = 1.0;
+    gamma = 2.5;
+    hue = 1.5;
     rotation = 5.0;
     shift = 1.0;
-    t_param_exponent = 1.5;
+    t_param_exponent = 1.8;
 
     /* TODO perhaps use the terms real and imaginary for the
      * data axi and not just x and y. However x and y are nice
@@ -602,6 +606,10 @@ int main(int argc, char*argv[])
     /* janky magnify slider container */
     XSetForeground(dsp, gc2, yellow.pixel);
     XDrawRectangle(dsp, win2, gc2, 215, 10, 176, 12);
+
+    /* janky bail_out slider container */
+    XSetForeground(dsp, gc2, WhitePixel(dsp, screen_num));
+    XDrawRectangle(dsp, win2, gc2, 215, 60, 176, 12);
 
     /* draw a blue box inside the second window */
     XSetForeground(dsp, gc2, blue.pixel);
@@ -1144,6 +1152,81 @@ int main(int argc, char*argv[])
 
                     XFlush(dsp);
 
+                } else if ( ( mouse_x_raw > 1268 ) && ( mouse_y_raw > ( 733 + 50 ) )
+                         && ( mouse_x_raw < 1440 ) && ( mouse_y_raw < ( 742 + 50 ) ) ) {
+
+                    /* we should be inside the janky bail_out control */
+                    XSetLineAttributes(dsp, gc2, 8, LineSolid, CapButt, JoinMiter);
+                    XSetForeground(dsp, gc2, BlackPixel(dsp, screen_num) );
+                    XDrawLine(dsp, win2, gc2, 218, 16 + 50, 388, 16 + 50);
+
+                    XSetLineAttributes(dsp, gc2, 1, LineSolid, CapButt, JoinMiter);
+
+                    /* yellow horizontal midline */
+                    XSetForeground(dsp, gc2, yellow.pixel);
+                    XDrawLine(dsp, win2, gc2, 218, 16 + 50, 388, 16 + 50);
+
+                    XSetForeground(dsp, gc2, cyan.pixel);
+                    for ( j = 0; j<21; j++ ) {
+                        XDrawLine(dsp, win2, gc2, 5 + 218 + 8 * j, 13 + 50,
+                                                  5 + 218 + 8 * j, 20 + 50 );
+                    }
+                    /* what is the current bail_out_jank value ? */
+                    XSetForeground(dsp, gc2, red.pixel);
+                    XDrawLine(dsp, win2, gc2, 
+                                           5 + 218 + 8 * bail_out_jank, 13 + 50,
+                                           5 + 218 + 8 * bail_out_jank, 20 + 50 );
+
+                    /* same as above where we did tests to locate the centre
+                     * and then hack along from there.  */
+                    bail_out_jank_in = (uint8_t)( ( ( mouse_x_raw - 1350 ) + 80 ) / 8);
+
+                    XDrawLine(dsp, win2, gc2, 
+                                           4 + 218 + 8 * bail_out_jank_in, 13 + 50,
+                                           4 + 218 + 8 * bail_out_jank_in, 20 + 50 );
+
+                    XDrawLine(dsp, win2, gc2, 
+                                           5 + 218 + 8 * bail_out_jank_in, 13 + 50,
+                                           5 + 218 + 8 * bail_out_jank_in, 20 + 50 );
+
+                    XDrawLine(dsp, win2, gc2, 
+                                           6 + 218 + 8 * bail_out_jank_in, 13 + 50,
+                                           6 + 218 + 8 * bail_out_jank_in, 20 + 50 );
+
+                    XSetForeground(dsp, gc2, magenta.pixel);
+                    XDrawLine(dsp, win2, gc2, 
+                                           5 + 218 + 8 * bail_out_jank, 13 + 50,
+                                           5 + 218 + 8 * bail_out_jank, 20 + 50 );
+
+                    bail_out_factor = pow ( 2.0, bail_out_jank_in - 10 );
+                    /* perform a test to ensure that the bail_out never falls
+                     * below 256 */
+                    if ( ( (double)mand_bail * bail_out_factor ) < 256.0 ) {
+
+                        bail_out_factor = 1.0;
+                        XSetForeground(dsp, gc2, red.pixel);
+                        sprintf(buf,"  factor set to 1  ");
+                        XDrawImageString( dsp, win2, gc2, 215, 40 + 50,
+                                          buf, (int)strlen(buf));
+
+                        /* force the bail_out jank to mid-point wherein
+                         * the bail_out_factor is 2^0 == 1 of course */
+                        bail_out_jank = 10;
+
+                    } else {
+
+                        XSetForeground(dsp, gc2, green.pixel);
+                        sprintf(buf,"f(%-+2i) = %-9.5e  ",
+                                                 bail_out_jank_in - 10,
+                                                 bail_out_factor );
+
+                        XDrawImageString( dsp, win2, gc2, 215, 40 + 50,
+                                          buf, (int)strlen(buf));
+
+                        bail_out_jank = bail_out_jank_in;
+
+                    }
+
                 } else if ( ( mouse_x_raw > 1372 ) && ( mouse_y_raw > 915 )
                          && ( mouse_x_raw < 1442 ) && ( mouse_y_raw < 932 )
 
@@ -1155,18 +1238,24 @@ int main(int argc, char*argv[])
 
                     /* are we inside the replot button */
                     if ( replot_flag == 0 ) {
+
                         /* flip the button to warning status */
                         XSetForeground(dsp, gc2, yellow.pixel);
                         XDrawRectangle(dsp, win2, gc2, 320, 192, 72, 20);
                         sprintf(buf,">REPLOT<");
                         XDrawImageString( dsp, win2, gc2, 324, 207, buf, (int)strlen(buf));
                         replot_flag = 1;
+
                     } else {
+
                         /* we are confirmed. Go back to red and actually replot
                          * however we need to adjust the magnify as well as
                          * other factors 
                          *
-                         *  CHECK THAT x_primt and y_prime are NOT the initial
+                         * So now we have bail_out_jank and we need to trap for
+                         * strange values.
+                         *
+                         *  CHECK THAT x_prime and y_prime are NOT the initial
                          *     impossible values ( -8.0, -8.0 ) 
                          *
                          * */
@@ -1182,6 +1271,9 @@ int main(int argc, char*argv[])
                         mouse_x = 506;   /* try to be dead center */
                         mouse_y = 518;   /* after a hokey adjustment */
 
+                        mand_bail = (uint32_t)( (double)mand_bail * bail_out_factor );
+                        fprintf(stderr,"INFO : mand_bail changed to %" PRIu32 "\n", mand_bail);
+
                         magnify *= magnify_factor;
                         fprintf(stderr,"INFO : magnify changed to %-+16.10e\n", magnify);
                         obs_x_width = 4.0 / magnify;
@@ -1190,7 +1282,7 @@ int main(int argc, char*argv[])
                         invert_me_dammit = 0;
                         button = Button2;
 
-                        /* ensure we trigger a recalc */
+                        /* trigger a recalc and thus flush vbox_flag to zero */
                         memset( &vbox_flag, 0x00, (size_t)(16*16)*sizeof(int));
 
                         real_translate = x_prime;
@@ -1363,6 +1455,10 @@ replot:
                         }
                     }
                 }
+
+                /* reset the mand_bail adjust ment parameters */
+               bail_out_factor = 1.0;
+               bail_out_jank = 10;
             } /* inside main plot area check */
 
             XSetForeground(dsp, gc, yellow.pixel);
