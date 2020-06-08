@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
      *
      */
     double offset_width = 1.0 / 524288.0;
-    double view_width = 1.0/262144.0;
+    double view_width = 1.0 / 262144.0;
     clock_gettime( CLOCK_REALTIME, &t0 );
     for (int i = 0; i < num_elements; ++i) {
         /*
