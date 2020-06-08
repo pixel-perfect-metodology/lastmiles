@@ -377,7 +377,7 @@ int main(int argc, char*argv[])
                 /* snazzy little bit shifting and counting follows
                  * where this is not at all efficient but is sort of
                  * fun */
-    
+
                 k = 0; /* number of '1' bits in candidate_int */
                 j = candidate_int;
                 p = 0; /* bit position being tested */
@@ -420,8 +420,8 @@ int main(int argc, char*argv[])
     printf("      magnify = %-+18.12e\n\n", magnify );
 
     /* TODO allow adjustment of these values */
-    gamma = 2.5;
-    hue = 1.5;
+    gamma = 2.0;
+    hue = 1.8;
     rotation = 5.0;
     shift = 1.0;
     t_param_exponent = 1.8;
@@ -757,8 +757,8 @@ int main(int argc, char*argv[])
     sprintf(buf,"[0000] tdelta = %14lld nsec", t_delta);
     XDrawImageString( dsp, win3, gc3, 10, 20, buf, (int)strlen(buf));
 
-    /* WTF ?? 
-     * plot some points on the grid that we created 
+    /* TODO WTF ??
+     * plot some points on the grid that we created
     XSetForeground(dsp, gc, yellow.pixel);
     XDrawPoint(dsp, win, gc, 5, 5);
     */
@@ -1113,7 +1113,7 @@ int main(int argc, char*argv[])
                     }
                     /* what is the current magnify_jank value ? */
                     XSetForeground(dsp, gc2, red.pixel);
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            5 + 218 + 8 * magnify_jank, 13,
                                            5 + 218 + 8 * magnify_jank, 20 );
 
@@ -1122,20 +1122,20 @@ int main(int argc, char*argv[])
                      * or right with be 8 pixels away. */
                     magnify_jank_in = (uint8_t)( ( ( mouse_x_raw - 1350 ) + 80 ) / 8);
 
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            4 + 218 + 8 * magnify_jank_in, 13,
                                            4 + 218 + 8 * magnify_jank_in, 20 );
 
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            5 + 218 + 8 * magnify_jank_in, 13,
                                            5 + 218 + 8 * magnify_jank_in, 20 );
 
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            6 + 218 + 8 * magnify_jank_in, 13,
                                            6 + 218 + 8 * magnify_jank_in, 20 );
 
                     XSetForeground(dsp, gc2, magenta.pixel);
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            5 + 218 + 8 * magnify_jank, 13,
                                            5 + 218 + 8 * magnify_jank, 20 );
 
@@ -1173,7 +1173,7 @@ int main(int argc, char*argv[])
                     }
                     /* what is the current bail_out_jank value ? */
                     XSetForeground(dsp, gc2, red.pixel);
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            5 + 218 + 8 * bail_out_jank, 13 + 50,
                                            5 + 218 + 8 * bail_out_jank, 20 + 50 );
 
@@ -1181,20 +1181,20 @@ int main(int argc, char*argv[])
                      * and then hack along from there.  */
                     bail_out_jank_in = (uint8_t)( ( ( mouse_x_raw - 1350 ) + 80 ) / 8);
 
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            4 + 218 + 8 * bail_out_jank_in, 13 + 50,
                                            4 + 218 + 8 * bail_out_jank_in, 20 + 50 );
 
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            5 + 218 + 8 * bail_out_jank_in, 13 + 50,
                                            5 + 218 + 8 * bail_out_jank_in, 20 + 50 );
 
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            6 + 218 + 8 * bail_out_jank_in, 13 + 50,
                                            6 + 218 + 8 * bail_out_jank_in, 20 + 50 );
 
                     XSetForeground(dsp, gc2, magenta.pixel);
-                    XDrawLine(dsp, win2, gc2, 
+                    XDrawLine(dsp, win2, gc2,
                                            5 + 218 + 8 * bail_out_jank, 13 + 50,
                                            5 + 218 + 8 * bail_out_jank, 20 + 50 );
 
@@ -1233,7 +1233,7 @@ int main(int argc, char*argv[])
                          && ( ( x_prime + 8.0 ) > EPSILON )
 
                          && ( ( y_prime + 8.0 ) > EPSILON )
-                       
+
                         ) {
 
                     /* are we inside the replot button */
@@ -1250,13 +1250,13 @@ int main(int argc, char*argv[])
 
                         /* we are confirmed. Go back to red and actually replot
                          * however we need to adjust the magnify as well as
-                         * other factors 
+                         * other factors
                          *
                          * So now we have bail_out_jank and we need to trap for
                          * strange values.
                          *
                          *  CHECK THAT x_prime and y_prime are NOT the initial
-                         *     impossible values ( -8.0, -8.0 ) 
+                         *     impossible values ( -8.0, -8.0 )
                          *
                          * */
                         XSetForeground(dsp, gc2, red.pixel);
@@ -1333,6 +1333,7 @@ replot:
 
                 XSetForeground(dsp, gc2, cornflowerblue.pixel);
                 sprintf(buf,"fp64( %-+10.8e , %-+10.8e )  ", win_x, win_y );
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win2, gc2, 10, 290, buf, (int)strlen(buf));
 
                 x_prime = obs_x_width * win_x / 2.0;
@@ -1344,13 +1345,17 @@ replot:
 
                 XSetForeground(dsp, gc3, red.pixel);
                 sprintf(buf," select = %-+16.12e, %-+16.12e  ", x_prime, y_prime );
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, green.pixel);
                 sprintf(buf,"bailout = %-8i          ", mand_bail);
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win3, gc3, 10, 100, buf, (int)strlen(buf));
                 sprintf(buf,"magnify = %-12.10e", magnify);
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win3, gc3, 10, 120, buf, (int)strlen(buf));
                 sprintf(buf," centre = %-+16.12e, %-+16.12e  ", real_translate, imag_translate);
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win3, gc3, 10, 140, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 
@@ -1368,7 +1373,7 @@ replot:
                 }
                 for ( vbox_y = 0; vbox_y < 16; vbox_y++ ) {
                     for ( vbox_x = 0; vbox_x < 16; vbox_x++ ) {
-                        if ( 1 ) { /* vbox_flag[vbox_x][vbox_y] == 0 */
+                        if ( vbox_flag[vbox_x][vbox_y] == 0 ) {
                             clock_gettime( CLOCK_MONOTONIC, &vbox_t0 );
                             for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
                                 vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
@@ -1396,6 +1401,10 @@ replot:
                                         mand_height = mbrot( x_prime, y_prime, mand_bail );
                                         mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix] = mand_height;
                                     }
+                                    /* TODO dump this to a binary file damn it */
+                                    fprintf(stderr,"%02i %02i  %-+22.16e  %-+22.16e  %"PRIu32"\n",
+                                                    vbox_x, vbox_y, x_prime, y_prime,
+                                                    mandel_val[vbox_x][vbox_y][mand_x_pix][mand_y_pix] );
 
                                     if ( colour_method_flag ) {
 
