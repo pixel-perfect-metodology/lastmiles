@@ -1,0 +1,52 @@
+
+vesta$ ./xmand 65536 4194304000000 -1.98541438285764e-01 -1.10013704315129e+00 8
+-------------------------------------------------------------
+           system name = FreeBSD
+             node name = vesta
+               release = 12.1-RELEASE-p5
+               version = FreeBSD 12.1-RELEASE-p5 GENERIC
+               machine = amd64
+             page size = 4096
+          avail memory = 10328125440
+                       = 10086060 kB
+                       = 9849 MB
+                endian = little endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : magnify accepted as long long int
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : FP Exception raised is FE_INEXACT
+imag : Perfectly safe to ignore FE_INEXACT
+
+    mand_bail = 65536
+pthread_limit = 8
+    translate = ( -1.98541438285764e-01 , -1.10013704315129e+00 )
+      magnify = +4.194304000000e+12
+
+
+ X11 : default width=1044 height=1044
+     : connection number 3
+     : screen number 0
+     : default depth is 24
+     : display seems to be 5760 wide and 1080 high.
+     : offset x=20 y=20
+     : eff_width =  1024    eff_height =  1024
+
+--------------------------------------------
+vbox  [ 012 , 006 ]
+fp64( +6.03515625e-01 , -2.34375000e-01 )  
+ select = -1.985414382855e-01, -1.100137043151e+00  
+bailout = 65536             
+magnify = 4.1943040000e+12
+ centre = -1.985414382858e-01, -1.100137043151e+00  
+[mand] =    20856431050 nsec   2.085643e+01 sec
+
+click at 831 642 
+right click
+click at 526 574 
+right click
+

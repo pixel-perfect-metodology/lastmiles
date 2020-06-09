@@ -1373,7 +1373,7 @@ replot:
                 }
                 for ( vbox_y = 0; vbox_y < 16; vbox_y++ ) {
                     for ( vbox_x = 0; vbox_x < 16; vbox_x++ ) {
-                        if ( vbox_flag[vbox_x][vbox_y] == 0 ) {
+                        if ( 1 ) {  /* vbox_flag[vbox_x][vbox_y] == 0 */
                             clock_gettime( CLOCK_MONOTONIC, &vbox_t0 );
                             for ( mand_y_pix = 0; mand_y_pix < vbox_h; mand_y_pix++ ) {
                                 vbox_ll_y = vbox_y * vbox_h + mand_y_pix;
