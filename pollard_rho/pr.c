@@ -24,6 +24,7 @@ count =    7  x_m = 20542.000000  factor_m = 41.000000
 */
 int gcd(uint64_t a, uint64_t b) 
 {
+
     uint64_t remainder;
     uint64_t save_a, save_b;
     uint64_t loop = 0;
@@ -41,30 +42,43 @@ int gcd(uint64_t a, uint64_t b)
     printf ("gcd( %"PRIu64", %"PRIu64" ) returns %"PRIu64"\n\n------\n", save_a, save_b, a);
 
     return a;
+
 }
 
 int main (int argc, char *argv[]) 
 {
+
     uint64_t count, number = 10403, loop = 1;
     uint64_t x_fixed = 2, size = 2, x = 2, factor = 1;
-    if (argc>1) number = (uint64_t)strtoll(argv[1], (char **)NULL, 10);
-    while (factor == 1) {
-        printf("----   loop %"PRIu64"   ----\n", loop);
-        printf("\nentering for loop with size = %"PRIu64"\n", size);
-        for (count = 1; (count <= size) && (factor <= 1); count++) {
-            printf("x = %"PRIu64"\n", x);
-            x = (x * x + 1) % number;
-            printf("x = (x * x + 1) %% number is now x = %"PRIu64"\n", x);
-            printf("x_fixed = %"PRIu64"\n", x_fixed);
-            printf("abs(x - x_fixed) = %"PRIu64"\n", abs(x - x_fixed));
-            factor = gcd(abs(x - x_fixed), number);
-            printf("count = %"PRIu64"  x = %"PRIu64"  factor = %"PRIu64"\n", count, x, factor);
+
+    if ( argc>1 ) {
+
+        number = (uint64_t)strtoll(argv[1], (char **)NULL, 10);
+
+        while (factor == 1) {
+            printf("----   loop %"PRIu64"   ----\n", loop);
+            printf("\nentering for loop with size = %"PRIu64"\n", size);
+            for (count = 1; (count <= size) && (factor <= 1); count++) {
+                printf("x = %"PRIu64"\n", x);
+                x = (x * x + 1) % number;
+                printf("x = (x * x + 1) %% number is now x = %"PRIu64"\n", x);
+                printf("x_fixed = %"PRIu64"\n", x_fixed);
+                printf("abs(x - x_fixed) = %"PRIu64"\n", abs(x - x_fixed));
+                factor = gcd(abs(x - x_fixed), number);
+                printf("count = %"PRIu64"  x = %"PRIu64"  factor = %"PRIu64"\n", count, x, factor);
+            }
+            size = 2 * size;
+            x_fixed = x;
+            loop = loop + 1;
         }
-        size = 2 * size;
-        x_fixed = x;
-        loop = loop + 1;
+        printf("A factor of %"PRIu64" is %"PRIu64"\n", number, factor);
+        return EXIT_SUCCESS;
+
+    } else {
+
+        printf("\ngimme a damn number\n");
+        return EXIT_FAILURE;
+
     }
-    printf("A factor of %"PRIu64" is %"PRIu64"\n", number, factor);
-    return EXIT_SUCCESS;
 }
 
