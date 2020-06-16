@@ -5,8 +5,9 @@ LDIR=/opt/bw/lib
 LD_OPTIONS=-L/opt/bw/lib
 LD_RUN_PATH=/opt/bw/lib
 
-CFLAGS= -I$(IDIR) -std=iso9899:1999 -m64 -g -O0 \
-	-fno-fast-math -fno-builtin
+CFLAGS= -I$(IDIR) -std=iso9899:1999 -pedantic -pedantic-errors \
+	-Weverything -Wno-reserved-id-macro -Wno-missing-prototypes \
+	-m64 -g -O0 -fno-fast-math -fno-builtin
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600

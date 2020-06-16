@@ -26,7 +26,7 @@
 #include <gmp.h>
 #include <mpfr.h>
 
-uint64_t system_memory();
+uint64_t system_memory(void);
 int sysinfo(void);
 uint64_t timediff( struct timespec st, struct timespec en );
 

@@ -20,6 +20,49 @@ fp32_format.c Attempts to convert an input decimal number to the
               results in the area of the ulp ( unit of least 
               precision ).
 
+Example : 
+
+vesta$ ./fp32_format 36.584
+INFO : FP Exception raised is FE_INEXACT FE_INEXACT
+real : Perfectly safe to ignore FE_INEXACT
+INFO : seems like a decimal number +36.584               
+     : actual exponent should be 5
+     : binary fp32 exponent will be 10000100
+INFO : starting point running_total = +1.4325000000000010e-01
+INFO : test bit 01 with value +5.0000000000000000e-01
+INFO : test bit 02 with value +2.5000000000000000e-01
+INFO : test bit 03 with value +1.2500000000000000e-01
+     : good bit 03 with new   +1.8250000000000099e-02
+INFO : test bit 04 with value +6.2500000000000000e-02
+INFO : test bit 05 with value +3.1250000000000000e-02
+INFO : test bit 06 with value +1.5625000000000000e-02
+     : good bit 06 with new   +2.6250000000000995e-03
+INFO : test bit 07 with value +7.8125000000000000e-03
+INFO : test bit 08 with value +3.9062500000000000e-03
+INFO : test bit 09 with value +1.9531250000000000e-03
+     : good bit 09 with new   +6.7187500000009948e-04
+INFO : test bit 10 with value +9.7656250000000000e-04
+INFO : test bit 11 with value +4.8828125000000000e-04
+     : good bit 11 with new   +1.8359375000009948e-04
+INFO : test bit 12 with value +2.4414062500000000e-04
+INFO : test bit 13 with value +1.2207031250000000e-04
+     : good bit 13 with new   +6.1523437500099476e-05
+INFO : test bit 14 with value +6.1035156250000000e-05
+     : good bit 14 with new   +4.8828125009947598e-07
+INFO : test bit 15 with value +3.0517578125000000e-05
+INFO : test bit 16 with value +1.5258789062500000e-05
+INFO : test bit 17 with value +7.6293945312500000e-06
+INFO : test bit 18 with value +3.8146972656250000e-06
+INFO : test bit 19 with value +1.9073486328125000e-06
+INFO : test bit 20 with value +9.5367431640625000e-07
+INFO : test bit 21 with value +4.7683715820312500e-07
+     : good bit 21 with new   +1.1444091896350983e-08
+INFO : test bit 22 with value +2.3841857910156250e-07
+INFO : test bit 23 with value +1.1920928955078125e-07
+INFO : perhaps fp32_register = 0x42125604
+vesta$ 
+
+
 fp128_q.c     This is a quick kick at the non-portable and highly
               non-standard  __float128 datatype.  To be honest there
               has been an update to IEEE-754 in 2008 which has the
@@ -317,7 +360,7 @@ main:
 $ 
 
 Clearly the data at LC0 is 64-bit only and while 0x400921fb54442d18
-is correct is it no where close to what we asked for.
+is correct for 64-bit is it no where close to what we asked for.
 
 -------------------- LLVM/Clang output opcodes on AMD k8
 

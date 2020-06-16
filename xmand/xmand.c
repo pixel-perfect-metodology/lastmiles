@@ -420,7 +420,7 @@ int main(int argc, char*argv[])
     printf("      magnify = %-+18.12e\n\n", magnify );
 
     /* TODO allow adjustment of these values */
-    gamma = 2.0;
+    gamma = 2.5;
     hue = 1.8;
     rotation = 5.0;
     shift = 1.0;
