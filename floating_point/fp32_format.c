@@ -71,7 +71,6 @@ int main ( int argc, char *argv[] )
         if ( fpe_raised & FE_UNDERFLOW ) printf(" FE_UNDERFLOW");
         if ( fpe_raised & FE_OVERFLOW ) printf(" FE_OVERFLOW");
         if ( fpe_raised & FE_INVALID ) printf(" FE_INVALID");
-        if ( fpe_raised & FE_INEXACT ) printf(" FE_INEXACT");
         printf("\n");
     }
     if ( fpe_raised & FE_INEXACT ) {
