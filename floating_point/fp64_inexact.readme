@@ -6,7 +6,10 @@ $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Solaris_SPARCV9.log | open
 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_ver10.0_aarch64.log | openssl dgst -sha256 -r -
 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_ppc64le.log | openssl dgst -sha256 -r -
+03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
 $ 
+
 
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_i686_via_eden_esther.log | openssl dgst -sha256 - 
 (stdin)= 67807eadb913c58ffc595213b71df2c15314266ae6074e899599d1bf0846626f
