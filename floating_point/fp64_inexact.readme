@@ -1,24 +1,59 @@
 
-vesta$ 
-vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_amd64.log | openssl dgst -sha256 -r -
+$ 
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_amd64.log | openssl dgst -sha256 -r -
 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
-vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Solaris_SPARCV9.log | openssl dgst -sha256 -r -
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Solaris_SPARCV9.log | openssl dgst -sha256 -r -
 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
-C_esther$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_ver10.0_aarch64.log | openssl dgst -sha256 -r -
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_ver10.0_aarch64.log | openssl dgst -sha256 -r -
 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
-C_esther$ 
+$ 
 
-C_esther$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_i686_via_eden_esther.log | openssl dgst -sha256 - 
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_i686_via_eden_esther.log | openssl dgst -sha256 - 
 (stdin)= 67807eadb913c58ffc595213b71df2c15314266ae6074e899599d1bf0846626f
-C_esther$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.kali_armv7l.log | openssl dgst -sha256 - 
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.kali_armv7l.log | openssl dgst -sha256 - 
 (stdin)= 67807eadb913c58ffc595213b71df2c15314266ae6074e899599d1bf0846626f
-C_esther$ 
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_i686_pentium_II.log | openssl dgst -sha256 -r -
+67807eadb913c58ffc595213b71df2c15314266ae6074e899599d1bf0846626f *stdin
+
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_12.1-RELEASE-p6_amd64.log | openssl dgst -sha256 -r -
+0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362037_ppc64.log | openssl dgst -sha256 -r -
+0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362257_amd64.log | openssl dgst -sha256 -r -
+0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
+$ 
 
 
-vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_12.1-RELEASE-p6_amd64.log | openssl dgst -sha256 -r -
-0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
-vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362037_ppc64.log | openssl dgst -sha256 -r -
-0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
-vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362257_amd64.log | openssl dgst -sha256 -r -
-0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
-vesta$ 
+
+
+Note that the 32-bit systems all toss an FE_INEXACT  exception in error
+at the 32 bit position :
+
+C_mars$ 
+C_mars$ cat -n foo | head -70 | tail 
+    61  ---- 31 ----  1.0000000004656612873077392578125000000000000000000000000000000000
+    62  INFO : seems like a decimal number +1.0000000004656612873077392578125  
+    63  ---- 32 ----  1.0000000002328306436538696289062500000000000000000000000000000000
+    64  INFO : FP Exception raised is FE_INEXACT
+    65  WARN : FE_INEXACT returned by strtod()
+    66  INFO : seems like a decimal number +1.00000000023283064365386962890625 
+    67  ---- 33 ----  1.0000000001164153218269348144531250000000000000000000000000000000
+    68  INFO : seems like a decimal number +1.000000000116415321826934814453125
+    69  ---- 34 ----  1.0000000000582076609134674072265625000000000000000000000000000000
+    70  INFO : seems like a decimal number +1.000000000058207660913467407226562
+C_mars$ 
+C_mars$ 
+C_mars$ cat -n foo2 | head -70 | tail 
+    61  ---- 31 ----  1.0000000004656612873077392578125000000000000000000000000000000000
+    62  INFO : seems like a decimal number +1.0000000004656612873077392578125  
+    63  ---- 32 ----  1.0000000002328306436538696289062500000000000000000000000000000000
+    64  INFO : seems like a decimal number +1.00000000023283064365386962890625 
+    65  ---- 33 ----  1.0000000001164153218269348144531250000000000000000000000000000000
+    66  INFO : seems like a decimal number +1.000000000116415321826934814453125
+    67  ---- 34 ----  1.0000000000582076609134674072265625000000000000000000000000000000
+    68  INFO : seems like a decimal number +1.000000000058207660913467407226562
+    69  ---- 35 ----  1.0000000000291038304567337036132812500000000000000000000000000000
+    70  INFO : seems like a decimal number +1.000000000029103830456733703613281
+C_mars$ 
+
+
