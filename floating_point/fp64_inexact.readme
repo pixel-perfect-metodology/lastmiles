@@ -1,0 +1,17 @@
+
+vesta$ 
+vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_amd64.log | openssl dgst -sha256 -r -
+03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
+vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Solaris_SPARCV9.log | openssl dgst -sha256 -r -
+03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
+vesta$ 
+vesta$ 
+vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_12.1-RELEASE-p6_amd64.log | openssl dgst -sha256 -r -
+0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
+vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362037_ppc64.log | openssl dgst -sha256 -r -
+0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
+vesta$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362257_amd64.log | openssl dgst -sha256 -r -
+0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
+vesta$ 
+vesta$ 
+
