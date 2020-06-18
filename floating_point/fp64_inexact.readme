@@ -27,6 +27,11 @@ $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r3622
 $ 
 
 
+Red Hat does its own silly thing wrong after bit 52 : 
+
+boe13$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.RHEL_7.4_amd64.log | openssl dgst -sha256 - 
+(stdin)= 3917c8ab822a708c79652eb5a8549fe8eb8a429c1fdab1d4ab77f2be1b78976a
+boe13$ 
 
 
 Note that the 32-bit systems all toss an FE_INEXACT  exception in error
