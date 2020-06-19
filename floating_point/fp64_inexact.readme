@@ -26,8 +26,9 @@ $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r3620
 0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362257_amd64.log | openssl dgst -sha256 -r -
 0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r362037_aarch64.log | openssl dgst -sha256 -r -
+0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
 $ 
-
 
 Red Hat does its own silly thing wrong after bit 52 : 
 
