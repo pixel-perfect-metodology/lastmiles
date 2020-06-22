@@ -1,28 +1,58 @@
 
+/*
+ * pr.c Pollard Rho Algorithm
+ * Copyright (C) Dennis Clarke 2019
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ *
+ * https://www.gnu.org/licenses/gpl-3.0.txt
+ */
+
+/*********************************************************************
+ * The Open Group Base Specifications Issue 6
+ * IEEE Std 1003.1, 2004 Edition
+ *
+ *    An XSI-conforming application should ensure that the feature
+ *    test macro _XOPEN_SOURCE is defined with the value 600 before
+ *    inclusion of any header. This is needed to enable the
+ *    functionality described in The _POSIX_C_SOURCE Feature Test
+ *    Macro and in addition to enable the XSI extension.
+ *
+ *********************************************************************/
+#define _XOPEN_SOURCE 600
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
-/*
- note that a mpfr code returns 123451 thus : 
+/* For the Pollard Rho factorization algorithm please
+ * see page 976 of the "CLRS" Algorithms textbook.
+ *
+ * Feel free to test with a prime pair that Jenny gave us :
+ *
+ *     75261003596099 = 8675309 * 8675311
+ *
+ * Should factor neatly in about 16 secs or so :
+ *
+ *     count = 382124  x = 24317867926243  factor = 8675309
+ *     A factor of 75261003596099 is 8675309
+ *     
+ */
 
-count =    1  x_m = 5.000000  factor_m = 1.000000
-count =    2  x_m = 26.000000  factor_m = 1.000000
-count =    1  x_m = 677.000000  factor_m = 1.000000
-count =    2  x_m = 87977.000000  factor_m = 1.000000
-count =    3  x_m = 68634.000000  factor_m = 1.000000
-count =    4  x_m = 106150.000000  factor_m = 1.000000
-count =    1  x_m = 79378.000000  factor_m = 1.000000
-count =    2  x_m = 51296.000000  factor_m = 1.000000
-count =    3  x_m = 45003.000000  factor_m = -1.000000
-count =    4  x_m = 56355.000000  factor_m = -1.000000
-count =    5  x_m = 109051.000000  factor_m = 1.000000
-count =    6  x_m = 85772.000000  factor_m = -1.000000
-count =    7  x_m = 20542.000000  factor_m = 41.000000
-*/
-int gcd(uint64_t a, uint64_t b) 
+uint64_t gcd(uint64_t a, uint64_t b) 
 {
 
     uint64_t remainder;
@@ -30,10 +60,15 @@ int gcd(uint64_t a, uint64_t b)
     uint64_t loop = 0;
     save_a = a;
     save_b = b;
-        printf("----   loop %"PRIu64"   ----\n", loop);
+
+    printf("----   loop %"PRIu64"   ----\n", loop);
     printf("\n------\nEntered into gcd( a = %"PRIu64", b = %"PRIu64")\n", a, b);
+
     while (b != 0) {
-        printf("gcd loop %"PRIu64" :  a = %"PRIu64"  b = %"PRIu64"  and a %% b", loop++);
+
+        printf("gcd loop %"PRIu64" :  a = %"PRIu64"  b = %"PRIu64"  and a %% b",
+                    loop++, a , b );
+
         remainder = a % b;
         printf(" remainder = %"PRIu64"\n", remainder);
         a = b;
@@ -53,7 +88,14 @@ int main (int argc, char *argv[])
 
     if ( argc>1 ) {
 
+        /* TODO : check that the input is a valid number 
+         * someday. */
         number = (uint64_t)strtoll(argv[1], (char **)NULL, 10);
+        if ( number > 4294967295 ) {
+            fprintf (stderr,"FAIL : number is too large for this trivial\n");
+            fprintf (stderr,"     : Pollard Rho implementation.\n");
+            return EXIT_FAILURE;
+        }
 
         while (factor == 1) {
             printf("----   loop %"PRIu64"   ----\n", loop);
@@ -74,11 +116,11 @@ int main (int argc, char *argv[])
         printf("A factor of %"PRIu64" is %"PRIu64"\n", number, factor);
         return EXIT_SUCCESS;
 
-    } else {
-
-        printf("\ngimme a damn number\n");
-        return EXIT_FAILURE;
-
     }
+
+    printf("USAGE : %s some_positive_integer\n", argv[0]);
+
+    return EXIT_FAILURE;
+
 }
 
