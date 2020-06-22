@@ -24,18 +24,19 @@
 /* this looks like a cool attempt to squeeze some 
  * precision out of the dark matter of the universe
  * but really ya just can not do that. Sorry. */
-long double shift_in_fp( long double a, long double b)
+long double fp( long double a, long double b)
 {
-        long double big_number = powl(b, 6.0L) + powl(a, 2.0L)
-                                   * ( 11.0L * powl(a, 2.0L)
-                                       * powl(b, 2.0L) 
-                                       - powl(b, 6.0L)
-                                       - 121.0L * powl(b, 4.0L) - 2.0L )
-                                       + 5.5L * powl(b, 8.0L) + (a / (2.0L * b ) );
+    long double big_num;
 
-        long double shift_value = powl(2.0L, logl(fabsl(big_number)) / logl(2.0) );
+    big_num = 333.75L * powl(b, 6.0L)
+               + powl(a, 2.0L)
+                   * ( 11.0L * powl(a, 2.0L) * powl(b, 2.0L)
+                           - powl(b, 6.0L)
+                           - 121.0L * powl(b, 4.0L) - 2.0L )
+               + 5.5L * powl(b, 8.0L)
+               + (a / (2.0L * b ) );
 
-        return ( 333.75L * shift_value * big_number / shift_value );
+    return big_num;
 
 }
 
@@ -61,9 +62,9 @@ int main(int argc, char **argv)
      */
 
 
-    /* the schmide test */
-    printf( "\n     : schmide  test = %-+32.28e\n\n",
-                                     shift_in_fp( 77617.0, 33096.0 ) );
+    /* fp func test */
+    printf( "\n     : fp test = %-+32.26e\n\n",
+                                     fp( 77617.0, 33096.0 ) );
 
     long double a, b, f, tmp[12];
     int fp_status, fp_round_mode, fpe_raised;
@@ -110,11 +111,13 @@ int main(int argc, char **argv)
     /* f= 333.75 * b^6 + a^2 * ( 11 * a^2 * b^2 - b^6 - 121 * b^4 - 2 )
      *      + 5.5 * b^8 + ( a / ( 2 * b ) ) */
 
-    f= 333.75 * powl(b,6.0)
-        + powl(a,2.0)
-            * ( 11.0 * powl(a,2.0) * powl(b,2.0) 
-                 - powl(b,6.0) - 121.0 * powl(b,4.0) - 2.0 )
-        + 5.5 * powl(b,8.0) + ( a / ( 2.0 * b ) );
+    f = 333.75L * powl(b, 6.0L)
+                + powl(a, 2.0L)
+                   * ( 11.0L * powl(a, 2.0L) * powl(b, 2.0L)
+                           - powl(b, 6.0L)
+                           - 121.0L * powl(b, 4.0L) - 2.0L )
+               + 5.5L * powl(b, 8.0L)
+               + (a / (2.0L * b ) );
 
     fpe_raised = fetestexcept(FE_ALL_EXCEPT);
     if (fpe_raised!=0){
@@ -127,7 +130,7 @@ int main(int argc, char **argv)
         printf("\n");
     }
 
-    printf( "\n     : f = %-+32.28e\n\n", f );
+    printf( "\n     : f = %-+32.26e\n\n", f );
     printf( "INFO : f = -0.827396059946821368141165095 ?\n\n");
 
     printf( "\n----------- start over slowly -----------\n\n");
@@ -185,6 +188,7 @@ int main(int argc, char **argv)
      */
 
     tmp[2] = 11.0L * a * a;
+
     fpe_raised = fetestexcept(FE_ALL_EXCEPT);
     if ( fpe_raised != 0 ) {
         printf("INFO : FP Exception raised is");
