@@ -44,7 +44,6 @@
  * Feel free to test with a prime pair that Jenny gave us :
  *
  *     75261003596099 = 8675309 * 8675311
- *
  * Should factor neatly in about 16 secs or so :
  *
  *     count = 382124  x = 24317867926243  factor = 8675309
@@ -62,19 +61,19 @@ uint64_t gcd(uint64_t a, uint64_t b)
     save_b = b;
 
     printf("----   loop %"PRIu64"   ----\n", loop);
-    printf("\n------\nEntered into gcd( a = %"PRIu64", b = %"PRIu64")\n", a, b);
+    printf("------\nEntered into gcd( a = %"PRIu64", b = %"PRIu64")\n",
+                                                                 a, b);
 
     while (b != 0) {
-
-        printf("gcd loop %"PRIu64" :  a = %"PRIu64"  b = %"PRIu64"  and a %% b",
-                    loop++, a , b );
-
+        printf("gcd loop %"PRIu64" :  ", loop++);
+        printf("a = %"PRIu64"  b = %"PRIu64"  and a %% b", a , b );
         remainder = a % b;
         printf(" remainder = %"PRIu64"\n", remainder);
         a = b;
         b = remainder;
     }
-    printf ("gcd( %"PRIu64", %"PRIu64" ) returns %"PRIu64"\n\n------\n", save_a, save_b, a);
+    printf ("gcd( %"PRIu64", %"PRIu64" ) == %"PRIu64"\n\n------\n",
+                          save_a, save_b, a);
 
     return a;
 
@@ -83,7 +82,7 @@ uint64_t gcd(uint64_t a, uint64_t b)
 int main (int argc, char *argv[]) 
 {
 
-    uint64_t count, number = 10403, loop = 1;
+    uint64_t count, number, loop = 1;
     uint64_t x_fixed = 2, size = 2, x = 2, factor = 1;
 
     if ( argc>1 ) {
@@ -92,7 +91,7 @@ int main (int argc, char *argv[])
          * someday. */
         number = (uint64_t)strtoll(argv[1], (char **)NULL, 10);
         if ( number > 4294967295 ) {
-            fprintf (stderr,"FAIL : number is too large for this trivial\n");
+            fprintf (stderr,"FAIL : number is too large for this\n");
             fprintf (stderr,"     : Pollard Rho implementation.\n");
             return EXIT_FAILURE;
         }
