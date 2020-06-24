@@ -11,7 +11,22 @@ $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Alpine_Linux_s390x_musl.lo
 (stdin)= 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_ppc64.log | openssl dgst -sha256 - 
 (stdin)= 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b
-$
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.RHEL_8.2_amd64.log| openssl dgst -sha256 -r -
+03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
+
+Note : Red Hat Enterprise Linux 8.2 claims glibc 2.30 thus 
+
+[metis@jupiter ~]$ ld --version
+GNU ld version 2.30-73.el8
+Copyright (C) 2018 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+
+
+
+
+
 
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_i686_via_eden_esther.log | openssl dgst -sha256 - 
 (stdin)= 67807eadb913c58ffc595213b71df2c15314266ae6074e899599d1bf0846626f
@@ -30,11 +45,26 @@ $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.FreeBSD_13.0-CURRENT_r3620
 0ed734ef6dc634701db6af8b26856c8016f97f6506d9dbb0d05ca7f493344cf9 *stdin
 $ 
 
-Red Hat does its own silly thing wrong after bit 52 : 
-
-boe13$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.RHEL_7.4_amd64.log | openssl dgst -sha256 - 
+Red Hat Enterprise Linux 7.4 and ye ASUS Tinkerboard are in their own little
+out of date old glibc world :
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.RHEL_7.4_amd64.log | openssl dgst -sha256 - 
 (stdin)= 3917c8ab822a708c79652eb5a8549fe8eb8a429c1fdab1d4ab77f2be1b78976a
-boe13$ 
+$ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_9.12_armv7l.log | openssl dgst -sha256 -r - 
+3917c8ab822a708c79652eb5a8549fe8eb8a429c1fdab1d4ab77f2be1b78976a *stdin
+
+Note, on the ASUS Tinkerboard we see this : 
+
+arm$ 
+arm$ ld --version 
+GNU ld (GNU Binutils for Debian) 2.28
+Copyright (C) 2017 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+arm$ 
+
+
+
 
 
 Note that the 32-bit systems all toss an FE_INEXACT  exception in error
