@@ -38,6 +38,17 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Written by Roland McGrath and Ulrich Drepper.
 
 
+Note : Kali Linux on 32-bit armv7l
+
+kali@kali:~$ ldd --version
+ldd (Debian GLIBC 2.30-4) 2.30
+Copyright (C) 2019 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Written by Roland McGrath and Ulrich Drepper.
+
+
+
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_i686_via_eden_esther.log | openssl dgst -sha256 - 
 (stdin)= 67807eadb913c58ffc595213b71df2c15314266ae6074e899599d1bf0846626f
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.kali_armv7l.log | openssl dgst -sha256 - 
@@ -71,6 +82,19 @@ Copyright (C) 2016 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Written by Roland McGrath and Ulrich Drepper.
+
+
+Red Hat Enterprise Linux 7.4 is in the ancient world of glibc
+from way way back in 2012 : 
+
+$ ldd --version 
+ldd (GNU libc) 2.17
+Copyright (C) 2012 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Written by Roland McGrath and Ulrich Drepper.
+$ 
+
 
 
 
