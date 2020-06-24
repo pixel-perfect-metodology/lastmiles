@@ -3,9 +3,9 @@ CC=/usr/bin/gcc
 
 CFLAGS= -g -m64 -std=iso9899:1999 -pedantic -fno-builtin -O0 \
 	-mcpu=power9 -mno-isel -mno-crypto -mno-htm -mno-quad-memory-atomic \
-	 -mfloat128-hardware -mfull-toc -mno-multiple -mupdate \
+	-mfloat128-hardware -mfull-toc -mno-multiple -mupdate \
 	-mno-avoid-indexed-addresses -mno-toc -mregnames -mno-recip \
-	-fno-unsafe-math-optimizations
+	-fno-unsafe-math-optimizations -fno-fast-math
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
 	-D_X_OPEN_SOURCE=600

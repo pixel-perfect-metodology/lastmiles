@@ -1,0 +1,94 @@
+
+may need to manually set source directory locations 
+
+C_titan$ 
+C_titan$ pwd 
+/home/dclarke/pgm/lastmiles/floating_point/glibc/glibc-2.31
+C_titan$ cd ../..
+C_titan$ 
+C_titan$ uname -a 
+Linux titan 5.8.0-rc2-genunix #1 SMP Wed Jun 24 07:02:46 UTC 2020 ppc64le GNU/Linux
+C_titan$ 
+C_titan$ LD_LIBRARY_PATH=/usr/lib/debug TERM=dumb gdb -q fp64_inexact
+Reading symbols from fp64_inexact...
+(gdb) set verbose on
+<ng_point/glibc/glibc-2.31:/home/dclarke/pgm/lastmiles/floating_point/glibc/glibc-2.31/stdlib
+Source directories searched: /home/dclarke/pgm/lastmiles/floating_point/glibc/glibc-2.31:/home/dclarke/pgm/lastmiles/floating_point/glibc/glibc-2.31/stdlib:$cdir:$cwd
+(gdb) break fp64_inexact.c:75
+Breakpoint 1 at 0x12bc: file fp64_inexact.c, line 75.
+(gdb) run 1.125
+Starting program: /home/dclarke/pgm/lastmiles/floating_point/fp64_inexact 1.125
+Using PIE (Position Independent Executable) displacement 0x100000000 for "/home/dclarke/pgm/lastmiles/floating_point/fp64_inexact".
+Reading symbols from /lib64/ld64.so.2...
+Reading symbols from /usr/lib/debug/.build-id/84/b976dcee36995ac93e9fcf4d593472ebef57c1.debug...
+Reading symbols from system-supplied DSO at 0x7ffff7f90000...
+Reading symbols from /lib/powerpc64le-linux-gnu/libm.so.6...
+Reading symbols from /usr/lib/debug/.build-id/84/7566577d3150979c4cf5298d0508bad8e59df0.debug...
+Reading symbols from /lib/powerpc64le-linux-gnu/libc.so.6...
+Reading symbols from /usr/lib/debug/.build-id/9c/af5b3dc1dfe64bd61aed84a160dc715bbb51cb.debug...
+-------------------------------------------------------------
+           system name = Linux
+             node name = titan
+               release = 5.8.0-rc2-genunix
+               version = #1 SMP Wed Jun 24 07:02:46 UTC 2020
+               machine = ppc64le
+             page size = 65536
+          avail memory = 4246929408
+                       = 4147392 kB
+                       = 4050 MB
+                endian = little endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+
+Breakpoint 1, main (Reading in symbols for ../sysdeps/unix/sysv/linux/powerpc/libc-start.c...done.
+argc=2, argv=0x7ffffffff918) at fp64_inexact.c:75
+75          candidate_double = strtod(argv[1], (char **)NULL);
+(gdb) step
+Reading in symbols for strtod.c...done.
+__GI_strtod (nptr=0x7ffffffffcd2 "1.125", endptr=0x0) at strtod.c:83
+83        return INTERNAL(STRTOF_L) (nptr, endptr, 0, _NL_CURRENT_LOCALE);
+(gdb) step
+Reading in symbols for strtod_l.c...done.
+__GI_____strtod_l_internal (nptr=0x7ffffffffcd2 "1.125", endptr=0x0, group=0, loc=0x7ffff7e41628 <_nl_global_locale>)
+    at strtod_l.c:564
+564       if (__glibc_unlikely (group))
+(gdb) step
+596       decimal = _NL_CURRENT (LC_NUMERIC, DECIMAL_POINT);
+(gdb) step
+597       decimal_len = strlen (decimal);
+(gdb) print decimal
+$1 = 0x7ffff7df0758 <dot> "."
+(gdb) step
+Reading in symbols for ../sysdeps/powerpc/powerpc64/power8/strlen.S...done.
+__strlen_power8 () at ../sysdeps/powerpc/powerpc64/power8/strlen.S:41
+41      #endif
+Current language:  auto
+The current source language is "auto; currently asm".
+(gdb) step
+42              orc     r9,r12,r5     /* Mask bits that are not part of the string.  */
+(gdb) step
+43              cmpb    r10,r9,r0     /* Check for null bytes in DWORD1.  */
+(gdb) step
+44              cmpdi   cr7,r10,0     /* If r10 == 0, no null's have been found.  */
+(gdb) step
+46
+(gdb) break strtod_l.c:565
+Reading in symbols for ../stdlib/strtod_l.c... and ../sysdeps/ieee754/float128/wcstof128_l.c...done.
+Reading in symbols for ../stdlib/strtod_l.c... and wcstof_l.c...done.
+Reading in symbols for ../stdlib/strtod_l.c... and wcstold_l.c...done.
+Reading in symbols for ../stdlib/strtod_l.c... and wcstod_l.c...done.
+Reading in symbols for ../stdlib/strtod_l.c... and ../sysdeps/ieee754/float128/strtof128_l.c...done.
+Reading in symbols for ./strtod_l.c... and ../sysdeps/ieee754/ldbl-128ibm/strtold_l.c...done.
+Reading in symbols for strtod_l.c... and strtof_l.c...done.
+Breakpoint 2 at 0x7ffff7c8fac0: strtod_l.c:565. (8 locations)
+(gdb) cont
+Continuing.
+INFO : seems like a decimal number +1.125                              
+[Inferior 1 (process 1796) exited normally]
+(gdb) quit
+C_titan$ 
+
+
