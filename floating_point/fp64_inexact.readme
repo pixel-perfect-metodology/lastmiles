@@ -1,4 +1,18 @@
 
+Debian sid amd64 claims : 
+
+nix$ uname -a 
+Linux nix 5.6.0-2-amd64 #1 SMP Debian 5.6.14-2 (2020-06-09) x86_64 GNU/Linux
+nix$ cat /proc/version 
+Linux version 5.6.0-2-amd64 (debian-kernel@lists.debian.org) (gcc version 9.3.0 (Debian 9.3.0-13)) #1 SMP Debian 5.6.14-2 (2020-06-09)
+nix$ ldd --version 
+ldd (Debian GLIBC 2.30-8) 2.30
+Copyright (C) 2019 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Written by Roland McGrath and Ulrich Drepper.
+nix$ 
+
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_amd64.log | openssl dgst -sha256 -r -
 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Solaris_SPARCV9.log | openssl dgst -sha256 -r -
@@ -14,18 +28,14 @@ $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_ppc64.log | ope
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.RHEL_8.2_amd64.log| openssl dgst -sha256 -r -
 03d95f901e4f95164039ac7d337509ac459380858a5e7b17ca8fb0f22945ef4b *stdin
 
-Note : Red Hat Enterprise Linux 8.2 claims glibc 2.30 thus 
+Note : Red Hat Enterprise Linux 8.2 claims glibc 2.28 thus 
 
-[metis@jupiter ~]$ ld --version
-GNU ld version 2.30-73.el8
+[metis@jupiter ~]$ ldd --version
+ldd (GNU libc) 2.28
 Copyright (C) 2018 Free Software Foundation, Inc.
-This program is free software; you may redistribute it under the terms of
-the GNU General Public License version 3 or (at your option) a later version.
-This program has absolutely no warranty.
-
-
-
-
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Written by Roland McGrath and Ulrich Drepper.
 
 
 $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_sid_i686_via_eden_esther.log | openssl dgst -sha256 - 
@@ -55,15 +65,12 @@ $ grep -E '^\-\-\-\-\ |seems|FE_INEXACT' fp64_inexact.Debian_9.12_armv7l.log | o
 Note, on the ASUS Tinkerboard we see this : 
 
 arm$ 
-arm$ ld --version 
-GNU ld (GNU Binutils for Debian) 2.28
-Copyright (C) 2017 Free Software Foundation, Inc.
-This program is free software; you may redistribute it under the terms of
-the GNU General Public License version 3 or (at your option) a later version.
-This program has absolutely no warranty.
-arm$ 
-
-
+arm$ ldd --version 
+ldd (Debian GLIBC 2.24-11+deb9u4) 2.24
+Copyright (C) 2016 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+Written by Roland McGrath and Ulrich Drepper.
 
 
 
