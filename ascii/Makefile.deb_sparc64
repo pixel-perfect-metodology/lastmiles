@@ -1,0 +1,22 @@
+
+CC=/usr/bin/gcc
+
+CFLAGS= -std=iso9899:1999 -pedantic -fno-builtin -g -m64
+
+CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
+	-D_X_OPEN_SOURCE=600
+
+LIBS = -lm
+
+SRCS = ./argv_dump.c ../sysinfo/sysmem.c ../sysinfo/sysinfo.c
+
+OBJS = ./argv_dump.o ../sysinfo/sysmem.o ../sysinfo/sysinfo.o
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+
+argv_dump: argv_dump.o $(OBJS)
+	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) $(LIBS)
+
+clean:
+	rm -f $(OBJS) argv_dump.o argv_dump

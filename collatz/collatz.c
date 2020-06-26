@@ -1,12 +1,34 @@
 
+/*********************************************************************
+ * The Open Group Base Specifications Issue 6
+ * IEEE Std 1003.1, 2004 Edition
+ *
+ *    An XSI-conforming application should ensure that the feature
+ *    test macro _XOPEN_SOURCE is defined with the value 600 before
+ *    inclusion of any header. This is needed to enable the
+ *    functionality described in The _POSIX_C_SOURCE Feature Test
+ *    Macro and in addition to enable the XSI extension.
+ *
+ *********************************************************************/
+#define _XOPEN_SOURCE 600
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+#include <sys/utsname.h>
+
+int sysinfo(void);
+uint64_t system_memory(void);
 
 int main(int argc, char *argv[]) 
 {
     uint64_t path_length, path_height, height_location, number;
     uint64_t c0; /* this is the starting point number entered */
+
+    setlocale( LC_ALL, "C" );
+    sysinfo();
 
     if ( argc > 1 ){
         number = strtoll(argv[1], (char **)NULL, 10);

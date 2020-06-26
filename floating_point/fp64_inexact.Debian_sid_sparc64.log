@@ -1,0 +1,1135 @@
+
+----  1 ----  1.5000000000000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.5                                
+
+----  2 ----  1.2500000000000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.25                               
+
+----  3 ----  1.1250000000000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.125                              
+
+----  4 ----  1.0625000000000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0625                             
+
+----  5 ----  1.0312500000000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.03125                            
+
+----  6 ----  1.0156250000000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.015625                           
+
+----  7 ----  1.0078125000000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0078125                          
+
+----  8 ----  1.0039062500000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00390625                         
+
+----  9 ----  1.0019531250000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.001953125                        
+
+---- 10 ----  1.0009765625000000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0009765625                       
+
+---- 11 ----  1.0004882812500000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00048828125                      
+
+---- 12 ----  1.0002441406250000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000244140625                     
+
+---- 13 ----  1.0001220703125000000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0001220703125                    
+
+---- 14 ----  1.0000610351562500000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00006103515625                   
+
+---- 15 ----  1.0000305175781250000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000030517578125                  
+
+---- 16 ----  1.0000152587890625000000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0000152587890625                 
+
+---- 17 ----  1.0000076293945312500000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000762939453125                
+
+---- 18 ----  1.0000038146972656250000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000003814697265625               
+
+---- 19 ----  1.0000019073486328125000000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0000019073486328125              
+
+---- 20 ----  1.0000009536743164062500000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000095367431640625             
+
+---- 21 ----  1.0000004768371582031250000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000476837158203125            
+
+---- 22 ----  1.0000002384185791015625000000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0000002384185791015625           
+
+---- 23 ----  1.0000001192092895507812500000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000011920928955078125          
+
+---- 24 ----  1.0000000596046447753906250000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000059604644775390625         
+
+---- 25 ----  1.0000000298023223876953125000000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0000000298023223876953125        
+
+---- 26 ----  1.0000000149011611938476562500000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000001490116119384765625       
+
+---- 27 ----  1.0000000074505805969238281250000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000007450580596923828125      
+
+---- 28 ----  1.0000000037252902984619140625000000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0000000037252902984619140625     
+
+---- 29 ----  1.0000000018626451492309570312500000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000000186264514923095703125    
+
+---- 30 ----  1.0000000009313225746154785156250000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000931322574615478515625   
+
+---- 31 ----  1.0000000004656612873077392578125000000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.0000000004656612873077392578125  
+
+---- 32 ----  1.0000000002328306436538696289062500000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000000023283064365386962890625 
+
+---- 33 ----  1.0000000001164153218269348144531250000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000116415321826934814453125
+
+---- 34 ----  1.0000000000582076609134674072265625000000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000058207660913467407226562
+
+---- 35 ----  1.0000000000291038304567337036132812500000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000029103830456733703613281
+
+---- 36 ----  1.0000000000145519152283668518066406250000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000014551915228366851806641
+
+---- 37 ----  1.0000000000072759576141834259033203125000000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000000000727595761418342590332 
+
+---- 38 ----  1.0000000000036379788070917129516601562500000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000000000363797880709171295166 
+
+---- 39 ----  1.0000000000018189894035458564758300781250000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000000000181898940354585647583 
+
+---- 40 ----  1.0000000000009094947017729282379150390625000000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000909494701772928237915
+
+---- 41 ----  1.0000000000004547473508864641189575195312500000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000454747350886464118958
+
+---- 42 ----  1.0000000000002273736754432320594787597656250000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000227373675443232059479
+
+---- 43 ----  1.0000000000001136868377216160297393798828125000000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000113686837721616029739
+
+---- 44 ----  1.0000000000000568434188608080148696899414062500000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.00000000000005684341886080801487 
+
+---- 45 ----  1.0000000000000284217094304040074348449707031250000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000028421709430404007435
+
+---- 46 ----  1.0000000000000142108547152020037174224853515625000000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000014210854715202003717
+
+---- 47 ----  1.0000000000000071054273576010018587112426757812500000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000007105427357601001859
+
+---- 48 ----  1.0000000000000035527136788005009293556213378906250000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000003552713678800500929
+
+---- 49 ----  1.0000000000000017763568394002504646778106689453125000000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000001776356839400250465
+
+---- 50 ----  1.0000000000000008881784197001252323389053344726562500000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000000888178419700125232
+
+---- 51 ----  1.0000000000000004440892098500626161694526672363281250000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000000444089209850062616
+
+---- 52 ----  1.0000000000000002220446049250313080847263336181640625000000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : seems like a decimal number +1.000000000000000222044604925031308
+
+---- 53 ----  1.0000000000000001110223024625156540423631668090820312500000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : FP Exception raised is FE_INEXACT
+WARN : FE_INEXACT returned by strtod()
+INFO : seems like a decimal number +1                                  
+
+---- 54 ----  1.0000000000000000555111512312578270211815834045410156250000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : FP Exception raised is FE_INEXACT
+WARN : FE_INEXACT returned by strtod()
+INFO : seems like a decimal number +1                                  
+
+---- 55 ----  1.0000000000000000277555756156289135105907917022705078125000000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : FP Exception raised is FE_INEXACT
+WARN : FE_INEXACT returned by strtod()
+INFO : seems like a decimal number +1                                  
+
+---- 56 ----  1.0000000000000000138777878078144567552953958511352539062500000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : FP Exception raised is FE_INEXACT
+WARN : FE_INEXACT returned by strtod()
+INFO : seems like a decimal number +1                                  
+
+---- 57 ----  1.0000000000000000069388939039072283776476979255676269531250000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : FP Exception raised is FE_INEXACT
+WARN : FE_INEXACT returned by strtod()
+INFO : seems like a decimal number +1                                  
+
+---- 58 ----  1.0000000000000000034694469519536141888238489627838134765625000000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : FP Exception raised is FE_INEXACT
+WARN : FE_INEXACT returned by strtod()
+INFO : seems like a decimal number +1                                  
+
+---- 59 ----  1.0000000000000000017347234759768070944119244813919067382812500000
+-------------------------------------------------------------
+           system name = Linux
+             node name = phobos
+               release = 5.5.0-2-sparc64
+               version = #1 Debian 5.5.17-1 (2020-04-15)
+               machine = sparc64
+             page size = 8192
+          avail memory = 1042522112
+                       = 1018088 kB
+                       = 994 MB
+                endian = big endian
+ sizeof(unsigned long) = 8
+           sizeof(int) = 4
+         sizeof(void*) = 8
+     fp rounding mode is FE_TONEAREST
+-------------------------------------------------------------
+INFO : FP Exception raised is FE_INEXACT
+WARN : FE_INEXACT returned by strtod()
+INFO : seems like a decimal number +1                                  
