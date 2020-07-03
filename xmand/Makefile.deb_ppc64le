@@ -16,7 +16,6 @@ LDIR=/usr/local/lib
 IDIR=/usr/local/include
 
 SRCS = ./mandel_col.c \
-	./not_double_r_col.c \
 	./linear_inter.c \
 	./mbrot.c \
 	../xwin/x_error_handler.c \
@@ -27,7 +26,6 @@ SRCS = ./mandel_col.c \
 
 
 OBJS = ./mandel_col.o \
-	./not_double_r_col.o \
 	./linear_inter.o \
 	./mbrot.o \
 	../xwin/x_error_handler.o \
