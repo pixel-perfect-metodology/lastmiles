@@ -1,0 +1,22 @@
+
+CC=/usr/bin/cc
+
+CFLAGS= -std=iso9899:1999 -m64 -g -O0 -fno-builtin \
+	-fno-fast-math -pedantic -pedantic-errors
+
+CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
+		-D_X_OPEN_SOURCE=600
+
+LIBS = -lm
+
+SRC = qsort.c
+OBJ = qsort.o
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
+
+qsort: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) $(LIBS)
+
+clean:
+	rm -f $(OBJ) qsort

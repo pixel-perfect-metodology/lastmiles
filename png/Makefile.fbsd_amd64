@@ -1,0 +1,22 @@
+
+CC=/usr/bin/cc
+
+CFLAGS= -std=iso9899:1999 -m64 -g -O0 -fno-builtin \
+	-fno-fast-math -pedantic -pedantic-errors
+
+CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
+		-D_X_OPEN_SOURCE=600
+
+LIBS = -lpng
+
+SRC = png_convert_to_8bit.c
+OBJ = png_convert_to_8bit.o
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I/opt/bw/include
+
+png_convert_to_8bit: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -Wl,-rpath=/opt/bw/lib -L/opt/bw/lib $(LIBS)
+
+clean:
+	rm -f $(OBJ) png_convert_to_8bit
