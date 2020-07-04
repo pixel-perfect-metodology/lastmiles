@@ -18,7 +18,7 @@ SRCS = ./mandel_col.c \
 	../xwin/create_gc.c \
 	../xwin/create_borderless_topwin.c \
 	../time_and_date/timediff.c \
-	../pthread/sysmem.c ../pthread/sysinfo.c
+	../sysinfo/sysmem.c ../sysinfo/sysinfo.c
 
 
 OBJS = ./mandel_col.o \
@@ -28,7 +28,7 @@ OBJS = ./mandel_col.o \
 	../xwin/create_gc.o \
 	../xwin/create_borderless_topwin.o \
 	../time_and_date/timediff.o \
-	../pthread/sysmem.o ../pthread/sysinfo.o
+	../sysinfo/sysmem.o ../sysinfo/sysinfo.o
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS)
