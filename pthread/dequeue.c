@@ -61,7 +61,9 @@ void *dequeue( q_type *q ) {
             && ( (q->head) == NULL )
             && ( (q->tail) == NULL ) ) {
 
-        /* queue is empty so we await for it to get a task */
+        /* WARNING : this is blocking.
+         *
+         * queue is empty so we await for it to get a task */
         pthread_cond_wait( &( q->alive ), q->mutex );
 
     }
@@ -93,7 +95,6 @@ void *dequeue( q_type *q ) {
      */
     free(tmp);
     tmp = NULL;
-
 
     return ( return_payload );
 
