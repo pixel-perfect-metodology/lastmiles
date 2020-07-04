@@ -1,0 +1,29 @@
+
+CC=/usr/bin/c99
+
+CFLAGS= -I$(IDIR) -Xc -g -errfmt=error -erroff=%none \
+	-xmemalign=8s -errshort=full -xstrconst -xildoff -m64 -xnolibmil \
+	-xcode=pic32 -xregs=no%appl -xlibmieee -ftrap=%none -xarch=sparc -mc \
+	-xs -xbuiltin=%none -xdebugformat=dwarf -xunroll=1
+
+CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
+	-D_X_OPEN_SOURCE=600
+
+LIBS = -lpng
+LDIR = /opt/bw/lib
+IDIR = /opt/bw/include
+LDFLAGS = -L/opt/bw/lib
+LD_OPTIONS = -64 -R/opt/bw/lib -L/opt/bw/lib
+LD_RUN_PATH = /opt/bw/lib
+
+SRC = png_convert_to_8bit.c
+OBJ = png_convert_to_8bit.o
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I$(IDIR)
+
+png_convert_to_8bit: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -Wl,-rpath=$(LDIR) -L$(LDIR) $(LIBS)
+
+clean:
+	rm -f $(OBJ) png_convert_to_8bit
