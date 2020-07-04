@@ -1,0 +1,24 @@
+
+CC=/usr/bin/cc
+
+CFLAGS= -I$(IDIR) -std=iso9899:1999 -fno-builtin -march=armv7-a \
+	-mtune=cortex-a17 -mfpu=vfpv4-d16 -mstructure-size-boundary=32 \
+	-marm -mtls-dialect=gnu2 -pedantic -Wl,-rpath=/opt/bw/lib \
+	-mno-sched-prolog -mlittle-endian -O0 -g
+
+CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
+	-D_X_OPEN_SOURCE=600
+
+LIBS = -lpng
+
+SRC = png_convert_to_8bit.c
+OBJ = png_convert_to_8bit.o
+
+%.o: %.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(CPPFLAGS) -I/opt/bw/include
+
+png_convert_to_8bit: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(CPPFLAGS) -Wl,-rpath=/opt/bw/lib -L/opt/bw/lib $(LIBS)
+
+clean:
+	rm -f $(OBJ) png_convert_to_8bit
