@@ -850,6 +850,7 @@ int main(int argc, char*argv[])
         mouse_y_raw = mouse_y;
         XSetForeground(dsp, gc3, red.pixel);
         sprintf(buf,"raw  [ %-4i , %-4i ]", mouse_x_raw, mouse_y_raw);
+        fprintf(stderr,"%s\n", buf);
         XDrawImageString( dsp, win3, gc3, 10, 40, buf, (int)strlen(buf));
 
         /* classic FiggleFratz jank adjustment of one or two pixels */
@@ -876,11 +877,13 @@ int main(int argc, char*argv[])
                 invert_mouse_x = mouse_x - offset_x;
                 invert_mouse_y = eff_height - mouse_y + offset_y;
                 sprintf(buf,"inv  [ %4i , %4i ]  ", invert_mouse_x, invert_mouse_y );
+                fprintf(stderr,"%s\n", buf);
 
                 XSetForeground(dsp, gc2, green.pixel);
                 XDrawImageString( dsp, win2, gc2, 10, 230, buf, (int)strlen(buf));
 
                 sprintf(buf,"fp64( %-10.8e , %-10.8e )", win_x, win_y );
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win2, gc2, 10, 250, buf, (int)strlen(buf));
 
                 /* a more useful value is the vbox[] coordinates for
@@ -888,8 +891,8 @@ int main(int argc, char*argv[])
                 vbox_x = ( mouse_x - offset_x ) / vbox_w;
                 vbox_y = ( eff_height - mouse_y + offset_y ) / vbox_h;
                 sprintf(buf,"vbox  [ %03i , %03i ]", vbox_x, vbox_y );
-                XDrawImageString( dsp, win2, gc2, 10, 270, buf, (int)strlen(buf));
                 fprintf(stderr,"%s\n", buf);
+                XDrawImageString( dsp, win2, gc2, 10, 270, buf, (int)strlen(buf));
 
                 /* Offset the floating point values such that the
                  * center point shall be ( 0.0, 0.0 ) */
@@ -898,6 +901,7 @@ int main(int argc, char*argv[])
 
                 XSetForeground(dsp, gc2, cornflowerblue.pixel);
                 sprintf(buf,"fp64( %-+10.8e , %-+10.8e )  ", win_x, win_y );
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win2, gc2, 10, 290, buf, (int)strlen(buf));
 
                 /* At this moment we have normalized values for a
@@ -916,8 +920,7 @@ int main(int argc, char*argv[])
                 /* apply the translation on the complex plane */
                 x_prime = x_prime + real_translate;
                 y_prime = y_prime + imag_translate;
-                fprintf(stderr,"c = ( %-+18.14e, %-+18.14e )\n", x_prime, y_prime );
-
+                fprintf(stderr,"c = ( %-+22.16e, %-+22.16e )\n", x_prime, y_prime );
                 XSetForeground(dsp, gc3, red.pixel);
                 sprintf(buf," select = %-+16.12e, %-+16.12e  ", x_prime, y_prime );
                 XDrawImageString( dsp, win3, gc3, 10, 80, buf, (int)strlen(buf));
@@ -933,9 +936,11 @@ int main(int argc, char*argv[])
                  * gets used by the physical screen ? */
                 pixel_real_width = obs_x_width / (double)eff_width;
                 sprintf(buf,"pixel_real_w = %-+16.12e",pixel_real_width);
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win3, gc3, 10, 180, buf, (int)strlen(buf));
                 pixel_imag_height = obs_y_height / (double)eff_height;
                 sprintf(buf,"pixel_imag_h = %-+16.12e",pixel_imag_height);
+                fprintf(stderr,"%s\n", buf);
                 XDrawImageString( dsp, win3, gc3, 10, 200, buf, (int)strlen(buf));
                 XSetForeground(dsp, gc3, cyan.pixel);
 

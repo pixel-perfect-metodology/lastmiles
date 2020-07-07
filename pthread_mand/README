@@ -1,0 +1,45 @@
+
+The idea here is to load up the POSIX thread work queue model with a
+pile of work that represents the computation needed on a region of the
+mandlebrot fractal. 
+
+At the moment the region of the mandlebrot in previous code tests was
+rendered on screen as a 1024 x 1024 square pixel grid. Each pixel may
+represent a single sample computation or an average of a set or even
+a statistical model applied to a set. Regardless we generally break
+up the work into regions of smaller work. Previously we used a sample
+grid that was 16 x 16 smaller squares inside the mandlebrot region of
+interest.  Consider the following trivial case : 
+
+    magnify = 64 = m
+
+     centre = ( -1.75, 0.0 ) = ( r0, c0 )
+
+The mandlebrot is only of interest within a circle of radius 2 and at
+the origin and thus we generally think that a magnify of 1 will cover
+a region on the complex place from ( -2, -2 ) to ( 2, 2 ) and thus we
+have a square width and height of 4 units.  The magnify value of 64
+simply means that this width and height are divided by 64 to give us
+a region centered at ( -1.75, 0.0 ) with a width and height of 4/64
+or simply 1/16th of a unit.  What are the complex coordinates of the
+lower left corner of this region?
+
+       real lower left = rll = r0 - 1/2 * ( 4 / m )
+                             = -1.75 - 2 / m
+                             = -1.75 - 2 / 64
+                             = -1.78125
+
+    complex lower left = cll = c0 - 1/2 * ( 4 / m )
+                             = 0.0 - 2 / m
+                             = 0.0 - 2 / 64
+                             = -0.03125
+
+
+
+
+7$ b=131072 m=4194304
+arm7$ -1.249971859332e+00
+arm7$ -7.747944619038e-03
+arm7$ thr = 16? or whatever
+
+
