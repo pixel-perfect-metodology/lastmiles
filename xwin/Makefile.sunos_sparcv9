@@ -10,7 +10,7 @@ CFLAGS= -I$(IDIR) -Xc -g -errfmt=error -erroff=%none -xmemalign=8s -errshort=ful
 	-xdebugformat=dwarf -xunroll=1
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
-	-D_X_OPEN_SOURCE=600
+	-D_XOPEN_SOURCE=600
 
 LIBS = -lX11 -lrt -lm
 

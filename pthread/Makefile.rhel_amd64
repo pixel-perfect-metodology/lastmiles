@@ -7,7 +7,7 @@ CFLAGS= -std=iso9899:1999 -m64 -g -O0 -fno-builtin -march=k8 \
 	-mlong-double-80 -mstackrealign -mpreferred-stack-boundary=8
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
-		-D_X_OPEN_SOURCE=600 -D_REENTRANT
+		-D_XOPEN_SOURCE=600 -D_REENTRANT
 
 LIBS = -lpthread -lrt -lm
 

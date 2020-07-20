@@ -9,7 +9,7 @@ CFLAGS= -I$(IDIR) -std=iso9899:1999 -m64 -O3 \
 	-mstackrealign -mpreferred-stack-boundary=4
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
-	-D_X_OPEN_SOURCE=600
+	-D_XOPEN_SOURCE=600
 
 LIBS = -lX11 -lrt -lm -lpthread
 
