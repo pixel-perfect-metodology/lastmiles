@@ -6,7 +6,7 @@ CFLAGS= -std=iso9899:1999 -pedantic -pedantic-errors -Weverything \
 	-fno-fast-math -fno-builtin
 
 CPPFLAGS=-D_TS_ERRNO -D_POSIX_PTHREAD_SEMANTICS -D_LARGEFILE64_SOURCE \
-	-D_XOPEN_SOURCE=600
+	-D_X_OPEN_SOURCE=600
 
 LIBS = -lX11 -lrt -lm -lpthread
 LDIR=/usr/local/lib
@@ -14,7 +14,8 @@ IDIR=/usr/local/include
 
 SRCS = ./mandel_col.c \
 	./linear_inter.c \
-	./mbrot.c ./mbrot_vbox_pthread.c \
+	./mbrot.c \
+	./mbrot_vbox_pthread.c \
 	../xwin/x_error_handler.c \
 	../xwin/create_gc.c \
 	../xwin/create_borderless_topwin.c \
@@ -24,7 +25,8 @@ SRCS = ./mandel_col.c \
 
 OBJS = ./mandel_col.o \
 	./linear_inter.o \
-	./mbrot.o ./mbrot_vbox_pthread.o \
+	./mbrot.o \
+	./mbrot_vbox_pthread.o \
 	../xwin/x_error_handler.o \
 	../xwin/create_gc.o \
 	../xwin/create_borderless_topwin.o \
